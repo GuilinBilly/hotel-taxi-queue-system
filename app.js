@@ -37,7 +37,7 @@ const callNextBtn = document.getElementById("callNextBtn");
 const doormanPinInput = document.getElementById("doormanPin");
 
 // Simple MVP PIN
-const DOORMAN_PIN = "1020";
+const DOORMAN_PIN = "1688";
 
 // 1) Driver joins queue -> push to DB
 async function joinQueue() {
