@@ -125,6 +125,7 @@ onValue(queueRef, (snapshot) => {
 
 // Wire buttons
 joinBtn.addEventListener("click", joinQueue);
+leaveBtn.addEventListener("click", leaveQueue);
 callNextBtn.addEventListener("click", callNext);
 
 // Optional: press Enter to join
