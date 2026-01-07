@@ -29,6 +29,9 @@ const db = getDatabase(app);
 const queueRef = ref(db, "queue");
 
 // UI elements
+const doormanPinInput = document.getElementById("doormanPin");
+// Simple MVP PIN (we will upgrade later)
+const DOORMAN_PIN = "1020";
 const driverNameInput = document.getElementById("driverName");
 const queueList = document.getElementById("queueList");
 const joinBtn = document.getElementById("joinBtn");
@@ -48,6 +51,15 @@ async function joinQueue() {
 }
 
 // 2) Doorman calls next -> remove earliest item (FIFO)
+async function callNext() {
+  const pin = (doormanPinInput.value || "").trim();
+  if (pin !== DOORMAN_PIN) return alert("Invalid PIN. Doorman only.");
+
+  const snapshot = await get(queueRef);
+  if (!snapshot.exists()) return alert("No drivers waiting");
+
+  // ... keep the rest the same
+}
 async function callNext() {
   const snapshot = await get(queueRef);
   if (!snapshot.exists()) return alert("No drivers waiting");
