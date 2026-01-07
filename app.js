@@ -29,13 +29,15 @@ const db = getDatabase(app);
 const queueRef = ref(db, "queue");
 
 // UI elements
-const doormanPinInput = document.getElementById("doormanPin");
-// Simple MVP PIN (we will upgrade later)
-const DOORMAN_PIN = "1020";
 const driverNameInput = document.getElementById("driverName");
 const queueList = document.getElementById("queueList");
 const joinBtn = document.getElementById("joinBtn");
+const leaveBtn = document.getElementById("leaveBtn");
 const callNextBtn = document.getElementById("callNextBtn");
+const doormanPinInput = document.getElementById("doormanPin");
+
+// Simple MVP PIN
+const DOORMAN_PIN = "1020";
 
 // 1) Driver joins queue -> push to DB
 async function joinQueue() {
