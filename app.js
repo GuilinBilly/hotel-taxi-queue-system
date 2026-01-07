@@ -51,7 +51,29 @@ async function joinQueue() {
 
   driverNameInput.value = "";
 }
+// 2) Driver leaves queue
+async function leaveQueue() {
+  const name = (driverNameInput.value || "").trim();
+  if (!name) return alert("Enter your name to leave the queue");
 
+  const snapshot = await get(queueRef);
+  if (!snapshot.exists()) return alert("Queue is empty");
+
+  const data = snapshot.val();
+  const entries = Object.entries(data);
+
+  // find the first matching name (case-insensitive)
+  const found = entries.find(([key, value]) =>
+    (value.name || "").toLowerCase() === name.toLowerCase()
+  );
+
+  if (!found) return alert("Name not found in queue");
+
+  const [keyToRemove] = found;
+  await remove(ref(db, `queue/${keyToRemove}`));
+
+  alert("Removed from queue.");
+}
 // 2) Doorman calls next -> remove earliest item (FIFO)
 async function callNext() {
   const pin = (doormanPinInput.value || "").trim();
