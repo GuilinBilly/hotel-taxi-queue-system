@@ -3,9 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <title>Hotel Taxi Queue System</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Hotel Taxi Queue System</h1>
-  <p>HTQS is now live.</p>
+
+<h1>Hotel Taxi Queue System</h1>
+
+<div class="card">
+  <h2>Driver Check-In</h2>
+  <input id="driverName" placeholder="Driver Name">
+  <button onclick="joinQueue()">Join Queue</button>
+</div>
+
+<div class="card">
+  <h2>Live Queue</h2>
+  <ul id="queueList"></ul>
+</div>
+
+<div class="card">
+  <h2>Doorman Control</h2>
+  <button onclick="callNext()">Call Next Taxi</button>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
