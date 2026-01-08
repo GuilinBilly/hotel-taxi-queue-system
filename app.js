@@ -28,13 +28,27 @@ const db = getDatabase(app);
 // Realtime Database path for the queue
 const queueRef = ref(db, "queue");
 
-// UI elements
+// UI elements (must match index.html ids)
 const driverNameInput = document.getElementById("driverName");
 const queueList = document.getElementById("queueList");
 const joinBtn = document.getElementById("joinBtn");
 const leaveBtn = document.getElementById("leaveBtn");
 const callNextBtn = document.getElementById("callNextBtn");
 const doormanPinInput = document.getElementById("doormanPin");
+
+// Quick sanity check (if any are null, buttons won't work)
+console.log({
+  driverNameInput,
+  queueList,
+  joinBtn,
+  leaveBtn,
+  callNextBtn,
+  doormanPinInput
+});
+
+if (!driverNameInput || !queueList || !joinBtn || !leaveBtn || !callNextBtn || !doormanPinInput) {
+  alert("HTQS setup error: one or more HTML element IDs do not match app.js. Check console.");
+}
 
 // Simple MVP PIN
 const DOORMAN_PIN = "1688";
