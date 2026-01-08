@@ -6,11 +6,10 @@ import {
   push,
   onValue,
   remove,
-  get,
-  child
+  get
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-// Your Firebase config (from your console)
+// Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAFpipCO1XuETiPzuCptlTJhpHy4v7teo4",
   authDomain: "htqs-afa97.firebaseapp.com",
@@ -36,22 +35,13 @@ const leaveBtn = document.getElementById("leaveBtn");
 const callNextBtn = document.getElementById("callNextBtn");
 const doormanPinInput = document.getElementById("doormanPin");
 
-// Quick sanity check (if any are null, buttons won't work)
-console.log({
-  driverNameInput,
-  queueList,
-  joinBtn,
-  leaveBtn,
-  callNextBtn,
-  doormanPinInput
-});
-
-if (!driverNameInput || !queueList || !joinBtn || !leaveBtn || !callNextBtn || !doormanPinInput) {
-  alert("HTQS setup error: one or more HTML element IDs do not match app.js. Check console.");
-}
-
 // Simple MVP PIN
 const DOORMAN_PIN = "1688";
+
+// Safety check
+if (!driverNameInput || !queueList || !joinBtn || !leaveBtn || !callNextBtn || !doormanPinInput) {
+  alert("HTQS setup error: HTML element IDs do not match app.js.");
+}
 
 // 1) Driver joins queue -> push to DB
 async function joinQueue() {
@@ -65,7 +55,8 @@ async function joinQueue() {
 
   driverNameInput.value = "";
 }
-// 2) Driver leaves queue
+
+// 2) Driver leaves queue -> remove first matching name
 async function leaveQueue() {
   const name = (driverNameInput.value || "").trim();
   if (!name) return alert("Enter your name to leave the queue");
@@ -76,7 +67,6 @@ async function leaveQueue() {
   const data = snapshot.val();
   const entries = Object.entries(data);
 
-  // find the first matching name (case-insensitive)
   const found = entries.find(([key, value]) =>
     (value.name || "").toLowerCase() === name.toLowerCase()
   );
@@ -88,7 +78,8 @@ async function leaveQueue() {
 
   alert("Removed from queue.");
 }
-// 2) Doorman calls next -> remove earliest item (FIFO)
+
+// 3) Doorman calls next -> remove earliest item (FIFO)
 async function callNext() {
   const pin = (doormanPinInput.value || "").trim();
   if (pin !== DOORMAN_PIN) return alert("Invalid PIN. Doorman only.");
@@ -96,27 +87,20 @@ async function callNext() {
   const snapshot = await get(queueRef);
   if (!snapshot.exists()) return alert("No drivers waiting");
 
-  // ... keep the rest the same
-}
-async function callNext() {
-  const snapshot = await get(queueRef);
-  if (!snapshot.exists()) return alert("No drivers waiting");
-
-  const data = snapshot.val(); // { key1: {name, joinedAt}, key2: ... }
+  const data = snapshot.val(); // { key: {name, joinedAt}, ... }
   const entries = Object.entries(data);
 
-  // Sort by joinedAt to ensure FIFO
+  // Sort by joinedAt (FIFO)
   entries.sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
   const [firstKey, firstValue] = entries[0];
 
   alert(`${firstValue.name} please go to hotel entrance`);
 
-  // Remove that driver from queue
   await remove(ref(db, `queue/${firstKey}`));
 }
 
-// 3) Live listener -> render queue for everyone in real time
+// 4) Live listener -> render queue for everyone in real time
 onValue(queueRef, (snapshot) => {
   queueList.innerHTML = "";
 
@@ -142,7 +126,7 @@ joinBtn.addEventListener("click", joinQueue);
 leaveBtn.addEventListener("click", leaveQueue);
 callNextBtn.addEventListener("click", callNext);
 
-// Optional: press Enter to join
+// Enter to join
 driverNameInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") joinQueue();
 });
