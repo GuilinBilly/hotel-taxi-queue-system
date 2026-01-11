@@ -37,16 +37,19 @@
   </section>
 
   <section class="card">
-    <h2>Doorman Control</h2>
+  <h2>Doorman Control</h2>
 
-    <div class="row">
-      <input id="doormanPin" class="input" placeholder="Enter doorman PIN" type="password" inputmode="numeric">
-      <button id="callNextBtn" class="btn danger">Call Next Taxi</button>
-    </div>
+  <div class="row">
+    <input id="doormanPin" class="input" placeholder="Enter doorman PIN" type="password" inputmode="numeric">
+    <button id="callNextBtn" class="btn danger">Call Next Taxi</button>
+    <button id="completeBtn" class="btn">Complete Pickup</button>
+  </div>
 
-    <p class="hint">PIN required to dispatch.</p>
-  </section>
+  <p class="hint">PIN required to dispatch.</p>
 
+  <!-- NEW: shows who is currently CALLED -->
+  <div id="calledBox" class="calledBox"></div>
+</section>
 </main>
 
 <script type="module" src="app.js"></script>
