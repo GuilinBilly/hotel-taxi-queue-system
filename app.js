@@ -6,7 +6,8 @@ import {
   push,
   onValue,
   remove,
-  get
+  get,
+  update
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
 // Your Firebase config
@@ -34,12 +35,13 @@ const joinBtn = document.getElementById("joinBtn");
 const leaveBtn = document.getElementById("leaveBtn");
 const callNextBtn = document.getElementById("callNextBtn");
 const doormanPinInput = document.getElementById("doormanPin");
-
+const completeBtn = document.getElementById("completeBtn");
+const calledBox = document.getElementById("calledBox");
 // Simple MVP PIN
 const DOORMAN_PIN = "1688";
 
 // Safety check
-if (!driverNameInput || !queueList || !joinBtn || !leaveBtn || !callNextBtn || !doormanPinInput) {
+if (!driverNameInput || !queueList || !joinBtn || !leaveBtn || !callNextBtn || !doormanPinInput || !completeBtn || !calledBox) {
   alert("HTQS setup error: HTML element IDs do not match app.js.");
 }
 
@@ -49,9 +51,10 @@ async function joinQueue() {
   if (!name) return alert("Enter your name");
 
   await push(queueRef, {
-    name,
-    joinedAt: Date.now()
-  });
+  name,
+  status: "WAITING",
+  joinedAt: Date.now()
+});
 
   driverNameInput.value = "";
 }
@@ -87,17 +90,47 @@ async function callNext() {
   const snapshot = await get(queueRef);
   if (!snapshot.exists()) return alert("No drivers waiting");
 
-  const data = snapshot.val(); // { key: {name, joinedAt}, ... }
+  const data = snapshot.val();
   const entries = Object.entries(data);
 
-  // Sort by joinedAt (FIFO)
-  entries.sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+  // Only pick drivers that are still WAITING
+  const waiting = entries
+    .filter(([key, value]) => (value.status || "WAITING") === "WAITING")
+    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
-  const [firstKey, firstValue] = entries[0];
+  if (waiting.length === 0) return alert("No WAITING drivers. (Someone is already CALLED.)");
+
+  const [firstKey, firstValue] = waiting[0];
+
+  // Mark as CALLED
+  await update(ref(db, `queue/${firstKey}`), {
+    status: "CALLED",
+    calledAt: Date.now()
+  });
 
   alert(`${firstValue.name} please go to hotel entrance`);
+}
 
-  await remove(ref(db, `queue/${firstKey}`));
+async function completePickup() {
+  const pin = (doormanPinInput.value || "").trim();
+  if (pin !== DOORMAN_PIN) return alert("Invalid PIN. Doorman only.");
+
+  const snapshot = await get(queueRef);
+  if (!snapshot.exists()) return alert("Queue is empty");
+
+  const data = snapshot.val();
+  const entries = Object.entries(data);
+
+  const called = entries
+    .filter(([key, value]) => (value.status || "WAITING") === "CALLED")
+    .sort((a, b) => (a[1].calledAt ?? 0) - (b[1].calledAt ?? 0));
+
+  if (called.length === 0) return alert("No CALLED driver to complete.");
+
+  const [calledKey, calledValue] = called[0];
+
+  await remove(ref(db, `queue/${calledKey}`));
+  alert(`Completed pickup: ${calledValue.name}`);
 }
 
 // 4) Live listener -> render queue for everyone in real time
