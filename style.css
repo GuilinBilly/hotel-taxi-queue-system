@@ -99,3 +99,19 @@ body {
   padding: 10px 12px;
   text-align: left;
 }
+
+.calledBox {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f7f7f7;
+  font-size: 16px;
+}
+.statusTag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  margin-left: 10px;
+}
