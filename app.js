@@ -136,28 +136,48 @@ async function completePickup() {
 // 4) Live listener -> render queue for everyone in real time
 onValue(queueRef, (snapshot) => {
   queueList.innerHTML = "";
+  calledBox.innerHTML = "";
 
   if (!snapshot.exists()) {
     queueList.innerHTML = "<li>(No drivers waiting)</li>";
+    calledBox.innerHTML = "<strong>Now Calling:</strong> (none)";
     return;
   }
 
   const data = snapshot.val();
   const entries = Object.entries(data);
 
+  // Sort by joinedAt for consistent list order
   entries.sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
+  // Render list
   entries.forEach(([key, value], index) => {
+    const name = value.name || "(no name)";
+    const status = value.status || "WAITING";
+
     const li = document.createElement("li");
-    li.textContent = `${index + 1}. ${value.name}`;
+    li.innerHTML = `${index + 1}. ${name} <span class="statusTag">${status}</span>`;
     queueList.appendChild(li);
   });
+
+  // Show who is CALLED (if any)
+  const called = entries
+    .filter(([key, value]) => (value.status || "WAITING") === "CALLED")
+    .sort((a, b) => (a[1].calledAt ?? 0) - (b[1].calledAt ?? 0));
+
+  if (called.length === 0) {
+    calledBox.innerHTML = "<strong>Now Calling:</strong> (none)";
+  } else {
+    const [k, v] = called[0];
+    calledBox.innerHTML = `<strong>Now Calling:</strong> ${v.name} <span class="statusTag">CALLED</span>`;
+  }
 });
 
 // Wire buttons
 joinBtn.addEventListener("click", joinQueue);
 leaveBtn.addEventListener("click", leaveQueue);
 callNextBtn.addEventListener("click", callNext);
+completeBtn.addEventListener("click", completePickup);
 
 // Enter to join
 driverNameInput.addEventListener("keydown", (e) => {
