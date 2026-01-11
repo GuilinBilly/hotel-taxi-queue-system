@@ -82,7 +82,7 @@ async function leaveQueue() {
   alert("Removed from queue.");
 }
 
-// 3) Doorman calls next -> remove earliest item (FIFO)
+// 3) Doorman calls next -> mark earliest WAITING as CALLED (FIFO)
 async function callNext() {
   const pin = (doormanPinInput.value || "").trim();
   if (pin !== DOORMAN_PIN) return alert("Invalid PIN. Doorman only.");
