@@ -118,3 +118,7 @@ body {
   border: 1px solid #ddd;
   margin-left: 10px;
 }
+.btn {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
