@@ -37,32 +37,50 @@ const callNextBtn = document.getElementById("callNextBtn");
 const doormanPinInput = document.getElementById("doormanPin");
 const completeBtn = document.getElementById("completeBtn");
 const calledBox = document.getElementById("calledBox");
+const driverColorInput = document.getElementById("driverColor");
+const driverPlateInput = document.getElementById("driverPlate");
+
 // Simple MVP PIN
 const DOORMAN_PIN = "1688";
 
 // Safety check
-if (!driverNameInput || !queueList || !joinBtn || !leaveBtn || !callNextBtn || !doormanPinInput || !completeBtn || !calledBox) {
+if (
+  !driverNameInput || !driverColorInput || !driverPlateInput ||
+  !queueList || !joinBtn || !leaveBtn || !callNextBtn ||
+  !doormanPinInput || !completeBtn || !calledBox
+) {
   alert("HTQS setup error: HTML element IDs do not match app.js.");
 }
 
 // 1) Driver joins queue -> push to DB
 async function joinQueue() {
   const name = (driverNameInput.value || "").trim();
+  const color = (driverColorInput.value || "").trim();
+  const plate = (driverPlateInput.value || "").trim();
+
   if (!name) return alert("Enter your name");
+  if (!color) return alert("Enter your car color");
+  if (!plate) return alert("Enter your plate (or last 4)");
 
   await push(queueRef, {
-  name,
-  status: "WAITING",
-  joinedAt: Date.now()
-});
+    name,
+    color,
+    plate,
+    status: "WAITING",
+    joinedAt: Date.now()
+  });
 
   driverNameInput.value = "";
+  driverColorInput.value = "";
+  driverPlateInput.value = "";
 }
-
 // 2) Driver leaves queue -> remove first matching name
 async function leaveQueue() {
   const name = (driverNameInput.value || "").trim();
-  if (!name) return alert("Enter your name to leave the queue");
+  const plate = (driverPlateInput.value || "").trim();
+
+  if (!name) return alert("Enter your name to leave");
+  if (!plate) return alert("Enter your plate (or last 4) to leave");
 
   const snapshot = await get(queueRef);
   if (!snapshot.exists()) return alert("Queue is empty");
@@ -70,18 +88,19 @@ async function leaveQueue() {
   const data = snapshot.val();
   const entries = Object.entries(data);
 
-  const found = entries.find(([key, value]) =>
-    (value.name || "").toLowerCase() === name.toLowerCase()
-  );
+  const found = entries.find(([key, value]) => {
+    const dbName = (value.name || "").toLowerCase();
+    const dbPlate = (value.plate || "").toLowerCase();
+    return dbName === name.toLowerCase() && dbPlate === plate.toLowerCase();
+  });
 
-  if (!found) return alert("Name not found in queue");
+  if (!found) return alert("Driver not found (check name + plate)");
 
   const [keyToRemove] = found;
   await remove(ref(db, `queue/${keyToRemove}`));
 
   alert("Removed from queue.");
 }
-
 // 3) Doorman calls next -> mark earliest WAITING as CALLED (FIFO)
 async function callNext() {
   const pin = (doormanPinInput.value || "").trim();
@@ -108,7 +127,7 @@ async function callNext() {
     calledAt: Date.now()
   });
 
-  alert(`${firstValue.name} please go to hotel entrance`);
+  alert(`${firstValue.name} (${firstValue.color}, ${firstValue.plate}) please go to hotel entrance`);
 }
 
 async function completePickup() {
@@ -156,7 +175,9 @@ onValue(queueRef, (snapshot) => {
     const status = value.status || "WAITING";
 
     const li = document.createElement("li");
-    li.innerHTML = `${index + 1}. ${name} <span class="statusTag">${status}</span>`;
+const color = value.color || "?";
+const plate = value.plate || "?";
+li.innerHTML = `${index + 1}. ${name} — ${color} / ${plate} <span class="statusTag">${status}</span>`;
     queueList.appendChild(li);
   });
 
@@ -169,7 +190,9 @@ onValue(queueRef, (snapshot) => {
     calledBox.innerHTML = "<strong>Now Calling:</strong> (none)";
   } else {
     const [k, v] = called[0];
-    calledBox.innerHTML = `<strong>Now Calling:</strong> ${v.name} <span class="statusTag">CALLED</span>`;
+    const c = v.color || "?";
+const p = v.plate || "?";
+calledBox.innerHTML = `<strong>Now Calling:</strong> ${v.name} — ${c} / ${p} <span class="statusTag">CALLED</span>`;
   }
 });
 
