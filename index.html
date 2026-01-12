@@ -16,19 +16,23 @@
 <main class="container">
 
   <section class="card">
-    <h2>Driver Check-In</h2>
+  <h2>Driver Check-In</h2>
 
-    <div class="row">
-      <input id="driverName" class="input" placeholder="Driver name (e.g., Billy)" autocomplete="off">
-      <button id="joinBtn" class="btn primary">Join Queue</button>
+  <div class="row">
+    <input id="driverName" class="input" placeholder="Driver name (e.g., Billy)" autocomplete="off">
 
-    </div>
+    <input id="driverColor" class="input" placeholder="Car color (e.g., Black)" autocomplete="off">
 
-    <div class="row">
-      <button id="leaveBtn" class="btn">Leave Queue</button>
-      <span class="hint">Tip: type your name, then Leave.</span>
-    </div>
-  </section>
+    <input id="driverPlate" class="input" placeholder="Plate (e.g., 123ABC or last 4)" autocomplete="off">
+
+    <button id="joinBtn" class="btn primary">Join Queue</button>
+  </div>
+
+  <div class="row">
+    <button id="leaveBtn" class="btn">Leave Queue</button>
+    <span class="hint">Tip: enter your name + plate, then Leave.</span>
+  </div>
+</section>
 
   <section class="card">
     <h2>Live Queue</h2>
