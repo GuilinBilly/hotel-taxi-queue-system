@@ -101,6 +101,7 @@ driverNameInput.value = "";
 driverColorInput.value = "";
 driverPlateInput.value = "";
 }
+
 // 2) Driver leaves queue -> remove first matching name
 async function leaveQueue() {
   const name = (driverNameInput.value || "").trim();
@@ -128,94 +129,91 @@ async function leaveQueue() {
 
   alert("Removed from queue.");
 }
-// 3) Doorman calls next -> mark earliest WAITING as CALLED (FIFO)
+
+const OFFER_TIMEOUT_MS = 25000;
+
+// Helper: find the "current" OFFERED driver (earliest offerStartedAt)
+function getCurrentOffered(entries) {
+  const offered = entries
+    .filter(([k, v]) => (v.status || "WAITING") === "OFFERED")
+    .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
+  return offered.length ? offered[0] : null;
+}
+
+// 3) Doorman offers next (FIFO) -> status = OFFERED
 async function callNext() {
   const pin = (doormanPinInput.value || "").trim();
-  if (pin !== DOORMAN_PIN) return alert("Invalid PIN. Doorman only.");
+  if (pin !== DOORMAN_PIN) return;
 
   const snapshot = await get(queueRef);
-  if (!snapshot.exists()) return alert("No drivers waiting");
+  if (!snapshot.exists()) return;
 
-  const now = Date.now();
   const data = snapshot.val();
   const entries = Object.entries(data);
 
-  // 1) Auto-expire any old OFFERED
-  const expiredOffers = entries.filter(([k, v]) =>
-    v.status === "OFFERED" && (v.offerExpiresAt ?? 0) <= now
-  );
+  // Only ONE active offer at a time
+  const currentOffer = getCurrentOffered(entries);
+  if (currentOffer) return;
 
-  for (const [k] of expiredOffers) {
-    await update(ref(db, `queue/${k}`), {
-      status: "WAITING",
-      offerExpiresAt: null,
-      offeredAt: null
-    });
-  }
-
-  // Refresh local entries after cleanup (simple approach: reuse entries but ignore expired)
-  const activeOffer = entries.find(([k, v]) =>
-    v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now
-  );
-
-  // Rule: Only one active offer at a time (simple + realistic)
-  if (activeOffer) {
-    const [, v] = activeOffer;
-    return alert(`Waiting for driver to accept: ${v.name}`);
-  }
-
-  // 2) Pick first WAITING (FIFO)
   const waiting = entries
     .filter(([k, v]) => (v.status || "WAITING") === "WAITING")
     .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
-  if (waiting.length === 0) return alert("No WAITING drivers.");
+  if (waiting.length === 0) return;
 
-  const [firstKey, firstValue] = waiting[0];
+  const [firstKey] = waiting[0];
+  const now = Date.now();
 
-  // 3) Mark as OFFERED with timeout
   await update(ref(db, `queue/${firstKey}`), {
     status: "OFFERED",
-    offeredAt: now,
+    offerStartedAt: now,
     offerExpiresAt: now + OFFER_TIMEOUT_MS
   });
 
-  alert(`Offer sent to: ${firstValue.name} (expires in ${Math.round(OFFER_TIMEOUT_MS/1000)}s)`);
+  // IMPORTANT: no alert() here
 }
 
-async function acceptOffer() {
+// Driver clicks Accept Ride -> status = ACCEPTED
+async function acceptRide() {
   const name = (driverNameInput.value || "").trim();
   const plate = (driverPlateInput.value || "").trim();
 
   if (!name || !plate) return alert("Enter your name + plate to accept.");
 
   const snapshot = await get(queueRef);
-  if (!snapshot.exists()) return alert("Queue is empty");
+  if (!snapshot.exists()) return alert("Queue is empty.");
 
-  const now = Date.now();
   const data = snapshot.val();
   const entries = Object.entries(data);
 
-  // Find OFFERED match by name+plate
-  const match = entries.find(([k, v]) =>
-    (v.status === "OFFERED") &&
-    ((v.offerExpiresAt ?? 0) > now) &&
-    ((v.name || "").toLowerCase() === name.toLowerCase()) &&
-    ((v.plate || "").toLowerCase() === plate.toLowerCase())
-  );
+  const currentOffer = getCurrentOffered(entries);
+  if (!currentOffer) return alert("No ride is being offered right now.");
 
-  if (!match) return alert("No active offer found for this name + plate.");
+  const [offerKey, offerVal] = currentOffer;
 
-  const [key] = match;
+  const offerName = (offerVal.name || "").toLowerCase();
+  const offerPlate = (offerVal.plate || "").toLowerCase();
 
-  await update(ref(db, `queue/${key}`), {
+  if (offerName !== name.toLowerCase() || offerPlate !== plate.toLowerCase()) {
+    return alert("This offer is not for you (name/plate mismatch).");
+  }
+
+  // Expired?
+  if (offerVal.offerExpiresAt && Date.now() > offerVal.offerExpiresAt) {
+    return alert("Offer expired. Wait for next offer.");
+  }
+
+  await update(ref(db, `queue/${offerKey}`), {
     status: "ACCEPTED",
-    acceptedAt: now
+    acceptedAt: Date.now()
   });
 
-  alert("Offer accepted. Proceed to hotel entrance.");
+  // optional: clear inputs
+  // driverNameInput.value = "";
+  // driverPlateInput.value = "";
 }
 
+// Doorman completes -> remove ACCEPTED driver
 async function completePickup() {
   const pin = (doormanPinInput.value || "").trim();
   if (pin !== DOORMAN_PIN) return alert("Invalid PIN. Doorman only.");
@@ -226,16 +224,16 @@ async function completePickup() {
   const data = snapshot.val();
   const entries = Object.entries(data);
 
-  const called = entries
-    .filter(([key, value]) => (value.status || "WAITING") === "CALLED")
-    .sort((a, b) => (a[1].calledAt ?? 0) - (b[1].calledAt ?? 0));
+  const accepted = entries
+    .filter(([k, v]) => (v.status || "WAITING") === "ACCEPTED")
+    .sort((a, b) => (a[1].acceptedAt ?? 0) - (b[1].acceptedAt ?? 0));
 
-  if (called.length === 0) return alert("No CALLED driver to complete.");
+  if (accepted.length === 0) return alert("No ACCEPTED driver to complete.");
 
-  const [calledKey, calledValue] = called[0];
+  const [acceptedKey, acceptedVal] = accepted[0];
+  await remove(ref(db, `queue/${acceptedKey}`));
 
-  await remove(ref(db, `queue/${calledKey}`));
-  alert(`Completed pickup: ${calledValue.name}`);
+  alert(`Completed pickup: ${acceptedVal.name}`);
 }
 
 // 4) Live listener -> render queue for everyone in real time
@@ -256,6 +254,17 @@ onValue(queueRef, (snapshot) => {
   const now = Date.now();
   const data = snapshot.val();
   const entries = Object.entries(data);
+  // Auto-timeout OFFERED -> back to WAITING
+const now = Date.now();
+entries.forEach(([k, v]) => {
+  if ((v.status || "WAITING") === "OFFERED" && v.offerExpiresAt && now > v.offerExpiresAt) {
+    update(ref(db, `queue/${k}`), {
+      status: "WAITING",
+      offerStartedAt: null,
+      offerExpiresAt: null
+    });
+  }
+});  
 
   // Sort FIFO by joinedAt
   entries.sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
@@ -309,8 +318,8 @@ onValue(queueRef, (snapshot) => {
 joinBtn.addEventListener("click", joinQueue);
 leaveBtn.addEventListener("click", leaveQueue);
 callNextBtn.addEventListener("click", callNext);
-acceptBtn.addEventListener("click", acceptOffer);
 completeBtn.addEventListener("click", completePickup);
+acceptBtn.addEventListener("click", acceptRide);
 
 // Enter to join
 driverNameInput.addEventListener("keydown", (e) => {
