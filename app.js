@@ -39,7 +39,7 @@ const completeBtn = document.getElementById("completeBtn");
 const calledBox = document.getElementById("calledBox");
 const driverColorInput = document.getElementById("driverColor");
 const driverPlateInput = document.getElementById("driverPlate");
-const acceptBtn = document.getElementById("acceptBtn");
+acceptBtn.addEventListener("click", acceptRide);
 const offerInfo = document.getElementById("offerInfo");
 
 const OFFER_TIMEOUT_MS = 25000; // 25 seconds (tweak later)
