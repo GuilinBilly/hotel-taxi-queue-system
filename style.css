@@ -122,3 +122,14 @@ body {
   white-space: nowrap;
   flex: 0 0 auto;
 }
+.btn { 
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.btn.success {
+  border: 1px solid #22c55e;
+}
+.btn.success:hover {
+  background: #f0fdf4;
+}
