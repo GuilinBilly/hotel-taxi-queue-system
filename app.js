@@ -39,7 +39,7 @@ const completeBtn = document.getElementById("completeBtn");
 const calledBox = document.getElementById("calledBox");
 const driverColorInput = document.getElementById("driverColor");
 const driverPlateInput = document.getElementById("driverPlate");
-acceptBtn.addEventListener("click", acceptRide);
+const acceptBtn = document.getElementById("acceptBtn");
 const offerInfo = document.getElementById("offerInfo");
 
 const OFFER_TIMEOUT_MS = 25000; // 25 seconds (tweak later)
@@ -73,9 +73,11 @@ function playBeep() {
 }
 
 // Safety check
-if (!driverNameInput || !queueList || !joinBtn || !leaveBtn || !callNextBtn ||
-    !doormanPinInput || !completeBtn || !calledBox || !driverColorInput ||
-    !driverPlateInput || !acceptBtn || !offerInfo) {
+if (
+  !driverNameInput || !queueList || !joinBtn || !leaveBtn || !callNextBtn ||
+  !doormanPinInput || !completeBtn || !calledBox || !driverColorInput ||
+  !driverPlateInput || !acceptBtn || !offerInfo
+) {
   alert("HTQS setup error: HTML element IDs do not match app.js.");
 }
 
@@ -90,19 +92,19 @@ async function joinQueue() {
   if (!plate) return alert("Enter your plate (or last 4)");
 
   await push(queueRef, {
-  name,
-  carColor: (driverColorInput.value || "").trim(),
-  plate: (driverPlateInput.value || "").trim(),
-  status: "WAITING",
-  joinedAt: Date.now()
-});
+    name,
+    carColor: color,
+    plate,
+    status: "WAITING",
+    joinedAt: Date.now()
+  });
 
-driverNameInput.value = "";
-driverColorInput.value = "";
-driverPlateInput.value = "";
+  driverNameInput.value = "";
+  driverColorInput.value = "";
+  driverPlateInput.value = "";
 }
 
-// 2) Driver leaves queue -> remove first matching name
+// 2) Driver leaves queue -> remove first matching name + plate
 async function leaveQueue() {
   const name = (driverNameInput.value || "").trim();
   const plate = (driverPlateInput.value || "").trim();
@@ -141,23 +143,23 @@ function getCurrentOffered(entries) {
 // 3) Doorman offers next (FIFO) -> status = OFFERED
 async function callNext() {
   const pin = (doormanPinInput.value || "").trim();
-  if (pin !== DOORMAN_PIN) return;
+  if (pin !== DOORMAN_PIN) return alert("Invalid PIN. Doorman only.");
 
   const snapshot = await get(queueRef);
-  if (!snapshot.exists()) return;
+  if (!snapshot.exists()) return alert("No drivers waiting.");
 
   const data = snapshot.val();
   const entries = Object.entries(data);
 
   // Only ONE active offer at a time
   const currentOffer = getCurrentOffered(entries);
-  if (currentOffer) return;
+  if (currentOffer) return alert("There is already an OFFERED driver. Wait for accept/timeout.");
 
   const waiting = entries
     .filter(([k, v]) => (v.status || "WAITING") === "WAITING")
     .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
-  if (waiting.length === 0) return;
+  if (waiting.length === 0) return alert("No WAITING drivers.");
 
   const [firstKey] = waiting[0];
   const now = Date.now();
@@ -205,10 +207,6 @@ async function acceptRide() {
     status: "ACCEPTED",
     acceptedAt: Date.now()
   });
-
-  // optional: clear inputs
-  // driverNameInput.value = "";
-  // driverPlateInput.value = "";
 }
 
 // Doorman completes -> remove ACCEPTED driver
@@ -252,17 +250,17 @@ onValue(queueRef, (snapshot) => {
   const now = Date.now();
   const data = snapshot.val();
   const entries = Object.entries(data);
-  // Auto-timeout OFFERED -> back to WAITING
 
-entries.forEach(([k, v]) => {
-  if ((v.status || "WAITING") === "OFFERED" && v.offerExpiresAt && now > v.offerExpiresAt) {
-    update(ref(db, `queue/${k}`), {
-      status: "WAITING",
-      offerStartedAt: null,
-      offerExpiresAt: null
-    });
-  }
-});  
+  // Auto-timeout OFFERED -> back to WAITING
+  entries.forEach(([k, v]) => {
+    if ((v.status || "WAITING") === "OFFERED" && v.offerExpiresAt && now > v.offerExpiresAt) {
+      update(ref(db, `queue/${k}`), {
+        status: "WAITING",
+        offerStartedAt: null,
+        offerExpiresAt: null
+      });
+    }
+  });
 
   // Sort FIFO by joinedAt
   entries.sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
@@ -281,8 +279,8 @@ entries.forEach(([k, v]) => {
 
   // Find active OFFERED (if any)
   const offered = entries
-    .filter(([k, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
-    .sort((a, b) => (a[1].offeredAt ?? 0) - (b[1].offeredAt ?? 0));
+    .filter(([k, v]) => (v.status || "WAITING") === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
+    .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
 
   if (offered.length === 0) {
     calledBox.innerHTML = "<strong>Now Offering:</strong> (none)";
@@ -312,6 +310,7 @@ entries.forEach(([k, v]) => {
     }
   }
 });
+
 // Wire buttons
 joinBtn.addEventListener("click", joinQueue);
 leaveBtn.addEventListener("click", leaveQueue);
