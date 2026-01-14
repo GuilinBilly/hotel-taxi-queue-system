@@ -253,7 +253,7 @@ onValue(queueRef, (snapshot) => {
   const data = snapshot.val();
   const entries = Object.entries(data);
   // Auto-timeout OFFERED -> back to WAITING
-const now = Date.now();
+
 entries.forEach(([k, v]) => {
   if ((v.status || "WAITING") === "OFFERED" && v.offerExpiresAt && now > v.offerExpiresAt) {
     update(ref(db, `queue/${k}`), {
