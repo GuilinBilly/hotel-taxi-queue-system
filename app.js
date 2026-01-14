@@ -130,8 +130,6 @@ async function leaveQueue() {
   alert("Removed from queue.");
 }
 
-const OFFER_TIMEOUT_MS = 25000;
-
 // Helper: find the "current" OFFERED driver (earliest offerStartedAt)
 function getCurrentOffered(entries) {
   const offered = entries
