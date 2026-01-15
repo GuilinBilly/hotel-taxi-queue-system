@@ -40,11 +40,12 @@ const calledBox = document.getElementById("calledBox");
 const driverColorInput = document.getElementById("driverColor");
 const driverPlateInput = document.getElementById("driverPlate");
 const acceptBtn = document.getElementById("acceptBtn");
+const acceptBtn = document.getElementById("acceptBtn");   // ✅ ADD THIS
 const offerInfo = document.getElementById("offerInfo");
 
 const OFFER_TIMEOUT_MS = 25000; // 25 seconds (tweak later)
 
-console.log("✅ app.js module loaded");
+console.log("✅ app.js module loaded");   // ✅ ADD THIS
 
 // Simple MVP PIN
 const DOORMAN_PIN = "1688";
