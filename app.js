@@ -39,13 +39,32 @@ const completeBtn = document.getElementById("completeBtn");
 const calledBox = document.getElementById("calledBox");
 const driverColorInput = document.getElementById("driverColor");
 const driverPlateInput = document.getElementById("driverPlate");
-const acceptBtn = document.getElementById("acceptBtn");   // ✅ ADD THIS
+const acceptBtn = document.getElementById("acceptBtn");   // ADD THIS
 const offerInfo = document.getElementById("offerInfo");
 
 const OFFER_TIMEOUT_MS = 25000; // 25 seconds (tweak later)
 
-console.log("✅ app.js module loaded");   // ✅ ADD THIS
+console.log(" app.js module loaded");   // ADD THIS
 
+// ===== Debug helpers =====
+function dbg(...args) {
+  console.log("[HTQS]", ...args);
+}
+
+function wrapAsync(name, fn) {
+  return async (...args) => {
+    const t0 = performance.now();
+    dbg(`▶ ${name} start`, { args });
+    try {
+      const result = await fn(...args);
+      dbg(` ${name} ok`, `${Math.round(performance.now() - t0)}ms`, result ?? "");
+      return result;
+    } catch (err) {
+      dbg(` ${name} FAIL`, `${Math.round(performance.now() - t0)}ms`, err);
+      throw err;
+    }
+  };
+}
 // Simple MVP PIN
 const DOORMAN_PIN = "1688";
 
@@ -251,7 +270,7 @@ async function completePickup() {
 
   offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
 refreshAcceptUI();
-   %       
+         
   if (accepted.length === 0) return alert("No ACCEPTED driver to complete.");
 
   const [acceptedKey, acceptedVal] = accepted[0];
@@ -341,14 +360,20 @@ function refreshAcceptUI() {
 }
 });
 
-// Wire buttons
-joinBtn.addEventListener("click", joinQueue);
-leaveBtn.addEventListener("click", leaveQueue);
-callNextBtn.addEventListener("click", callNext);
-completeBtn.addEventListener("click", completePickup);
-acceptBtn.addEventListener("click", acceptRide);
-driverNameInput.addEventListener("input", refreshAcceptUI);
-driverPlateInput.addEventListener("input", refreshAcceptUI);
+// Wire buttons (Existing comment)
+// Find your existing function declarations and replace the wiring (only the wiring) like this:joinBtn.addEventListener("click", joinQueue);
+const joinQueueDBG = wrapAsync("joinQueue", joinQueue);
+const leaveQueueDBG = wrapAsync("leaveQueue", leaveQueue);
+const callNextDBG = wrapAsync("callNext", callNext);
+const acceptRideDBG = wrapAsync("acceptRide", acceptRide);
+const completePickupDBG = wrapAsync("completePickup", completePickup);
+
+// Wire buttons (use the DBG versions)
+joinBtn.addEventListener("click", joinQueueDBG);
+leaveBtn.addEventListener("click", leaveQueueDBG);
+callNextBtn.addEventListener("click", callNextDBG);
+acceptBtn.addEventListener("click", acceptRideDBG);
+completeBtn.addEventListener("click", completePickupDBG);
 // Enter to join
 driverNameInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") joinQueue();
