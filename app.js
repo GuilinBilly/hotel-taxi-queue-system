@@ -262,6 +262,7 @@ refreshAcceptUI();
 
 // 4) Live listener -> render queue for everyone in real time
 let lastBeepKey = null;
+let offeredCache = null;
 
 onValue(queueRef, (snapshot) => {
   queueList.innerHTML = "";
@@ -307,9 +308,15 @@ onValue(queueRef, (snapshot) => {
 
   // Find active OFFERED (if any)
  const offered = entries
+  const offered = entries
   .filter(([k, v]) => (v.status || "WAITING") === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
   .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
 
+offeredCache = offered.length
+  ? { key: offered[0][0], val: offered[0][1] }
+  : null;
+
+refreshAcceptUI();
 offeredCache = offered.length
   ? { key: offered[0][0], val: offered[0][1] }
   : null;
@@ -322,7 +329,7 @@ function refreshAcceptUI() {
 
   const v = offeredCache.val;
 
-  const inputName = (driverNameInput.value || "").trim().toLowerCase();
+ 
   const inputPlate = (driverPlateInput.value || "").trim().toLowerCase();
 
   const isMe =
@@ -330,15 +337,7 @@ function refreshAcceptUI() {
     (v.name || "").toLowerCase() === inputName &&
     (v.plate || "").toLowerCase() === inputPlate;
 
-  if (isMe) {
-    acceptBtn.disabled = false;
-    offerInfo.textContent = "You have an active offer. Click Accept.";
-
-    if (lastBeepKey !== offeredCache.key) {
-      playBeep();
-      lastBeepKey = offeredCache.key;
-    }
-  }
+ 
 }
 });
 
