@@ -44,6 +44,8 @@ const offerInfo = document.getElementById("offerInfo");
 
 const OFFER_TIMEOUT_MS = 25000; // 25 seconds (tweak later)
 
+console.log("✅ app.js module loaded");
+
 // Simple MVP PIN
 const DOORMAN_PIN = "1688";
 
