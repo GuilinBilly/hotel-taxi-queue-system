@@ -101,9 +101,8 @@ async function joinQueue() {
     joinedAt: Date.now()
   });
 
-  driverNameInput.value = "";
   driverColorInput.value = "";
-  driverPlateInput.value = "";
+// keep name + plate so Accept can match
 }
 
 // 2) Driver leaves queue -> remove first matching name + plate
