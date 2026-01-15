@@ -174,6 +174,30 @@ async function callNext() {
   // IMPORTANT: no alert() here
 }
 
+let offeredCache = null; // { key, val } or null
+
+function refreshAcceptUI() {
+  acceptBtn.disabled = true;
+  offerInfo.textContent = "";
+
+  if (!offeredCache) return;
+
+  const v = offeredCache.val;
+
+  const inputName = (driverNameInput.value || "").trim().toLowerCase();
+  const inputPlate = (driverPlateInput.value || "").trim().toLowerCase();
+
+  const isMe =
+    inputName && inputPlate &&
+    (v.name || "").toLowerCase() === inputName &&
+    (v.plate || "").toLowerCase() === inputPlate;
+
+  if (isMe) {
+    acceptBtn.disabled = false;
+    offerInfo.textContent = "You have an active offer. Click Accept.";
+  }
+}
+
 // Driver clicks Accept Ride -> status = ACCEPTED
 async function acceptRide() {
   const name = (driverNameInput.value || "").trim();
@@ -225,6 +249,9 @@ async function completePickup() {
     .filter(([k, v]) => (v.status || "WAITING") === "ACCEPTED")
     .sort((a, b) => (a[1].acceptedAt ?? 0) - (b[1].acceptedAt ?? 0));
 
+  offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
+refreshAcceptUI();
+   %       
   if (accepted.length === 0) return alert("No ACCEPTED driver to complete.");
 
   const [acceptedKey, acceptedVal] = accepted[0];
@@ -279,37 +306,40 @@ onValue(queueRef, (snapshot) => {
   });
 
   // Find active OFFERED (if any)
-  const offered = entries
-    .filter(([k, v]) => (v.status || "WAITING") === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
-    .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
+ const offered = entries
+  .filter(([k, v]) => (v.status || "WAITING") === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
+  .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
 
-  if (offered.length === 0) {
-    calledBox.innerHTML = "<strong>Now Offering:</strong> (none)";
-  } else {
-    const [k, v] = offered[0];
-    const remainingMs = Math.max(0, (v.offerExpiresAt ?? now) - now);
-    const remainingSec = Math.ceil(remainingMs / 1000);
+offeredCache = offered.length
+  ? { key: offered[0][0], val: offered[0][1] }
+  : null;
 
-    calledBox.innerHTML =
-      `<strong>Now Offering:</strong> ${v.name} — ${v.carColor || ""} / ${v.plate || ""} ` +
-      `<span class="statusTag">OFFERED</span> (expires in ${remainingSec}s)`;
+function refreshAcceptUI() {
+  acceptBtn.disabled = true;
+  offerInfo.textContent = "";
 
-    // If this page is "the offered driver", enable Accept + beep once
-    const inputName = (driverNameInput.value || "").trim().toLowerCase();
-    const inputPlate = (driverPlateInput.value || "").trim().toLowerCase();
-    const isMe = inputName && inputPlate &&
-      (v.name || "").toLowerCase() === inputName &&
-      (v.plate || "").toLowerCase() === inputPlate;
+  if (!offeredCache) return;
 
-    if (isMe) {
-      acceptBtn.disabled = false;
-      offerInfo.textContent = "You have an active offer. Click Accept.";
-      if (lastBeepKey !== k) {
-        playBeep();
-        lastBeepKey = k;
-      }
+  const v = offeredCache.val;
+
+  const inputName = (driverNameInput.value || "").trim().toLowerCase();
+  const inputPlate = (driverPlateInput.value || "").trim().toLowerCase();
+
+  const isMe =
+    inputName && inputPlate &&
+    (v.name || "").toLowerCase() === inputName &&
+    (v.plate || "").toLowerCase() === inputPlate;
+
+  if (isMe) {
+    acceptBtn.disabled = false;
+    offerInfo.textContent = "You have an active offer. Click Accept.";
+
+    if (lastBeepKey !== offeredCache.key) {
+      playBeep();
+      lastBeepKey = offeredCache.key;
     }
   }
+}
 });
 
 // Wire buttons
@@ -318,7 +348,8 @@ leaveBtn.addEventListener("click", leaveQueue);
 callNextBtn.addEventListener("click", callNext);
 completeBtn.addEventListener("click", completePickup);
 acceptBtn.addEventListener("click", acceptRide);
-
+driverNameInput.addEventListener("input", refreshAcceptUI);
+driverPlateInput.addEventListener("input", refreshAcceptUI);
 // Enter to join
 driverNameInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") joinQueue();
