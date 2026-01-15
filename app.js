@@ -39,7 +39,6 @@ const completeBtn = document.getElementById("completeBtn");
 const calledBox = document.getElementById("calledBox");
 const driverColorInput = document.getElementById("driverColor");
 const driverPlateInput = document.getElementById("driverPlate");
-const acceptBtn = document.getElementById("acceptBtn");
 const acceptBtn = document.getElementById("acceptBtn");   // ✅ ADD THIS
 const offerInfo = document.getElementById("offerInfo");
 
