@@ -34,6 +34,32 @@ const OFFER_TIMEOUT_MS = 25000;
 const DOORMAN_PIN = "1688";
 let offeredCache = null;
 
+function refreshAcceptUI() {
+  // Default state
+  acceptBtn.disabled = true;
+  offerInfo.textContent = "";
+
+  // No active offer -> nothing to accept
+  if (!offeredCache) return;
+
+  const v = offeredCache.val;
+
+  // What the driver typed
+  const inputName = (driverNameInput.value || "").trim().toLowerCase();
+  const inputPlate = (driverPlateInput.value || "").trim().toLowerCase();
+
+  // Does this offer belong to this driver?
+  const isMe =
+    inputName &&
+    inputPlate &&
+    (v.name || "").toLowerCase() === inputName &&
+    (v.plate || "").toLowerCase() === inputPlate;
+
+  if (isMe) {
+    acceptBtn.disabled = false;
+    offerInfo.textContent = "You have an active offer. Click Accept Ride.";
+  }
+}
 async function joinQueue() {
   const name = driverNameInput.value.trim();
   const color = driverColorInput.value.trim();
