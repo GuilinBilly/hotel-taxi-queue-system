@@ -121,11 +121,16 @@ onValue(queueRef,(snap)=>{
     li.textContent=`${i+1}. ${v.name} ${v.carColor} ${v.plate} ${v.status}`;
     queueList.appendChild(li);
   });
-  const offer=entries.find(([k,v])=>v.status==="OFFERED");
-  if(offer){
-    offeredCache={key:offer[0],val:offer[1]};
-    calledBox.textContent="Now Offering: "+offer[1].name;
-  }
+
+  ? { key: offered[0][0], val: offered[0][1] }
+  : null;
+
+refreshAcceptUI();
+
+calledBox.textContent = offeredCache
+  ? "Now Offering: " + offeredCache.val.name
+  : "";
+  
 });
 
 joinBtn.onclick=joinQueue;
