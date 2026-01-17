@@ -87,7 +87,11 @@ async function callNext() {
     .sort((a,b)=>a[1].joinedAt-b[1].joinedAt);
   if (!entries.length) return;
   const now = Date.now();
-  await update(ref(db,"queue/"+entries[0][0]),{status:"OFFERED",offerExpiresAt:now+OFFER_TIMEOUT_MS});
+ await update(ref(db,"queue/"+entries[0][0]), {
+  status: "OFFERED",
+  offerStartedAt: now,
+  offerExpiresAt: now + OFFER_TIMEOUT_MS
+});
 }
 
 async function acceptRide(){
