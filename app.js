@@ -133,8 +133,11 @@ calledBox.textContent = offeredCache
   
 });
 
-joinBtn.onclick=joinQueue;
-leaveBtn.onclick=leaveQueue;
-callNextBtn.onclick=callNext;
-acceptBtn.onclick=acceptRide;
-completeBtn.onclick=completePickup;
+joinBtn.onclick = joinQueue;
+leaveBtn.onclick = leaveQueue;
+callNextBtn.onclick = callNext;
+acceptBtn.onclick = acceptRide;
+completeBtn.onclick = completePickup;
+
+driverNameInput.oninput = refreshAcceptUI;
+driverPlateInput.oninput = refreshAcceptUI;
