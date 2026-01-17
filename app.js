@@ -120,10 +120,23 @@ onValue(queueRef,(snap)=>{
     const li=document.createElement("li");
     li.textContent=`${i+1}. ${v.name} ${v.carColor} ${v.plate} ${v.status}`;
     queueList.appendChild(li);
-  });
+    // Find active OFFERED (if any) and cache it
+const offered = entries
+  .filter(([k, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
+  .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
 
+offeredCache = offered.length
   ? { key: offered[0][0], val: offered[0][1] }
   : null;
+
+refreshAcceptUI();
+
+calledBox.textContent = offeredCache
+  ? "Now Offering: " + offeredCache.val.name
+  : "";
+  });
+
+  
 
 refreshAcceptUI();
 
