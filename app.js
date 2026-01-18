@@ -138,7 +138,6 @@ refreshAcceptUI();
 calledBox.textContent = offeredCache
   ? "Now Offering: " + offeredCache.val.name
   : "";
-  
 });
 
 joinBtn.onclick = joinQueue;
