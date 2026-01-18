@@ -162,11 +162,3 @@ completeBtn.onclick = completePickup;
 driverNameInput.oninput = refreshAcceptUI;
 driverPlateInput.oninput = refreshAcceptUI;
 
-joinBtn.onclick = joinQueue;
-leaveBtn.onclick = leaveQueue;
-callNextBtn.onclick = callNext;
-acceptBtn.onclick = acceptRide;
-completeBtn.onclick = completePickup;
-
-driverNameInput.oninput = refreshAcceptUI;
-driverPlateInput.oninput = refreshAcceptUI;
