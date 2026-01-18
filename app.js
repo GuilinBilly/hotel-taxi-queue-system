@@ -34,6 +34,19 @@ const OFFER_TIMEOUT_MS = 25000;
 const DOORMAN_PIN = "1688";
 let offeredCache = null;
 
+async function expireOffersNow() {
+  const snap = await get(queueRef);
+  if (!snap.exists()) return;
+
+  const now = Date.now();
+  const entries = Object.entries(snap.val());
+
+  entries.forEach(([k, v]) => {
+    if (v.status === "OFFERED" && v.offerExpiresAt && v.offerExpiresAt < now) {
+      update(ref(db, "queue/" + k), { status: "WAITING", offerExpiresAt: null });
+    }
+  });
+}
 function refreshAcceptUI() {
   // Default state
   acceptBtn.disabled = true;
@@ -106,6 +119,8 @@ async function completePickup(){
   const acc=Object.entries(snap.val()).find(([k,v])=>v.status==="ACCEPTED");
   if(acc) await remove(ref(db,"queue/"+acc[0]));
 }
+
+setInterval(expireOffersNow, 1000);
 
 onValue(queueRef, (snap) => {
   queueList.innerHTML = "";
