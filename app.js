@@ -107,38 +107,60 @@ async function completePickup(){
   if(acc) await remove(ref(db,"queue/"+acc[0]));
 }
 
-onValue(queueRef,(snap)=>{
-  queueList.innerHTML="";
-  calledBox.innerHTML="";
-  offeredCache=null;
-  if(!snap.exists())return;
-  const now=Date.now();
-  const entries=Object.entries(snap.val());
-  entries.forEach(([k,v])=>{
-    if(v.status==="OFFERED" && v.offerExpiresAt<now){
-      update(ref(db,"queue/"+k),{status:"WAITING",offerExpiresAt:null});
+onValue(queueRef, (snap) => {
+  queueList.innerHTML = "";
+  calledBox.innerHTML = "";
+  offeredCache = null;
+
+  if (!snap.exists()) {
+    refreshAcceptUI();
+    return;
+  }
+
+  const now = Date.now();
+  const entries = Object.entries(snap.val());
+
+  // 1) expire old offers
+  entries.forEach(([k, v]) => {
+    if (v.status === "OFFERED" && v.offerExpiresAt < now) {
+      update(ref(db, "queue/" + k), { status: "WAITING", offerExpiresAt: null });
     }
   });
-  entries.sort((a,b)=>a[1].joinedAt-b[1].joinedAt);
-  entries.forEach(([k,v],i)=>{
-    const li=document.createElement("li");
-    li.textContent=`${i+1}. ${v.name} ${v.carColor} ${v.plate} ${v.status}`;
-    queueList.appendChild(li);
-    // Find active OFFERED (if any) and cache it
-const offered = entries
-  .filter(([k, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
-  .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
 
-offeredCache = offered.length
-  ? { key: offered[0][0], val: offered[0][1] }
-  : null;
+  // 2) render queue (sorted by joinedAt)
+  entries
+    .slice()
+    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
+    .forEach(([k, v], i) => {
+      const li = document.createElement("li");
+      li.textContent = `${i + 1}. ${v.name} ${v.carColor} ${v.plate} ${v.status}`;
+      queueList.appendChild(li);
+    });
 
-refreshAcceptUI();
+  // 3) find active OFFERED (if any) and cache it
+  const offered = entries
+    .filter(([k, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
+    .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
 
-calledBox.textContent = offeredCache
-  ? "Now Offering: " + offeredCache.val.name
-  : "";
+  offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
+
+  refreshAcceptUI();
+
+  calledBox.textContent = offeredCache
+    ? "Now Offering: " + offeredCache.val.name
+    : "";
 });
+
+// Button wiring (must be BELOW onValue)
+joinBtn.onclick = joinQueue;
+leaveBtn.onclick = leaveQueue;
+callNextBtn.onclick = callNext;
+acceptBtn.onclick = acceptRide;
+completeBtn.onclick = completePickup;
+
+// keep Accept button state updated as user types
+driverNameInput.oninput = refreshAcceptUI;
+driverPlateInput.oninput = refreshAcceptUI;
 
 joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
