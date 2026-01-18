@@ -138,15 +138,6 @@ refreshAcceptUI();
 calledBox.textContent = offeredCache
   ? "Now Offering: " + offeredCache.val.name
   : "";
-  });
-
-  
-
-refreshAcceptUI();
-
-calledBox.textContent = offeredCache
-  ? "Now Offering: " + offeredCache.val.name
-  : "";
   
 });
 
