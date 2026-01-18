@@ -42,10 +42,15 @@ async function expireOffersNow() {
   const entries = Object.entries(snap.val());
 
   entries.forEach(([k, v]) => {
-    if (v.status === "OFFERED" && v.offerExpiresAt && v.offerExpiresAt < now) {
-      update(ref(db, "queue/" + k), { status: "WAITING", offerExpiresAt: null });
-    }
-  });
+  if (v.status === "OFFERED" && (v.offerExpiresAt ?? 0) < now) {
+    update(ref(db, "queue/" + k), {
+      status: "WAITING",
+      offerExpiresAt: null,
+      offerStartedAt: null,   // optional cleanup
+      joinedAt: Date.now()    // key change: move to back
+    });
+  }
+});
 }
 function refreshAcceptUI() {
   // Default state
