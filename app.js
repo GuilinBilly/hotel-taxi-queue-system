@@ -41,41 +41,37 @@ async function expireOffersNow() {
   const now = Date.now();
   const entries = Object.entries(snap.val());
 
-  entries.forEach(([k, v]) => {
-  if (v.status === "OFFERED" && (v.offerExpiresAt ?? 0) < now) {
-    update(ref(db, "queue/" + k), {
-      status: "WAITING",
-      offerExpiresAt: null,
-      offerStartedAt: null,   // optional cleanup
-      joinedAt: Date.now()    // key change: move to back
-    });
-  }
-});
 }
+
+function norm(s) {
+  return (s || "").trim().toLowerCase();
+}
+
+function isMeForOffer(v) {
+  const inputName = norm(driverNameInput.value);
+  const inputPlate = norm(driverPlateInput.value);
+  return inputName && inputPlate &&
+    norm(v?.name) === inputName &&
+    norm(v?.plate) === inputPlate;
+}
+
 function refreshAcceptUI() {
-  // Default state
   acceptBtn.disabled = true;
   offerInfo.textContent = "";
 
-  // No active offer -> nothing to accept
   if (!offeredCache) return;
 
   const v = offeredCache.val;
+  const stillValid = (v.status === "OFFERED") && ((v.offerExpiresAt ?? 0) > Date.now());
 
-  // What the driver typed
-  const inputName = (driverNameInput.value || "").trim().toLowerCase();
-  const inputPlate = (driverPlateInput.value || "").trim().toLowerCase();
+  if (!stillValid) return;
 
-  // Does this offer belong to this driver?
-  const isMe =
-    inputName &&
-    inputPlate &&
-    (v.name || "").toLowerCase() === inputName &&
-    (v.plate || "").toLowerCase() === inputPlate;
-
-  if (isMe) {
+  if (isMeForOffer(v)) {
     acceptBtn.disabled = false;
     offerInfo.textContent = "You have an active offer. Click Accept Ride.";
+  } else {
+    // helpful UX: show who is being offered (but still disable)
+    offerInfo.textContent = `Currently offering: ${v.name}`;
   }
 }
 async function joinQueue() {
@@ -98,25 +94,59 @@ async function leaveQueue() {
 
 async function callNext() {
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
+
   const snap = await get(queueRef);
   if (!snap.exists()) return;
-  const entries = Object.entries(snap.val())
-    .filter(([k,v])=>v.status==="WAITING")
-    .sort((a,b)=>a[1].joinedAt-b[1].joinedAt);
-  if (!entries.length) return;
+
   const now = Date.now();
- await update(ref(db,"queue/"+entries[0][0]), {
-  status: "OFFERED",
-  offerStartedAt: now,
-  offerExpiresAt: now + OFFER_TIMEOUT_MS
-});
-}
+  const entries = Object.entries(snap.val());
 
-async function acceptRide(){
-  if(!offeredCache) return alert("No offer");
-  await update(ref(db,"queue/"+offeredCache.key),{status:"ACCEPTED"});
-}
+  // Safety: block new offer if one is already active
+  const hasActiveOffer = entries.some(([k, v]) =>
+    v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now
+  );
+  if (hasActiveOffer) return alert("An offer is already active. Wait for accept/expire.");
 
+  // Safety: block if someone already accepted (doorman should Complete Pickup)
+  const hasAccepted = entries.some(([k, v]) => v.status === "ACCEPTED");
+  if (hasAccepted) return alert("A ride is already ACCEPTED. Complete Pickup first.");
+
+  const waiting = entries
+    .filter(([k, v]) => v.status === "WAITING")
+    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+
+  if (!waiting.length) return alert("No WAITING taxis.");
+
+  const [key] = waiting[0];
+  await update(ref(db, "queue/" + key), {
+    status: "OFFERED",
+    offerStartedAt: now,
+    offerExpiresAt: now + OFFER_TIMEOUT_MS
+  });
+}
+async function acceptRide() {
+  if (!offeredCache) return alert("No active offer right now.");
+
+  const v = offeredCache.val;
+
+  // Must be the matching driver
+  if (!isMeForOffer(v)) {
+    return alert("This offer is not for you. Check your Name + Plate.");
+  }
+
+  // Must still be valid
+  if (v.status !== "OFFERED" || (v.offerExpiresAt ?? 0) <= Date.now()) {
+    refreshAcceptUI();
+    return alert("Offer expired. Please wait for the next call.");
+  }
+
+  // Accept
+  await update(ref(db, "queue/" + offeredCache.key), {
+    status: "ACCEPTED",
+    offerStartedAt: null,
+    offerExpiresAt: null
+  });
+}
 async function completePickup(){
   if (doormanPinInput.value.trim()!==DOORMAN_PIN) return;
   const snap=await get(queueRef);
@@ -140,13 +170,17 @@ onValue(queueRef, (snap) => {
   const now = Date.now();
   const entries = Object.entries(snap.val());
 
-  // 1) expire old offers
-  entries.forEach(([k, v]) => {
-    if (v.status === "OFFERED" && v.offerExpiresAt < now) {
-      update(ref(db, "queue/" + k), { status: "WAITING", offerExpiresAt: null });
-    }
-  });
-
+  // 1) expire old offers (ONLY place this logic exists)
+entries.forEach(([k, v]) => {
+  if (v.status === "OFFERED" && (v.offerExpiresAt ?? 0) <= now) {
+    update(ref(db, "queue/" + k), {
+      status: "WAITING",
+      offerStartedAt: null,
+      offerExpiresAt: null
+    });
+  }
+});
+  
   // 2) render queue (sorted by joinedAt)
   entries
     .slice()
