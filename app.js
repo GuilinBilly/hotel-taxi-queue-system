@@ -79,14 +79,49 @@ function refreshAcceptUI() {
     offerInfo.textContent = `Currently offering: ${v.name}`;
   }
 }
+
 async function joinQueue() {
   const name = driverNameInput.value.trim();
-  const color = driverColorInput.value.trim();
+  const carColor = driverColorInput.value.trim();
   const plate = driverPlateInput.value.trim();
-  if (!name || !color || !plate) return alert("Fill all fields");
-  await push(queueRef, { name, carColor: color, plate, status: "WAITING", joinedAt: Date.now() });
-}
 
+  if (!name || !plate) {
+    alert("Enter name and plate.");
+    return;
+  }
+
+  const snap = await get(queueRef);
+  const entries = snap.exists() ? Object.entries(snap.val()) : [];
+
+  // Identity = plate (single driver record)
+  const targetPlate = norm(plate);
+  const existing = entries.find(([_, v]) => norm(v.plate) === targetPlate);
+
+  const payload = {
+    name,
+    carColor,
+    plate,
+    status: "WAITING",
+    offerStartedAt: null,
+    offerExpiresAt: null,
+  };
+
+  if (existing) {
+    const [key, v] = existing;
+
+    // Preserve original position in line
+    await update(ref(db, "queue/" + key), {
+      ...payload,
+      joinedAt: v.joinedAt ?? Date.now(),
+    });
+  } else {
+    // New driver
+    await push(queueRef, {
+      ...payload,
+      joinedAt: Date.now(),
+    });
+  }
+}
 async function leaveQueue() {
   const snap = await get(queueRef);
   if (!snap.exists()) return;
