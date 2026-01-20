@@ -221,3 +221,4 @@ completeBtn.onclick = completePickup;
 driverNameInput.oninput = refreshAcceptUI;
 driverPlateInput.oninput = refreshAcceptUI;
 
+window.debug = { norm, isMeForOffer, refreshAcceptUI };
