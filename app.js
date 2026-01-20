@@ -54,6 +54,16 @@ function isMeForOffer(v) {
     norm(v?.name) === inputName &&
     norm(v?.plate) === inputPlate;
 }
+function norm(s) {
+  return (s ?? "").toString().trim().toLowerCase();
+}
+
+// offered driver matches the current inputs
+function isMeForOffer(v) {
+  const nameOk  = norm(v?.name)  === norm(driverNameInput.value);
+  const plateOk = norm(v?.plate) === norm(driverPlateInput.value);
+  return nameOk && plateOk;
+}
 
 function refreshAcceptUI() {
   acceptBtn.disabled = true;
