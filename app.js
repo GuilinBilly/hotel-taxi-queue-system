@@ -43,26 +43,21 @@ async function expireOffersNow() {
 
 }
 
-function norm(s) {
-  return (s || "").trim().toLowerCase();
-}
-
-function isMeForOffer(v) {
-  const inputName = norm(driverNameInput.value);
-  const inputPlate = norm(driverPlateInput.value);
-  return inputName && inputPlate &&
-    norm(v?.name) === inputName &&
-    norm(v?.plate) === inputPlate;
-}
+// ---------- Helpers (SINGLE COPY ONLY) ----------
 function norm(s) {
   return (s ?? "").toString().trim().toLowerCase();
 }
 
-// offered driver matches the current inputs
+// True if the currently typed Name+Plate matches the active offer's driver
 function isMeForOffer(v) {
-  const nameOk  = norm(v?.name)  === norm(driverNameInput.value);
-  const plateOk = norm(v?.plate) === norm(driverPlateInput.value);
-  return nameOk && plateOk;
+  if (!v) return false;
+
+  const inputName = norm(driverNameInput.value);
+  const inputPlate = norm(driverPlateInput.value);
+
+  if (!inputName || !inputPlate) return false;
+
+  return norm(v.name) === inputName && norm(v.plate) === inputPlate;
 }
 
 function refreshAcceptUI() {
