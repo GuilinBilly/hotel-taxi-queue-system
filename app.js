@@ -85,42 +85,35 @@ async function joinQueue() {
   const carColor = driverColorInput.value.trim();
   const plate = driverPlateInput.value.trim();
 
-  if (!name || !plate) {
-    alert("Enter name and plate.");
-    return;
-  }
+  if (!name || !plate) return alert("Enter name and plate.");
 
-  const snap = await get(queueRef);
-  const entries = snap.exists() ? Object.entries(snap.val()) : [];
+  const driverKey = `${norm(name)}_${norm(plate)}`;
 
-  // Identity = plate (single driver record)
-  const targetPlate = norm(plate);
-  const existing = entries.find(([_, v]) => norm(v.plate) === targetPlate);
+  // Read existing record so we don't "duplicate" the driver
+  const driverRef = ref(db, "queue/" + driverKey);
+  const snap = await get(driverRef);
 
-  const payload = {
+  // If driver already exists, KEEP their joinedAt (keeps position stable)
+  const joinedAt = snap.exists() ? (snap.val().joinedAt ?? Date.now()) : Date.now();
+
+  // If they were OFFERED/ACCEPTED already, do not blindly overwrite status.
+  // Keep status unless it was missing.
+  const prevStatus = snap.exists() ? snap.val().status : null;
+  const status = prevStatus ?? "WAITING";
+
+  await set(driverRef, {
     name,
     carColor,
     plate,
-    status: "WAITING",
-    offerStartedAt: null,
-    offerExpiresAt: null,
-  };
+    status,
+    joinedAt,
 
-  if (existing) {
-    const [key, v] = existing;
+    // If they re-join and they had old offer fields, keep them (or clear if you prefer)
+    offerStartedAt: snap.exists() ? (snap.val().offerStartedAt ?? null) : null,
+    offerExpiresAt: snap.exists() ? (snap.val().offerExpiresAt ?? null) : null
+  });
 
-    // Preserve original position in line
-    await update(ref(db, "queue/" + key), {
-      ...payload,
-      joinedAt: v.joinedAt ?? Date.now(),
-    });
-  } else {
-    // New driver
-    await push(queueRef, {
-      ...payload,
-      joinedAt: Date.now(),
-    });
-  }
+  refreshAcceptUI();
 }
 async function leaveQueue() {
   const snap = await get(queueRef);
