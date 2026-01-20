@@ -1,5 +1,3 @@
-// app.js (FULL FIXED VERSION)
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
   getDatabase,
@@ -7,8 +5,8 @@ import {
   onValue,
   remove,
   get,
-  set,
-  update
+  update,
+  set
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
 const firebaseConfig = {
@@ -25,7 +23,6 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const queueRef = ref(db, "queue");
 
-// DOM
 const driverNameInput = document.getElementById("driverName");
 const driverColorInput = document.getElementById("driverColor");
 const driverPlateInput = document.getElementById("driverPlate");
@@ -39,14 +36,21 @@ const queueList = document.getElementById("queueList");
 const calledBox = document.getElementById("calledBox");
 const offerInfo = document.getElementById("offerInfo");
 
-// Config/state
 const OFFER_TIMEOUT_MS = 25000;
 const DOORMAN_PIN = "1688";
+
 let offeredCache = null;
 
 // ---------- Helpers (SINGLE COPY ONLY) ----------
 function norm(s) {
   return (s ?? "").toString().trim().toLowerCase();
+}
+
+function driverKeyFromInputs() {
+  const name = driverNameInput.value.trim();
+  const plate = driverPlateInput.value.trim();
+  if (!name || !plate) return null;
+  return `${norm(name)}_${norm(plate)}`;
 }
 
 // True if the currently typed Name+Plate matches the active offer's driver
@@ -65,9 +69,9 @@ function refreshAcceptUI() {
   acceptBtn.disabled = true;
   offerInfo.textContent = "";
 
-  if (!offeredCache) return;
+  const v = offeredCache?.val;
+  if (!v) return;
 
-  const v = offeredCache.val;
   const stillValid =
     v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > Date.now();
 
@@ -89,28 +93,17 @@ async function joinQueue() {
 
   if (!name || !plate) return alert("Enter name and plate.");
 
-  const driverKey = `${norm(name)}_${norm(plate)}`;
-  const driverRef = ref(db, "queue/" + driverKey);
+  const key = `${norm(name)}_${norm(plate)}`;
+  const driverRef = ref(db, "queue/" + key);
 
-  // Clean up any old duplicate records that were created before (push keys)
-  // so you never see 1,2,3 duplicated again.
-  const allSnap = await get(queueRef);
-  if (allSnap.exists()) {
-    const entries = Object.entries(allSnap.val());
-    for (const [k, v] of entries) {
-      const sameDriver =
-        norm(v?.name) === norm(name) && norm(v?.plate) === norm(plate);
-      if (sameDriver && k !== driverKey) {
-        await remove(ref(db, "queue/" + k));
-      }
-    }
-  }
-
-  // Read existing record (if any) so we keep their joinedAt (stable ordering)
   const snap = await get(driverRef);
+
   const prev = snap.exists() ? snap.val() : null;
 
+  // Keep joinedAt stable if driver already existed
   const joinedAt = prev?.joinedAt ?? Date.now();
+
+  // Never wipe an active offer/accepted status by “re-join”
   const status = prev?.status ?? "WAITING";
 
   await set(driverRef, {
@@ -127,12 +120,9 @@ async function joinQueue() {
 }
 
 async function leaveQueue() {
-  const name = driverNameInput.value.trim();
-  const plate = driverPlateInput.value.trim();
-  if (!name || !plate) return alert("Enter name and plate.");
-
-  const driverKey = `${norm(name)}_${norm(plate)}`;
-  await remove(ref(db, "queue/" + driverKey));
+  const key = driverKeyFromInputs();
+  if (!key) return alert("Enter name and plate.");
+  await remove(ref(db, "queue/" + key));
 }
 
 async function callNext() {
@@ -144,18 +134,18 @@ async function callNext() {
   const now = Date.now();
   const entries = Object.entries(snap.val());
 
-  // Block new offer if one is already active
-  const hasActiveOffer = entries.some(([k, v]) =>
-    v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now
+  // Block if one active OFFERED exists
+  const hasActiveOffer = entries.some(
+    ([, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now
   );
   if (hasActiveOffer) return alert("An offer is already active. Wait for accept/expire.");
 
-  // Block if someone already accepted (doorman should Complete Pickup)
-  const hasAccepted = entries.some(([k, v]) => v.status === "ACCEPTED");
+  // Block if already ACCEPTED exists
+  const hasAccepted = entries.some(([, v]) => v.status === "ACCEPTED");
   if (hasAccepted) return alert("A ride is already ACCEPTED. Complete Pickup first.");
 
   const waiting = entries
-    .filter(([k, v]) => v.status === "WAITING")
+    .filter(([, v]) => v.status === "WAITING")
     .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
   if (!waiting.length) return alert("No WAITING taxis.");
@@ -170,16 +160,13 @@ async function callNext() {
 }
 
 async function acceptRide() {
-  if (!offeredCache) return alert("No active offer right now.");
+  const v = offeredCache?.val;
+  if (!v) return alert("No active offer right now.");
 
-  const v = offeredCache.val;
-
-  // Must be the matching driver
   if (!isMeForOffer(v)) {
     return alert("This offer is not for you. Check your Name + Plate.");
   }
 
-  // Must still be valid
   if (v.status !== "OFFERED" || (v.offerExpiresAt ?? 0) <= Date.now()) {
     refreshAcceptUI();
     return alert("Offer expired. Please wait for the next call.");
@@ -193,18 +180,18 @@ async function acceptRide() {
 }
 
 async function completePickup() {
-  if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
+  if (doormanPinInput.value.trim() !== DOORMAN_PIN) return;
 
   const snap = await get(queueRef);
   if (!snap.exists()) return;
 
-  const acc = Object.entries(snap.val()).find(([k, v]) => v.status === "ACCEPTED");
-  if (!acc) return alert("No ACCEPTED ride to complete.");
+  const accepted = Object.entries(snap.val()).find(([, v]) => v.status === "ACCEPTED");
+  if (!accepted) return;
 
-  await remove(ref(db, "queue/" + acc[0]));
+  await remove(ref(db, "queue/" + accepted[0]));
 }
 
-// ---------- Single listener (single source of truth) ----------
+// ---------- Single realtime listener ----------
 onValue(queueRef, (snap) => {
   queueList.innerHTML = "";
   calledBox.textContent = "";
@@ -220,7 +207,8 @@ onValue(queueRef, (snap) => {
 
   // 1) expire old offers (ONLY place this logic exists)
   entries.forEach(([k, v]) => {
-    if (v.status === "OFFERED" && (v.offerExpiresAt ?? 0) <= now) {
+    const expired = v.status === "OFFERED" && (v.offerExpiresAt ?? 0) <= now;
+    if (expired) {
       update(ref(db, "queue/" + k), {
         status: "WAITING",
         offerStartedAt: null,
@@ -239,9 +227,9 @@ onValue(queueRef, (snap) => {
       queueList.appendChild(li);
     });
 
-  // 3) choose the ACTIVE offer only
+  // 3) find active OFFERED (if any) and cache it
   const offered = entries
-    .filter(([k, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
+    .filter(([, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
     .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
 
   offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
@@ -251,21 +239,20 @@ onValue(queueRef, (snap) => {
   calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
 });
 
-// ---------- Wiring (must be BELOW onValue) ----------
+// ---------- Wiring ----------
 joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
 callNextBtn.onclick = callNext;
 acceptBtn.onclick = acceptRide;
 completeBtn.onclick = completePickup;
 
-// keep Accept button state updated as user types
 driverNameInput.oninput = refreshAcceptUI;
 driverPlateInput.oninput = refreshAcceptUI;
 
-// Optional debug helpers (safe to remove later)
+// Safari console helpers (module vars are not global)
 window.debug = {
   norm,
   isMeForOffer,
   refreshAcceptUI,
-  getOffer: () => offeredCache
+  getOfferedCache: () => offeredCache
 };
