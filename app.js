@@ -261,8 +261,18 @@ onValue(queueRef, (snap) => {
     .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
     .forEach(([k, v], i) => {
       const li = document.createElement("li");
-      li.textContent = `${i + 1}. ${v.name} ${v.carColor} ${v.plate} ${v.status}`;
-      queueList.appendChild(li);
+
+// status class for styling
+const status = (v.status ?? "WAITING").toUpperCase();
+li.classList.add("queue-item", `status-${status.toLowerCase()}`);
+
+li.innerHTML = `
+  <span class="pos">${i + 1}.</span>
+  <span class="driver">${v.name} ${v.carColor ?? ""} ${v.plate}</span>
+  <span class="badge">${status}</span>
+`;
+
+queueList.appendChild(li);
     });
 
   // Cache the single active offer (oldest offerStartedAt wins)
