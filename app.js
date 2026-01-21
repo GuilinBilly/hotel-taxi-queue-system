@@ -41,6 +41,7 @@ const offerInfo = document.getElementById("offerInfo");
 
 const OFFER_TIMEOUT_MS = 25000;
 const DOORMAN_PIN = "1688";
+const WRITE_PIN = DOORMAN_PIN; // pin-gated writes (demo protection)
 
 // { key, val } for the *single* active offer (if any)
 let offeredCache = null;
@@ -134,15 +135,16 @@ async function joinQueue() {
   const status = prev?.status ?? "WAITING";
 
   await set(driverRef, {
-    name,
-    carColor,
-    plate,
-    status,
-    joinedAt,
-    offerStartedAt: prev?.offerStartedAt ?? null,
-    offerExpiresAt: prev?.offerExpiresAt ?? null
-  });
-
+  pin: WRITE_PIN,
+  name,
+  carColor,
+  plate,
+  status,
+  joinedAt,
+  offerStartedAt: prev?.offerStartedAt ?? null,
+  offerExpiresAt: prev?.offerExpiresAt ?? null
+});
+  
   refreshAcceptUI();
 }
 
