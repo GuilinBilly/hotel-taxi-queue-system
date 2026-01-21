@@ -124,6 +124,10 @@ async function joinQueue() {
   const snap = await get(driverRef);
 
   const prev = snap.exists() ? snap.val() : null;
+
+// joinedAt controls queue position.
+// Earlier joinedAt = earlier in the list.
+// When an OFFER expires, we set joinedAt to "now" to move that driver to the end.  
   const joinedAt = prev?.joinedAt ?? Date.now();
 
   // keep previous status if it exists; otherwise WAITING
