@@ -108,6 +108,7 @@ async function expireOffersNow() {
     }
   }
 }
+
 // ---------- Driver actions ----------
 async function joinQueue() {
   const name = driverNameInput.value.trim();
