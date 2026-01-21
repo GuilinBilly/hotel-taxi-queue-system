@@ -84,6 +84,7 @@ function refreshAcceptUI() {
 }
 
 // ---------- Expire offers (SINGLE PATH ONLY) ----------
+
 async function expireOffersNow() {
   const snap = await get(queueRef);
   if (!snap.exists()) return;
@@ -91,20 +92,22 @@ async function expireOffersNow() {
   const now = Date.now();
   const entries = Object.entries(snap.val());
 
-  // Only expire OFFERED that are past offerExpiresAt
-  await Promise.all(
-    entries.map(async ([k, v]) => {
-      if (v.status === "OFFERED" && (v.offerExpiresAt ?? 0) <= now) {
-        await update(ref(db, "queue/" + k), {
-          status: "WAITING",
-          offerStartedAt: null,
-          offerExpiresAt: null
-        });
-      }
-    })
-  );
-}
+  // Move expired OFFERED drivers to end of queue by bumping joinedAt
+  let bump = 0;
 
+  for (const [k, v] of entries) {
+    if (v.status === "OFFERED" && (v.offerExpiresAt ?? 0) <= now) {
+      await update(ref(db, "queue/" + k), {
+        status: "WAITING",
+        offerStartedAt: null,
+        offerExpiresAt: null,
+
+        // key change: push to end
+        joinedAt: now + (bump++)
+      });
+    }
+  }
+}
 // ---------- Driver actions ----------
 async function joinQueue() {
   const name = driverNameInput.value.trim();
