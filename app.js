@@ -266,8 +266,13 @@ async function resetDemo() {
 
   if (!confirm("Reset demo? This will clear the entire queue.")) return;
 
-  // Wipe /queue completely
-  await remove(ref(db, "queue"));
+   %
+  // Wipe /queue completely (delete children one-by-one so rules on /queue/$driverId apply)
+  const snap = await get(queueRef);
+  if (!snap.exists()) return;
+
+  const keys = Object.keys(snap.val());
+  await Promise.all(keys.map((k) => remove(ref(db, "queue/" + k))));
 
   // UI cleanup (onValue will also refresh)
   offeredCache = null;
