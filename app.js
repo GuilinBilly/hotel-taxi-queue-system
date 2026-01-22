@@ -31,6 +31,13 @@ const joinBtn = document.getElementById("joinBtn");
 const leaveBtn = document.getElementById("leaveBtn");
 const acceptBtn = document.getElementById("acceptBtn");
 
+// Lock / unlock driver input controls (single source of truth)
+const lockDriverInputs = (locked) => {
+  driverNameInput.disabled = locked;
+  driverColorInput.disabled = locked;
+  driverPlateInput.disabled = locked;
+  joinBtn.disabled = locked;
+};
 const callNextBtn = document.getElementById("callNextBtn");
 const completeBtn = document.getElementById("completeBtn");
 const doormanPinInput = document.getElementById("doormanPin");
@@ -54,8 +61,7 @@ const DOORMAN_PIN = "1688";
 const WRITE_PIN = DOORMAN_PIN; // pin-gated writes (demo protection)
 // Driver identity for THIS browser tab/session
 let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
-// Restore joined state on reload
-if (myDriverKey) lockDriverInputs(true);
+
 // { key, val } for the *single* active offer (if any)
 let offeredCache = null;
 
