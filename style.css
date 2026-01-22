@@ -186,3 +186,13 @@ body {
   background: #d1f7d6;
   border-color: #8fdaa0;
 }
+
+.btn.danger {
+  border: 2px solid #b00020;
+  color: #b00020;
+  background: white;
+}
+.btn.danger:hover {
+  background: #b00020;
+  color: white;
+}
