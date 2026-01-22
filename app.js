@@ -312,50 +312,64 @@ async function resetDemo() {
 }
 // ---------- Live UI render ----------
 
-onValue(queueRef, (snap) => {
-  queueList.innerHTML = "";
-  calledBox.textContent = "";
-  offeredCache = null;
+// ---------- Live UI render ----------
 
-  if (!snap.exists()) {
-    refreshAcceptUI();
-    return;
+// Keep exactly ONE active listener
+let unsubscribeQueue = null;
+
+function subscribeQueue() {
+  // If we already subscribed, unsubscribe first (prevents double-render)
+  if (typeof unsubscribeQueue === "function") {
+    unsubscribeQueue();
   }
 
-  const now = Date.now();
-  const entries = Object.entries(snap.val());
+  unsubscribeQueue = onValue(queueRef, (snap) => {
+    // Clear UI (single render pass)
+    queueList.innerHTML = "";
+    calledBox.textContent = "";
+    offeredCache = null;
 
-  // Render stable order by joinedAt
-  entries
-    .slice()
-    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
-    .forEach(([k, v], i) => {
-      const li = document.createElement("li");
+    if (!snap.exists()) {
+      refreshAcceptUI();
+      return;
+    }
 
-// status class for styling
-const status = (v.status ?? "WAITING").toUpperCase();
-li.classList.add("queue-item", `status-${status.toLowerCase()}`);
+    const now = Date.now();
+    const entries = Object.entries(snap.val() || {});
 
-li.innerHTML = `
-  <span class="pos">${i + 1}.</span>
-  <span class="driver">${v.name} ${v.carColor ?? ""} ${v.plate}</span>
-  <span class="badge">${status}</span>
-`;
+    // Render stable order by joinedAt
+    entries
+      .slice()
+      .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
+      .forEach(([k, v], i) => {
+        const li = document.createElement("li");
 
-queueList.appendChild(li);
-    });
+        const status = (v.status ?? "WAITING").toUpperCase();
+        li.classList.add("queue-item", `status-${status.toLowerCase()}`);
 
-  // Cache the single active offer (oldest offerStartedAt wins)
-  const offered = entries
-    .filter(([k, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
-    .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
+        li.innerHTML = `
+          <span class="pos">${i + 1}.</span>
+          <span class="driver">${v.name} ${v.carColor ?? ""} ${v.plate}</span>
+          <span class="badge">${status}</span>
+        `;
 
-  offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
+        queueList.appendChild(li);
+      });
 
-  refreshAcceptUI();
+    // Cache the single active offer (oldest offerStartedAt wins)
+    const offered = entries
+      .filter(([_, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
+      .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
 
-  calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
-});
+    offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
+
+    refreshAcceptUI();
+    calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
+  });
+}
+
+// Call it ONCE
+subscribeQueue();
 
 // Expire loop (single place)
 setInterval(expireOffersNow, 1000);
