@@ -48,9 +48,23 @@ acceptBtn.onclick = acceptRide;
 callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
+
+// Restore joined state on reload
+if (myDriverKey) {
+  lockDriverInputs(true);
+}
 const OFFER_TIMEOUT_MS = 25000;
 const DOORMAN_PIN = "1688";
 const WRITE_PIN = DOORMAN_PIN; // pin-gated writes (demo protection)
+// Driver identity for THIS browser tab/session (prevents removing other drivers)
+let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
+
+// Per-browser session token (unique for this tab/session)
+let SESSION_ID = sessionStorage.getItem("htqs.sessionId");
+if (!SESSION_ID) {
+  SESSION_ID = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now());
+  sessionStorage.setItem("htqs.sessionId", SESSION_ID);
+}
 
 // { key, val } for the *single* active offer (if any)
 let offeredCache = null;
@@ -132,6 +146,9 @@ async function joinQueue() {
   if (!name || !plate) return alert("Enter name and plate.");
 
   const driverKey = `${norm(name)}_${norm(plate)}`;
+  myDriverKey = driverKey;
+  sessionStorage.setItem("htqs.driverKey", driverKey);
+  lockDriverInputs(true);
   const driverRef = ref(db, "queue/" + driverKey);
 
   // read existing record to keep joinedAt stable
@@ -158,6 +175,7 @@ async function joinQueue() {
   plate,
   status,
   joinedAt,
+  sessionId: SESSION_ID,     // ✅ add this
   offerStartedAt: prev?.offerStartedAt ?? null,
   offerExpiresAt: prev?.offerExpiresAt ?? null
 });
@@ -166,12 +184,38 @@ async function joinQueue() {
 }
 
 async function leaveQueue() {
-  const name = norm(driverNameInput.value);
-  const plate = norm(driverPlateInput.value);
-  if (!name || !plate) return alert("Enter name and plate.");
+  if (!myDriverKey) return alert("You are not joined yet.");
 
-  const driverKey = `${name}_${plate}`;
-  await remove(ref(db, "queue/" + driverKey));
+  const driverRef = ref(db, "queue/" + myDriverKey);
+
+  const snap = await get(driverRef);
+  if (!snap.exists()) {
+    // local cleanup if record is already gone
+    myDriverKey = null;
+    sessionStorage.removeItem("htqs.driverKey");
+    lockDriverInputs(false);
+    refreshAcceptUI();
+    return alert("Your record is not in the queue anymore.");
+  }
+
+  const v = snap.val();
+
+  // ✅ Only the same browser session can leave this record
+  if (v.sessionId !== SESSION_ID) {
+    return alert("You cannot leave for another driver on this device/session.");
+  }
+
+  await update(driverRef, {
+    status: "LEFT"
+  });
+
+  // local cleanup
+  myDriverKey = null;
+  sessionStorage.removeItem("htqs.driverKey");
+  lockDriverInputs(false);
+
+  offeredCache = null;
+  refreshAcceptUI();
 }
 
 async function callNext() {
@@ -197,8 +241,18 @@ async function callNext() {
   if (hasAccepted) return alert("A ride is already ACCEPTED. Complete Pickup first.");
 
   const waiting = entries
-    .filter(([k, v]) => v.status === "WAITING")
-    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+  .filter(([k, v]) => v.status !== "LEFT") // ✅ hide LEFT drivers
+  .slice()
+  .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
+  .forEach(([k, v], i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span class="pos">${i + 1}</span>
+      <span class="driver">${v.name} ${v.plate}</span>
+      <span class="badge">${v.status}</span>
+    `;
+    queueList.appendChild(li);
+  });
 
   if (!waiting.length) return alert("No WAITING taxis.");
 
