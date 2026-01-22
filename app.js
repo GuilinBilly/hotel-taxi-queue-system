@@ -40,6 +40,14 @@ const calledBox = document.getElementById("calledBox");
 const resetBtn = document.getElementById("resetBtn");
 const offerInfo = document.getElementById("offerInfo");
 
+// ✅ Hook up UI events (put right here)
+joinBtn.onclick = joinQueue;
+leaveBtn.onclick = leaveQueue;
+acceptBtn.onclick = acceptRide;
+
+callNextBtn.onclick = callNext;
+completeBtn.onclick = completePickup;
+resetBtn.onclick = resetDemo;
 const OFFER_TIMEOUT_MS = 25000;
 const DOORMAN_PIN = "1688";
 const WRITE_PIN = DOORMAN_PIN; // pin-gated writes (demo protection)
@@ -97,18 +105,22 @@ async function expireOffersNow() {
   // Move expired OFFERED drivers to end of queue by bumping joinedAt
   let bump = 0;
 
-  for (const [k, v] of entries) {
-    if (v.status === "OFFERED" && (v.offerExpiresAt ?? 0) <= now) {
+  await Promise.all(
+    entries.map(async ([k, v]) => {
+      const isExpired =
+        v.status === "OFFERED" && (v.offerExpiresAt ?? 0) <= now;
+
+      if (!isExpired) return;
+
       await update(ref(db, "queue/" + k), {
+        pin: WRITE_PIN,
         status: "WAITING",
         offerStartedAt: null,
         offerExpiresAt: null,
-
-        // key change: push to end
         joinedAt: now + (bump++)
       });
-    }
-  }
+    })
+  );
 }
 
 // ---------- Driver actions ----------
@@ -193,6 +205,7 @@ async function callNext() {
   const [key] = waiting[0];
 
   await update(ref(db, "queue/" + key), {
+    pin: WRITE_PIN,
     status: "OFFERED",
     offerStartedAt: now,
     offerExpiresAt: now + OFFER_TIMEOUT_MS
@@ -227,6 +240,7 @@ async function acceptRide() {
   }
 
   await update(ref(db, "queue/" + offerKey), {
+    pin: WRITE_PIN,
     status: "ACCEPTED",
     offerStartedAt: null,
     offerExpiresAt: null
