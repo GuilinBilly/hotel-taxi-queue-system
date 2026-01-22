@@ -59,12 +59,7 @@ const WRITE_PIN = DOORMAN_PIN; // pin-gated writes (demo protection)
 // Driver identity for THIS browser tab/session (prevents removing other drivers)
 let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 
-// Per-browser session token (unique for this tab/session)
-let SESSION_ID = sessionStorage.getItem("htqs.sessionId");
-if (!SESSION_ID) {
-  SESSION_ID = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now());
-  sessionStorage.setItem("htqs.sessionId", SESSION_ID);
-}
+
 
 // { key, val } for the *single* active offer (if any)
 let offeredCache = null;
@@ -175,7 +170,7 @@ async function joinQueue() {
   plate,
   status,
   joinedAt,
-  sessionId: SESSION_ID,     // ✅ add this
+ 
   offerStartedAt: prev?.offerStartedAt ?? null,
   offerExpiresAt: prev?.offerExpiresAt ?? null
 });
