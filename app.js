@@ -123,9 +123,13 @@ async function joinQueue() {
 
   // read existing record to keep joinedAt stable
   const snap = await get(driverRef);
-
   const prev = snap.exists() ? snap.val() : null;
 
+  // Duplicate join protection:
+  // If this driver already exists and hasn't LEFT, block re-joining.
+  if (prev && prev.status && prev.status !== "LEFT") {
+    return alert(`You're already in the queue (status: ${prev.status}).`);
+   }
 // joinedAt controls queue position.
 // Earlier joinedAt = earlier in the list.
 // When an OFFER expires, we set joinedAt to "now" to move that driver to the end.  
