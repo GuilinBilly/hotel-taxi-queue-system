@@ -183,26 +183,28 @@ async function joinQueue() {
 }
 
 async function leaveQueue() {
-  // Must have joined on THIS device/session
+  // Must have joined from THIS device/session
   if (!myDriverKey) return alert("You haven't joined from this device yet.");
 
-  // Extra safety: only allow leaving if the current typed driver matches the saved key
+  // Extra safety: typed Name+Plate must match the saved key
   const name = driverNameInput.value.trim();
   const plate = driverPlateInput.value.trim();
-  const typedKey = `${norm(name)}_${norm(plate)}`;
-
   if (!name || !plate) return alert("Enter your name and plate first.");
-  if (typedKey !== myDriverKey) return alert("You can only leave your own driver entry on this device.");
+
+  const typedKey = `${norm(name)}_${norm(plate)}`;
+  if (typedKey !== myDriverKey) {
+    return alert("You can only leave your own driver entry on this device.");
+  }
 
   const driverRef = ref(db, "queue/" + myDriverKey);
 
-  // Mark as LEFT (do not delete; keeps history and avoids weird UI timing)
+  // Mark as LEFT (keep history; avoids UI timing issues)
   await update(driverRef, {
     status: "LEFT",
     leftAt: Date.now(),
   });
 
-  // Clear local identity + unlock inputs
+  // Local cleanup
   sessionStorage.removeItem("htqs.driverKey");
   myDriverKey = null;
 
@@ -211,7 +213,6 @@ async function leaveQueue() {
   driverColorInput.value = "";
   driverPlateInput.value = "";
 
-  // If you had an offer cached, refresh UI (onValue will also refresh)
   offeredCache = null;
   refreshAcceptUI();
 }
