@@ -37,6 +37,7 @@ const doormanPinInput = document.getElementById("doormanPin");
 
 const queueList = document.getElementById("queueList");
 const calledBox = document.getElementById("calledBox");
+const resetBtn = document.getElementById("resetBtn");
 const offerInfo = document.getElementById("offerInfo");
 
 const OFFER_TIMEOUT_MS = 25000;
@@ -245,6 +246,19 @@ async function completePickup() {
   await remove(ref(db, "queue/" + accepted[0]));
 }
 
+async function resetDemo() {
+  const pin = doormanPinInput.value.trim();
+  if (pin !== DOORMAN_PIN) return alert("Invalid PIN.");
+
+  if (!confirm("Reset demo? This will clear the entire queue.")) return;
+
+  // Wipe /queue completely
+  await remove(ref(db, "queue"));
+
+  // UI cleanup (onValue will also refresh)
+  offeredCache = null;
+  refreshAcceptUI();
+}
 // ---------- Live UI render ----------
 onValue(queueRef, (snap) => {
   queueList.innerHTML = "";
@@ -300,6 +314,7 @@ leaveBtn.onclick = leaveQueue;
 callNextBtn.onclick = callNext;
 acceptBtn.onclick = acceptRide;
 completeBtn.onclick = completePickup;
+resetBtn.onclick = resetDemo;
 
 // Keep Accept UI updated while typing
 driverNameInput.oninput = refreshAcceptUI;
