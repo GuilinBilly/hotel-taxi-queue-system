@@ -31,13 +31,15 @@ const joinBtn = document.getElementById("joinBtn");
 const leaveBtn = document.getElementById("leaveBtn");
 const acceptBtn = document.getElementById("acceptBtn");
 
-// Lock / unlock driver input controls (single source of truth)
-const lockDriverInputs = (locked) => {
+function lockDriverInputs(locked) {
   driverNameInput.disabled = locked;
   driverColorInput.disabled = locked;
   driverPlateInput.disabled = locked;
+
   joinBtn.disabled = locked;
-};
+  leaveBtn.disabled = !locked; // optional but recommended
+}
+
 const callNextBtn = document.getElementById("callNextBtn");
 const completeBtn = document.getElementById("completeBtn");
 const doormanPinInput = document.getElementById("doormanPin");
@@ -64,6 +66,7 @@ let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 
 // { key, val } for the *single* active offer (if any)
 let offeredCache = null;
+
 
 // ---------- Helpers (SINGLE COPY ONLY) ----------
 function norm(s) {
