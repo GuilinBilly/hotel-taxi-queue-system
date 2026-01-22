@@ -220,42 +220,22 @@ async function leaveQueue() {
 async function callNext() {
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
 
-  // expire first so we don’t block on a stale offer
+  // expire first so we don't block on a stale offer
   await expireOffersNow();
 
   const snap = await get(queueRef);
-  if (!snap.exists()) return;
+  const data = snap.exists() ? snap.val() : {};
+  const entries = Object.entries(data);
 
-  const now = Date.now();
-  const entries = Object.entries(snap.val());
-
-  // block if already active offer
-  const hasActiveOffer = entries.some(([k, v]) =>
-    v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now
-  );
-  if (hasActiveOffer) return alert("An offer is already active. Wait for accept/expire.");
-
-  // block if already accepted
-  const hasAccepted = entries.some(([k, v]) => v.status === "ACCEPTED");
-  if (hasAccepted) return alert("A ride is already ACCEPTED. Complete Pickup first.");
-
+  // Only WAITING drivers (and not LEFT)
   const waiting = entries
-  .filter(([k, v]) => v.status !== "LEFT") // ✅ hide LEFT drivers
-  .slice()
-  .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
-  .forEach(([k, v], i) => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <span class="pos">${i + 1}</span>
-      <span class="driver">${v.name} ${v.plate}</span>
-      <span class="badge">${v.status}</span>
-    `;
-    queueList.appendChild(li);
-  });
+    .filter(([k, v]) => v && v.status === "WAITING")
+    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
-  if (!waiting.length) return alert("No WAITING taxis.");
+  if (waiting.length === 0) return alert("No WAITING taxis.");
 
   const [key] = waiting[0];
+  const now = Date.now();
 
   await update(ref(db, "queue/" + key), {
     pin: WRITE_PIN,
@@ -264,7 +244,6 @@ async function callNext() {
     offerExpiresAt: now + OFFER_TIMEOUT_MS
   });
 }
-
 async function acceptRide() {
   if (!offeredCache) return alert("No active offer right now.");
 
@@ -332,6 +311,7 @@ async function resetDemo() {
   refreshAcceptUI();
 }
 // ---------- Live UI render ----------
+
 onValue(queueRef, (snap) => {
   queueList.innerHTML = "";
   calledBox.textContent = "";
