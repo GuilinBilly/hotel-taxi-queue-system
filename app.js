@@ -49,18 +49,13 @@ callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
 
-// Restore joined state on reload
-if (myDriverKey) {
-  lockDriverInputs(true);
-}
 const OFFER_TIMEOUT_MS = 25000;
 const DOORMAN_PIN = "1688";
 const WRITE_PIN = DOORMAN_PIN; // pin-gated writes (demo protection)
-// Driver identity for THIS browser tab/session (prevents removing other drivers)
+// Driver identity for THIS browser tab/session
 let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
-
-
-
+// Restore joined state on reload
+if (myDriverKey) lockDriverInputs(true);
 // { key, val } for the *single* active offer (if any)
 let offeredCache = null;
 
