@@ -338,6 +338,22 @@ function subscribeQueue() {
 
     const now = Date.now();
     const entries = Object.entries(snap.val() || {});
+
+    const data = snap.val() || {};
+
+// If this browser thinks it has a driver record, but that record is LEFT,
+// clear local identity so user can Join again without refresh.
+if (myDriverKey && data[myDriverKey] && data[myDriverKey].status === "LEFT") {
+  sessionStorage.removeItem("htqs.driverKey");
+  myDriverKey = null;
+  lockDriverInputs(false);
+
+  driverNameInput.value = "";
+  driverColorInput.value = "";
+  driverPlateInput.value = "";
+  offeredCache = null;
+  refreshAcceptUI();
+}    
     // Active = not LEFT
     const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT");
     
