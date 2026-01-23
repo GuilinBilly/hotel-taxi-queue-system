@@ -226,11 +226,14 @@ async function callNext() {
   const data = snap.exists() ? snap.val() : {};
   const entries = Object.entries(data);
 
-  // Only WAITING drivers (and not LEFT)
-  const waiting = entries
-    .filter(([k, v]) => v && v.status === "WAITING")
-    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+ // Active = not LEFT
+const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT");
 
+// Only WAITING drivers (treat missing status as WAITING)
+   const waiting = active
+  .filter(([k, v]) => (v.status ?? "WAITING") === "WAITING")
+  .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+  
   if (waiting.length === 0) return alert("No WAITING taxis.");
 
   const [key] = waiting[0];
