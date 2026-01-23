@@ -338,13 +338,17 @@ function subscribeQueue() {
 
     const now = Date.now();
     const entries = Object.entries(snap.val() || {});
-
+    // Active = not LEFT
+    const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT");
+    
     // Render stable order by joinedAt
-    entries
-      .slice()
-      .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
-      .forEach(([k, v], i) => {
-        const li = document.createElement("li");
+   active
+  .slice()
+  .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
+  .forEach(([k, v], i) => {
+    // existing li render logic
+  });
+    const li = document.createElement("li");
 
         const status = (v.status ?? "WAITING").toUpperCase();
         li.classList.add("queue-item", `status-${status.toLowerCase()}`);
