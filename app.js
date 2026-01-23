@@ -164,8 +164,11 @@ async function joinQueue() {
       await remove(driverRef);
     }
 
-    const joinedAt = existing?.joinedAt ?? Date.now();
-
+   const joinedAt =
+  (existing && existing.status !== "LEFT" && existing.joinedAt != null)
+    ? existing.joinedAt
+    : Date.now();
+    
     await set(driverRef, {
       pin: WRITE_PIN,
       status: "WAITING",
