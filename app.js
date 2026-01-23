@@ -138,50 +138,56 @@ async function expireOffersNow() {
 
 // ---------- Driver actions ----------
 async function joinQueue() {
-  const name = driverNameInput.value.trim();
-  const carColor = driverColorInput.value.trim();
-  const plate = driverPlateInput.value.trim();
+  try {
+    console.log("joinQueue clicked");
 
-  if (!name || !plate) return alert("Enter name and plate.");
+    const name = driverNameInput.value.trim();
+    const carColor = driverColorInput.value.trim();
+    const plate = driverPlateInput.value.trim();
 
-  const driverKey = `${norm(name)}_${norm(plate)}`;
-  myDriverKey = driverKey;
-  sessionStorage.setItem("htqs.driverKey", driverKey);
-  lockDriverInputs(true);
-  const driverRef = ref(db, "queue/" + driverKey);
+    if (!name || !plate) {
+      alert("Enter name and plate.");
+      return;
+    }
 
-  // read existing record to keep joinedAt stable
-  const snap = await get(driverRef);
-  const prev = snap.exists() ? snap.val() : null;
+    const driverKey = `${norm(name)}_${norm(plate)}`;
+    console.log("driverKey:", driverKey);
 
-  // Duplicate join protection:
-  // If this driver already exists and hasn't LEFT, block re-joining.
-  if (prev && prev.status && prev.status !== "LEFT") {
-    return alert(`You're already in the queue (status: ${prev.status}).`);
-   }
-// joinedAt controls queue position.
-// Earlier joinedAt = earlier in the list.
-// When an OFFER expires, we set joinedAt to "now" to move that driver to the end.  
-  const joinedAt = prev?.joinedAt ?? Date.now();
+    const driverRef = ref(db, "queue/" + driverKey);
 
-  // keep previous status if it exists; otherwise WAITING
-  const status = prev?.status ?? "WAITING";
+    // If a LEFT record exists, remove it so re-join works
+    const existingSnap = await get(driverRef);
+    const existing = existingSnap.exists() ? existingSnap.val() : null;
 
-  await set(driverRef, {
-  pin: WRITE_PIN,
-  name,
-  carColor,
-  plate,
-  status,
-  joinedAt,
- 
-  offerStartedAt: prev?.offerStartedAt ?? null,
-  offerExpiresAt: prev?.offerExpiresAt ?? null
-});
-  
-  refreshAcceptUI();
+    if (existing && existing.status === "LEFT") {
+      console.log("Removing LEFT record before re-join");
+      await remove(driverRef);
+    }
+
+    const joinedAt = existing?.joinedAt ?? Date.now();
+
+    await set(driverRef, {
+      pin: WRITE_PIN,
+      status: "WAITING",
+      name,
+      carColor,
+      plate,
+      joinedAt,
+      offerStartedAt: null,
+      offerExpiresAt: null
+    });
+
+    myDriverKey = driverKey;
+    sessionStorage.setItem("htqs.driverKey", driverKey);
+    lockDriverInputs(true);
+    refreshAcceptUI();
+
+    console.log("joinQueue success");
+  } catch (err) {
+    console.error("joinQueue failed:", err);
+    alert("Join Queue failed. Check console for details.");
+  }
 }
-
 async function leaveQueue() {
   // Must have joined from THIS device/session
   if (!myDriverKey) return alert("You haven't joined from this device yet.");
@@ -341,19 +347,22 @@ function subscribeQueue() {
 
     // ✅ ADD THIS BLOCK RIGHT HERE
   if (myDriverKey) {
-    const mine = (snap.val() || {})[myDriverKey];
-    if (mine && mine.status === "LEFT") {
-      sessionStorage.removeItem("htqs.driverKey");
-      myDriverKey = null;
-      lockDriverInputs(false);
-      // Optional: clear inputs so it feels “reset”
-      driverNameInput.value = "";
-      driverColorInput.value = "";
-      driverPlateInput.value = "";
-      offeredCache = null;
-      refreshAcceptUI();
-    }
+  const mine = (snap.val() || {})[myDriverKey];
+
+  // ✅ clear if record is missing OR LEFT
+  if (!mine || mine.status === "LEFT") {
+    sessionStorage.removeItem("htqs.driverKey");
+    myDriverKey = null;
+    lockDriverInputs(false);
+
+    driverNameInput.value = "";
+    driverColorInput.value = "";
+    driverPlateInput.value = "";
+
+    offeredCache = null;
+    refreshAcceptUI();
   }
+}
 
   // now continue with your existing logic:
   // const active = ...
