@@ -342,26 +342,24 @@ function subscribeQueue() {
     const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT");
     
     // Render stable order by joinedAt
-   active
+  // Render stable order by joinedAt (ACTIVE only, so LEFT drivers disappear)
+active
   .slice()
   .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
   .forEach(([k, v], i) => {
-    // existing li render logic
-  });
     const li = document.createElement("li");
 
-        const status = (v.status ?? "WAITING").toUpperCase();
-        li.classList.add("queue-item", `status-${status.toLowerCase()}`);
+    const status = (v.status ?? "WAITING").toUpperCase();
+    li.classList.add("queue-item", `status-${status.toLowerCase()}`);
 
-        li.innerHTML = `
-          <span class="pos">${i + 1}.</span>
-          <span class="driver">${v.name} ${v.carColor ?? ""} ${v.plate}</span>
-          <span class="badge">${status}</span>
-        `;
+    li.innerHTML = `
+      <span class="pos">${i + 1}.</span>
+      <span class="driver">${v.name} ${v.carColor ?? ""} ${v.plate}</span>
+      <span class="badge">${status}</span>
+    `;
 
-        queueList.appendChild(li);
-      });
-
+    queueList.appendChild(li);
+  });
     // Cache the single active offer (oldest offerStartedAt wins)
     const offered = entries
       .filter(([_, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
