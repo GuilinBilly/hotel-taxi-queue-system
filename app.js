@@ -342,7 +342,7 @@ function subscribeQueue() {
     // ✅ ADD THIS BLOCK RIGHT HERE
   if (myDriverKey) {
     const mine = (snap.val() || {})[myDriverKey];
-    if (!mine || mine.status === "LEFT") {
+    if (mine && mine.status === "LEFT") {
       sessionStorage.removeItem("htqs.driverKey");
       myDriverKey = null;
       lockDriverInputs(false);
