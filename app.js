@@ -174,7 +174,7 @@ async function joinQueue() {
       status: "WAITING",
       name,
       carColor,
-      cabNumber,
+      plate,
       joinedAt,
       offerStartedAt: null,
       offerExpiresAt: null
