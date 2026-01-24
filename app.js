@@ -388,7 +388,7 @@ active
     li.innerHTML = `
       <span class="pos">${i + 1}.</span>
       <span class="driver">
-      ${v.name} ${v.carColor ?? ""} Cab ${v.cabNumber}
+      ${v.name} ${v.carColor ?? ""} Cab ${v.plate}
       </span>
       <span class="badge">${status}</span>
     `;
