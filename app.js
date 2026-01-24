@@ -258,6 +258,37 @@ const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT
     offerExpiresAt: now + OFFER_TIMEOUT_MS
   });
 }
+function playOfferTone() {
+  // High-pitch triple-beep using WebAudio (no external files)
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    const ctx = playOfferTone._ctx || (playOfferTone._ctx = new AudioCtx());
+
+    // Some browsers require a user gesture once; if blocked, it will just fail silently.
+    const now = ctx.currentTime;
+
+    const beep = (t, freq, dur) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.8, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + dur + 0.02);
+    };
+
+    // Three sharp beeps (high pitch)
+    beep(now + 0.00, 1200, 0.12);
+    beep(now + 0.18, 1400, 0.12);
+    beep(now + 0.36, 1200, 0.12);
+  } catch (e) {
+    // If audio blocked, do nothing (UI will still show OFFERED)
+  }
+}
 async function acceptRide() {
   if (!offeredCache) return alert("No active offer right now.");
 
