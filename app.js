@@ -143,14 +143,14 @@ async function joinQueue() {
 
     const name = driverNameInput.value.trim();
     const carColor = driverColorInput.value.trim();
-    const plate = driverPlateInput.value.trim();
+    const cabNumber = driverPlateInput.value.trim();
 
-    if (!name || !plate) {
-      alert("Enter name and plate.");
-      return;
-    }
+    if (!name || !cabNumber) {
+  alert("Enter name and cab number.");
+  return;
+}
 
-    const driverKey = `${norm(name)}_${norm(plate)}`;
+    const driverKey = `${norm(name)}_${norm(cabNumber)}`;
     console.log("driverKey:", driverKey);
 
     const driverRef = ref(db, "queue/" + driverKey);
