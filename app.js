@@ -143,14 +143,16 @@ async function joinQueue() {
 
     const name = driverNameInput.value.trim();
     const carColor = driverColorInput.value.trim();
-    const plate = driverPlateInput.value.trim(); // Cab Number" in the UI
+    const plate = driverPlateInput.value.trim(); // this is Cab Number in the UI
 
-    if (!name || !cabNumber) {
-  alert("Enter name and cab number.");
-  return;
-}
+    // ✅ validate the right variable
+    if (!name || !plate) {
+      alert("Enter name and cab number.");
+      return;
+    }
 
-    const driverKey = `${norm(name)}_${norm(cabNumber)}`;
+    // ✅ build key from plate (cab number)
+    const driverKey = `${norm(name)}_${norm(plate)}`;
     console.log("driverKey:", driverKey);
 
     const driverRef = ref(db, "queue/" + driverKey);
@@ -164,17 +166,18 @@ async function joinQueue() {
       await remove(driverRef);
     }
 
-   const joinedAt =
-  (existing && existing.status !== "LEFT" && existing.joinedAt != null)
-    ? existing.joinedAt
-    : Date.now();
-    
+    // ✅ fairness: if LEFT, you get a NEW joinedAt (go to back of line)
+    const joinedAt =
+      (existing && existing.status !== "LEFT" && existing.joinedAt != null)
+        ? existing.joinedAt
+        : Date.now();
+
     await set(driverRef, {
       pin: WRITE_PIN,
       status: "WAITING",
       name,
       carColor,
-      plate,
+      plate, // still stored as plate
       joinedAt,
       offerStartedAt: null,
       offerExpiresAt: null
