@@ -453,7 +453,9 @@ if (myDriverKey && offeredCache && offeredCache.key === myDriverKey) {
   // Not currently offered to me → allow next offer to beep again
   lastBeepOfferStartedAt = null;
   lastBeepOfferKey = null;
-}    
+}   
+
+    
     refreshAcceptUI();
     calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
   });
