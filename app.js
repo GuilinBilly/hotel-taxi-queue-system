@@ -66,7 +66,8 @@ let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 
 // { key, val } for the *single* active offer (if any)
 let offeredCache = null;
-
+let lastBeepOfferStartedAt = null;
+let lastBeepOfferKey = null;
 
 // ---------- Helpers (SINGLE COPY ONLY) ----------
 function norm(s) {
@@ -357,8 +358,6 @@ async function resetDemo() {
 }
 // ---------- Live UI render ----------
 
-// ---------- Live UI render ----------
-
 // Keep exactly ONE active listener
 let unsubscribeQueue = null;
 
@@ -436,6 +435,25 @@ active
 
     offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
 
+    // 🔔 Step 2: play tone when MY driver becomes OFFERED (only once per offer)
+if (myDriverKey && offeredCache && offeredCache.key === myDriverKey) {
+  const mine = (snap.val() || {})[myDriverKey];
+  const startedAt = mine?.offerStartedAt ?? null;
+
+  const isNewOffer =
+    startedAt &&
+    (startedAt !== lastBeepOfferStartedAt || myDriverKey !== lastBeepOfferKey);
+
+  if (isNewOffer) {
+    playOfferTone();
+    lastBeepOfferStartedAt = startedAt;
+    lastBeepOfferKey = myDriverKey;
+  }
+} else {
+  // Not currently offered to me → allow next offer to beep again
+  lastBeepOfferStartedAt = null;
+  lastBeepOfferKey = null;
+}    
     refreshAcceptUI();
     calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
   });
