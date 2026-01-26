@@ -391,7 +391,7 @@ function installAudioUnlockListeners() {
 
 async function acceptRide() {
   stopOfferBeepLoop(); // stop beeping immediately on accept
-  ...
+  
 }
 async function acceptRide() {
   if (!offeredCache) return alert("No active offer right now.");
@@ -443,7 +443,7 @@ async function completePickup() {
 
 async function acceptRide() {
   stopOfferBeepLoop(); // stop beeping immediately on accept
-  ...
+
 }
 async function resetDemo() {
   const pin = doormanPinInput.value.trim();
