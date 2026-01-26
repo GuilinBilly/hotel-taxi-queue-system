@@ -66,8 +66,7 @@ let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 
 // { key, val } for the *single* active offer (if any)
 let offeredCache = null;
-let lastBeepOfferStartedAt = null;
-let lastBeepOfferKey = null;
+
 
 // ---------- Helpers (SINGLE COPY ONLY) ----------
 function norm(s) {
@@ -144,15 +143,13 @@ async function joinQueue() {
 
     const name = driverNameInput.value.trim();
     const carColor = driverColorInput.value.trim();
-    const plate = driverPlateInput.value.trim(); // this is Cab Number in the UI
+    const plate = driverPlateInput.value.trim();
 
-    // ✅ validate the right variable
     if (!name || !plate) {
-      alert("Enter name and cab number.");
+      alert("Enter name and plate.");
       return;
     }
 
-    // ✅ build key from plate (cab number)
     const driverKey = `${norm(name)}_${norm(plate)}`;
     console.log("driverKey:", driverKey);
 
@@ -167,18 +164,17 @@ async function joinQueue() {
       await remove(driverRef);
     }
 
-    // ✅ fairness: if LEFT, you get a NEW joinedAt (go to back of line)
-    const joinedAt =
-      (existing && existing.status !== "LEFT" && existing.joinedAt != null)
-        ? existing.joinedAt
-        : Date.now();
-
+   const joinedAt =
+  (existing && existing.status !== "LEFT" && existing.joinedAt != null)
+    ? existing.joinedAt
+    : Date.now();
+    
     await set(driverRef, {
       pin: WRITE_PIN,
       status: "WAITING",
       name,
       carColor,
-      plate, // still stored as plate
+      plate,
       joinedAt,
       offerStartedAt: null,
       offerExpiresAt: null
@@ -194,11 +190,6 @@ async function joinQueue() {
     console.error("joinQueue failed:", err);
     alert("Join Queue failed. Check console for details.");
   }
-}
-
-async function acceptRide() {
-  stopOfferBeepLoop(); // stop beeping immediately on accept
-
 }
 async function leaveQueue() {
   // Must have joined from THIS device/session
@@ -264,135 +255,6 @@ const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT
     offerExpiresAt: now + OFFER_TIMEOUT_MS
   });
 }
-async function playOfferTone() {
-  try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-
-    const ctx = playOfferTone._ctx || (playOfferTone._ctx = new AudioCtx());
-
-    // ✅ Critical for iOS/Safari: resume if suspended
-    if (ctx.state === "suspended") {
-      await ctx.resume();
-    }
-
-    const now = ctx.currentTime;
-
-    const beep = (t, freq, dur) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, t);
-
-      gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.exponentialRampToValueAtTime(0.8, t + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(t);
-      osc.stop(t + dur);
-    };
-
-    // High-pitch triple beep
-    beep(now + 0.00, 1300, 0.12);
-    beep(now + 0.18, 1500, 0.12);
-    beep(now + 0.36, 1700, 0.14);
-
-  } catch (e) {
-    console.warn("playOfferTone blocked:", e);
-  }
-}
-
-let offerBeepIntervalId = null;
-let offerBeepStopTimeoutId = null;
-
-function stopOfferBeepLoop() {
-  if (offerBeepIntervalId) {
-    clearInterval(offerBeepIntervalId);
-    offerBeepIntervalId = null;
-  }
-  if (offerBeepStopTimeoutId) {
-    clearTimeout(offerBeepStopTimeoutId);
-    offerBeepStopTimeoutId = null;
-  }
-}
-
-function startOfferBeepLoop(maxMs = 25000) {
-  // avoid double loops
-  stopOfferBeepLoop();
-
-  // beep immediately
-  playOfferTone();
-
-  // then repeat every ~1.2s (tune as you like)
-  offerBeepIntervalId = setInterval(() => {
-    playOfferTone();
-  }, 1200);
-
-  // hard stop after 25s
-  offerBeepStopTimeoutId = setTimeout(() => {
-    stopOfferBeepLoop();
-  }, maxMs);
-}
-let audioUnlocked = false;
-
-function unlockAudioOnce() {
-  if (audioUnlocked) return;
-
-  try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-
-    // reuse the same context as playOfferTone()
-    const ctx = playOfferTone._ctx || (playOfferTone._ctx = new AudioCtx());
-
-    const doUnlock = async () => {
-      try {
-        if (ctx.state === "suspended") await ctx.resume();
-
-        // “silent ping” to fully unlock on iOS
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        gain.gain.value = 0.0001;
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.01);
-
-        audioUnlocked = true;
-        console.log("✅ Audio unlocked");
-      } catch (e) {
-        console.warn("Audio unlock failed:", e);
-      }
-    };
-
-    doUnlock();
-  } catch (e) {
-    console.warn("unlockAudioOnce error:", e);
-  }
-}
-
-function installAudioUnlockListeners() {
-  const handler = () => {
-    unlockAudioOnce();
-    window.removeEventListener("pointerdown", handler, true);
-    window.removeEventListener("touchstart", handler, true);
-    window.removeEventListener("keydown", handler, true);
-  };
-
-  // capture=true helps iOS
-  window.addEventListener("pointerdown", handler, true);
-  window.addEventListener("touchstart", handler, true);
-  window.addEventListener("keydown", handler, true);
-}
-
-async function acceptRide() {
-  stopOfferBeepLoop(); // stop beeping immediately on accept
-  
-}
 async function acceptRide() {
   if (!offeredCache) return alert("No active offer right now.");
 
@@ -441,10 +303,6 @@ async function completePickup() {
   await remove(ref(db, "queue/" + accepted[0]));
 }
 
-async function acceptRide() {
-  stopOfferBeepLoop(); // stop beeping immediately on accept
-
-}
 async function resetDemo() {
   const pin = doormanPinInput.value.trim();
   if (pin !== DOORMAN_PIN) return alert("Invalid PIN.");
@@ -463,6 +321,8 @@ async function resetDemo() {
   offeredCache = null;
   refreshAcceptUI();
 }
+// ---------- Live UI render ----------
+
 // ---------- Live UI render ----------
 
 // Keep exactly ONE active listener
@@ -516,7 +376,8 @@ function subscribeQueue() {
     
     // Render stable order by joinedAt
   // Render stable order by joinedAt (ACTIVE only, so LEFT drivers disappear)
-active.slice()  
+active
+  .slice()
   .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
   .forEach(([k, v], i) => {
     const li = document.createElement("li");
@@ -526,9 +387,7 @@ active.slice()
 
     li.innerHTML = `
       <span class="pos">${i + 1}.</span>
-      <span class="driver">
-      ${v.name} ${v.carColor ?? ""} Cab ${v.plate}
-      </span>
+      <span class="driver">${v.name} ${v.carColor ?? ""} ${v.plate}</span>
       <span class="badge">${status}</span>
     `;
 
@@ -541,35 +400,6 @@ active.slice()
 
     offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
 
-    // Start/stop continuous offer beep (only for THIS driver)
-const offeredToMe = offeredCache && isMeForOffer(offeredCache.val);
-
-if (offeredToMe) {
-  startOfferBeepLoop(25000);
-} else {
-  stopOfferBeepLoop();
-}
-    // 🔔 Step 2: play tone when MY driver becomes OFFERED (only once per offer)
-if (myDriverKey && offeredCache && offeredCache.key === myDriverKey) {
-  const mine = (snap.val() || {})[myDriverKey];
-  const startedAt = mine?.offerStartedAt ?? null;
-
-  const isNewOffer =
-    startedAt &&
-    (startedAt !== lastBeepOfferStartedAt || myDriverKey !== lastBeepOfferKey);
-
-  if (isNewOffer) {
-    playOfferTone();
-    lastBeepOfferStartedAt = startedAt;
-    lastBeepOfferKey = myDriverKey;
-  }
-} else {
-  // Not currently offered to me → allow next offer to beep again
-  lastBeepOfferStartedAt = null;
-  lastBeepOfferKey = null;
-}   
-
-    
     refreshAcceptUI();
     calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
   });
@@ -577,7 +407,6 @@ if (myDriverKey && offeredCache && offeredCache.key === myDriverKey) {
 
 // Call it ONCE
 subscribeQueue();
-installAudioUnlockListeners();
 
 // Expire loop (single place)
 setInterval(expireOffersNow, 1000);
