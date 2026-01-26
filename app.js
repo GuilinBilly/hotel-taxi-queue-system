@@ -94,6 +94,8 @@ function isMeForOffer(v) {
   return norm(v.name) === inputName && norm(v.plate) === inputPlate;
 }
 
+
+
 function refreshAcceptUI() {
   // default state
   acceptBtn.disabled = true;
@@ -441,10 +443,10 @@ function subscribeQueue() {
     driverColorInput.value = "";
     driverPlateInput.value = "";
 
-    offeredCache = null;
-    refreshAcceptUI();
-    stopOfferBeepLoop();   // ✅ add this
-    return;                // ✅ add this (important)
+   offeredCache = null;
+   stopOfferBeepLoop();   // stop immediately
+   refreshAcceptUI();     // then update UI
+   return;
   }
 }
 
