@@ -259,13 +259,18 @@ const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT
     offerExpiresAt: now + OFFER_TIMEOUT_MS
   });
 }
-function playOfferTone() {
-  // High-pitch triple-beep using WebAudio (no external files)
+async function playOfferTone() {
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+
     const ctx = playOfferTone._ctx || (playOfferTone._ctx = new AudioCtx());
 
-    // Some browsers require a user gesture once; if blocked, it will just fail silently.
+    // ✅ Critical for iOS/Safari: resume if suspended
+    if (ctx.state === "suspended") {
+      await ctx.resume();
+    }
+
     const now = ctx.currentTime;
 
     const beep = (t, freq, dur) => {
@@ -273,23 +278,81 @@ function playOfferTone() {
       const gain = ctx.createGain();
       osc.type = "sine";
       osc.frequency.setValueAtTime(freq, t);
+
       gain.gain.setValueAtTime(0.0001, t);
       gain.gain.exponentialRampToValueAtTime(0.8, t + 0.01);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
       osc.connect(gain);
       gain.connect(ctx.destination);
+
       osc.start(t);
-      osc.stop(t + dur + 0.02);
+      osc.stop(t + dur);
     };
 
-    // Three sharp beeps (high pitch)
-    beep(now + 0.00, 1200, 0.12);
-    beep(now + 0.18, 1400, 0.12);
-    beep(now + 0.36, 1200, 0.12);
+    // High-pitch triple beep
+    beep(now + 0.00, 1300, 0.12);
+    beep(now + 0.18, 1500, 0.12);
+    beep(now + 0.36, 1700, 0.14);
+
   } catch (e) {
-    // If audio blocked, do nothing (UI will still show OFFERED)
+    console.warn("playOfferTone blocked:", e);
   }
 }
+
+let audioUnlocked = false;
+
+function unlockAudioOnce() {
+  if (audioUnlocked) return;
+
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+
+    // reuse the same context as playOfferTone()
+    const ctx = playOfferTone._ctx || (playOfferTone._ctx = new AudioCtx());
+
+    const doUnlock = async () => {
+      try {
+        if (ctx.state === "suspended") await ctx.resume();
+
+        // “silent ping” to fully unlock on iOS
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        gain.gain.value = 0.0001;
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.01);
+
+        audioUnlocked = true;
+        console.log("✅ Audio unlocked");
+      } catch (e) {
+        console.warn("Audio unlock failed:", e);
+      }
+    };
+
+    doUnlock();
+  } catch (e) {
+    console.warn("unlockAudioOnce error:", e);
+  }
+}
+
+function installAudioUnlockListeners() {
+  const handler = () => {
+    unlockAudioOnce();
+    window.removeEventListener("pointerdown", handler, true);
+    window.removeEventListener("touchstart", handler, true);
+    window.removeEventListener("keydown", handler, true);
+  };
+
+  // capture=true helps iOS
+  window.addEventListener("pointerdown", handler, true);
+  window.addEventListener("touchstart", handler, true);
+  window.addEventListener("keydown", handler, true);
+}
+
 async function acceptRide() {
   if (!offeredCache) return alert("No active offer right now.");
 
@@ -463,6 +526,7 @@ if (myDriverKey && offeredCache && offeredCache.key === myDriverKey) {
 
 // Call it ONCE
 subscribeQueue();
+installAudioUnlockListeners();
 
 // Expire loop (single place)
 setInterval(expireOffersNow, 1000);
