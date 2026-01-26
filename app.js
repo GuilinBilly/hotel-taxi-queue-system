@@ -198,7 +198,7 @@ async function joinQueue() {
 
 async function acceptRide() {
   stopOfferBeepLoop(); // stop beeping immediately on accept
-  ...
+
 }
 async function leaveQueue() {
   // Must have joined from THIS device/session
