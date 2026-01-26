@@ -115,6 +115,74 @@ function refreshAcceptUI() {
   }
 }
 
+function unlockAudio() {
+  if (audioUnlocked) return;
+
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return; // very old browsers
+
+  if (!audioCtx) audioCtx = new Ctx();
+
+  // resume is required on iOS Safari, must be called from user gesture
+  audioCtx.resume().then(() => {
+    audioUnlocked = true;
+    console.log("Audio unlocked");
+  }).catch((e) => {
+    console.warn("Audio unlock blocked:", e);
+  });
+}
+
+function playOfferTone() {
+  if (!audioCtx || !audioUnlocked) return;
+
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    // Simple “beep”
+    osc.type = "sine";
+    osc.frequency.value = 880; // A5-ish
+    gain.gain.value = 0.08;
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    const now = audioCtx.currentTime;
+    osc.start(now);
+    osc.stop(now + 0.12); // 120ms beep
+  } catch (e) {
+    console.warn("playOfferTone failed:", e);
+  }
+}
+
+function stopOfferBeepLoop() {
+  if (offerBeepIntervalId) {
+    clearInterval(offerBeepIntervalId);
+    offerBeepIntervalId = null;
+  }
+  if (offerBeepStopTimeoutId) {
+    clearTimeout(offerBeepStopTimeoutId);
+    offerBeepStopTimeoutId = null;
+  }
+}
+
+function startOfferBeepLoop(maxMs = 25000) {
+  // prevent stacking multiple loops
+  stopOfferBeepLoop();
+
+  // beep once immediately
+  playOfferTone();
+
+  // keep beeping (adjust interval to taste)
+  offerBeepIntervalId = setInterval(() => {
+    playOfferTone();
+  }, 1200);
+
+  // hard stop after maxMs
+  offerBeepStopTimeoutId = setTimeout(() => {
+    stopOfferBeepLoop();
+  }, maxMs);
+}
 // ---------- Expire offers (SINGLE PATH ONLY) ----------
 
 async function expireOffersNow() {
