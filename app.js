@@ -195,6 +195,11 @@ async function joinQueue() {
     alert("Join Queue failed. Check console for details.");
   }
 }
+
+async function acceptRide() {
+  stopOfferBeepLoop(); // stop beeping immediately on accept
+  ...
+}
 async function leaveQueue() {
   // Must have joined from THIS device/session
   if (!myDriverKey) return alert("You haven't joined from this device yet.");
@@ -300,6 +305,37 @@ async function playOfferTone() {
   }
 }
 
+let offerBeepIntervalId = null;
+let offerBeepStopTimeoutId = null;
+
+function stopOfferBeepLoop() {
+  if (offerBeepIntervalId) {
+    clearInterval(offerBeepIntervalId);
+    offerBeepIntervalId = null;
+  }
+  if (offerBeepStopTimeoutId) {
+    clearTimeout(offerBeepStopTimeoutId);
+    offerBeepStopTimeoutId = null;
+  }
+}
+
+function startOfferBeepLoop(maxMs = 25000) {
+  // avoid double loops
+  stopOfferBeepLoop();
+
+  // beep immediately
+  playOfferTone();
+
+  // then repeat every ~1.2s (tune as you like)
+  offerBeepIntervalId = setInterval(() => {
+    playOfferTone();
+  }, 1200);
+
+  // hard stop after 25s
+  offerBeepStopTimeoutId = setTimeout(() => {
+    stopOfferBeepLoop();
+  }, maxMs);
+}
 let audioUnlocked = false;
 
 function unlockAudioOnce() {
@@ -354,6 +390,10 @@ function installAudioUnlockListeners() {
 }
 
 async function acceptRide() {
+  stopOfferBeepLoop(); // stop beeping immediately on accept
+  ...
+}
+async function acceptRide() {
   if (!offeredCache) return alert("No active offer right now.");
 
   const offerKey = offeredCache.key;
@@ -401,6 +441,10 @@ async function completePickup() {
   await remove(ref(db, "queue/" + accepted[0]));
 }
 
+async function acceptRide() {
+  stopOfferBeepLoop(); // stop beeping immediately on accept
+  ...
+}
 async function resetDemo() {
   const pin = doormanPinInput.value.trim();
   if (pin !== DOORMAN_PIN) return alert("Invalid PIN.");
@@ -498,6 +542,14 @@ active
 
     offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
 
+    // Start/stop continuous offer beep (only for THIS driver)
+const offeredToMe = offeredCache && isMeForOffer(offeredCache.val);
+
+if (offeredToMe) {
+  startOfferBeepLoop(25000);
+} else {
+  stopOfferBeepLoop();
+}
     // 🔔 Step 2: play tone when MY driver becomes OFFERED (only once per offer)
 if (myDriverKey && offeredCache && offeredCache.key === myDriverKey) {
   const mine = (snap.val() || {})[myDriverKey];
