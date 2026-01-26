@@ -483,6 +483,14 @@ active
 
     offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
 
+    // Start/stop continuous offer beep (only for THIS driver)
+const offeredToMe = offeredCache && myDriverKey && isMeForOffer(offeredCache.val);
+
+if (offeredToMe) {
+  startOfferBeepLoop(25000);
+} else {
+  stopOfferBeepLoop();
+}
     refreshAcceptUI();
     calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
   });
