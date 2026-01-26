@@ -516,8 +516,7 @@ function subscribeQueue() {
     
     // Render stable order by joinedAt
   // Render stable order by joinedAt (ACTIVE only, so LEFT drivers disappear)
-active
-  .slice()
+active.slice()  
   .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
   .forEach(([k, v], i) => {
     const li = document.createElement("li");
