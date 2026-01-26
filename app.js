@@ -67,6 +67,15 @@ let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 // { key, val } for the *single* active offer (if any)
 let offeredCache = null;
 
+// ---------- Offer beep (continuous up to 25s) ----------
+let audioCtx = null;
+let audioUnlocked = false;
+
+let offerBeepIntervalId = null;
+let offerBeepStopTimeoutId = null;
+
+// Track which offer we've already started beeping for (prevents re-start every render)
+let lastBeepOfferStartedAt = null;
 
 // ---------- Helpers (SINGLE COPY ONLY) ----------
 function norm(s) {
