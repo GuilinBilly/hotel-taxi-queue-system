@@ -213,6 +213,8 @@ async function expireOffersNow() {
   );
 }
 
+
+
 // ---------- Driver actions ----------
 async function joinQueue() {
   try {
@@ -441,6 +443,8 @@ function subscribeQueue() {
 
     offeredCache = null;
     refreshAcceptUI();
+    stopOfferBeepLoop();   // ✅ add this
+    return;                // ✅ add this (important)
   }
 }
 
