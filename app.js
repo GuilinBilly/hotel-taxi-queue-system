@@ -133,6 +133,9 @@ function unlockAudio() {
     console.warn("Audio unlock blocked:", e);
   });
 }
+// expose for Safari console + some environments
+window.unlockAudio = unlockAudio;
+window.playOfferTone = playOfferTone;
 
 function playOfferTone() {
   if (!audioCtx || !audioUnlocked) return;
