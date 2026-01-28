@@ -157,6 +157,21 @@ function playOfferTone() {
   }
 }
 
+function unlockAudio() {
+  if (audioUnlocked) return;
+
+  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+
+  // Play a silent buffer to unlock audio
+  const buffer = audioCtx.createBuffer(1, 1, 22050);
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(audioCtx.destination);
+  source.start(0);
+
+  audioUnlocked = true;
+  console.log("🔓 Audio unlocked");
+}
 function stopOfferBeepLoop() {
   if (offerBeepIntervalId) {
     clearInterval(offerBeepIntervalId);
@@ -219,6 +234,7 @@ async function expireOffersNow() {
 
 // ---------- Driver actions ----------
 async function joinQueue() {
+   unlockAudio(); // 🔑 required
   try {
     console.log("joinQueue clicked");
 
@@ -337,6 +353,7 @@ const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT
   });
 }
 async function acceptRide() {
+  unlockAudio(); // 🔑 required
   if (!offeredCache) return alert("No active offer right now.");
 
   const offerKey = offeredCache.key;
