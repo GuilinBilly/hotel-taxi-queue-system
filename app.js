@@ -160,21 +160,7 @@ function playOfferTone() {
   }
 }
 
-function unlockAudio() {
-  if (audioUnlocked) return;
 
-  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-
-  // Play a silent buffer to unlock audio
-  const buffer = audioCtx.createBuffer(1, 1, 22050);
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-  source.connect(audioCtx.destination);
-  source.start(0);
-
-  audioUnlocked = true;
-  console.log("🔓 Audio unlocked");
-}
 function stopOfferBeepLoop() {
   if (offerBeepIntervalId) {
     clearInterval(offerBeepIntervalId);
