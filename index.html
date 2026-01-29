@@ -1,74 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hotel Taxi Queue System</title>
-  <link rel="stylesheet" href="style.css">
+
+  <!-- If you have style.css, keep this line. If not, remove it. -->
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+  <header class="header">
+    <h1>Hotel Taxi Queue System</h1>
+    <p class="sub">Real-time taxi queue &amp; dispatch (HTQS)</p>
+  </header>
 
-<header class="header">
-  <h1>Hotel Taxi Queue System</h1>
-  <p class="subtitle">Real-time taxi queue & dispatch (HTQS)</p>
-</header>
+  <main class="container">
+    <!-- Driver Check-In -->
+    <section class="card section driver" aria-labelledby="driver-title">
+      <h2 id="driver-title">Driver Check-In</h2>
+      <p class="hint">Enter your info, then tap <strong>Join Queue</strong>.</p>
 
-<main class="container">
+      <div class="row">
+        <input
+          id="driverName"
+          class="input"
+          placeholder="Driver name (e.g., Billy)"
+          autocomplete="off"
+        />
 
-  <!-- Driver Check-In -->
-<section class="card section driver">
-  <h2>Driver Check-In</h2>
+        <input
+          id="driverColor"
+          class="input"
+          placeholder="Car color (e.g., Black)"
+          autocomplete="off"
+        />
 
-  <div class="row">
-    <input
-      id="driverName"
-      class="input"
-      placeholder="Driver name (e.g., Billy)"
-      autocomplete="off"
-    >
+        <input
+          id="driverPlate"
+          class="input"
+          placeholder="Cab Number (e.g., 762)"
+          autocomplete="off"
+        />
+      </div>
 
-    <input
-      id="driverColor"
-      class="input"
-      placeholder="Car color (e.g., Black)"
-      autocomplete="off"
-    >
+      <div class="row actions">
+        <button id="joinBtn" class="btn">Join Queue</button>
+        <button id="leaveBtn" class="btn" disabled>Leave Queue</button>
+        <button id="acceptBtn" class="btn outline" disabled>Accept Ride</button>
 
-    <input
-      id="driverPlate"
-      class="input"
-      placeholder="Cab Number (e.g. 762)"
-      autocomplete="off"
-    >
-  </div>
-</section>
+        <!-- status text updated by JS -->
+        <span id="offerInfo" class="status" aria-live="polite"></span>
+      </div>
+    </section>
 
-<!-- Live Queue -->
-<section class="card section queue">
-  <h2>Live Queue</h2>
-  <ul id="queueList" class="queue"></ul>
-</section>
+    <!-- Live Queue -->
+    <section class="card section queue" aria-labelledby="queue-title">
+      <h2 id="queue-title">Live Queue</h2>
+      <ul id="queueList" class="queue"></ul>
+    </section>
 
-<!-- Doorman Control -->
-<section class="card section doorman">
-  <h2>Doorman Control</h2>
+    <!-- Doorman Control -->
+    <section class="card section doorman" aria-labelledby="doorman-title">
+      <h2 id="doorman-title">Doorman Control</h2>
+      <p class="hint">PIN required to dispatch.</p>
 
-  <div class="row">
-    <input
-      id="doormanPin"
-      class="input"
-      placeholder="Enter doorman PIN"
-      type="password"
-      inputmode="numeric"
-    >
+      <div class="row">
+        <input
+          id="doormanPin"
+          class="input"
+          placeholder="Enter doorman PIN"
+          type="password"
+          inputmode="numeric"
+          autocomplete="off"
+        />
 
-    <button id="callNextBtn" class="btn danger">Call Next Taxi</button>
-    <button id="completeBtn" class="btn">Complete Pickup</button>
-    <button id="resetBtn" class="btn danger">Reset Demo</button>
-  </div>
-</section>
-</main>
+        <button id="callNextBtn" class="btn danger">Call Next Taxi</button>
+        <button id="completeBtn" class="btn">Complete Pickup</button>
+        <button id="resetBtn" class="btn danger">Reset Demo</button>
+      </div>
 
-<script type="module" src="app.js"></script>
+      <!-- optional box for JS messages if your app uses one -->
+      <div id="calledBox" class="called" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <!-- IMPORTANT: keep this at the very bottom so elements exist before app.js runs -->
+  <script type="module" src="app.js"></script>
 </body>
 </html>
