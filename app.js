@@ -423,12 +423,6 @@ async function resetDemo() {
   refreshAcceptUI();
 }
 
-console.log("✅ app.js loaded", {
-  hasUnlock: typeof unlockAudio === "function",
-  hasBeepStop: typeof stopOfferBeepLoop === "function",
-  hasAccept: typeof acceptRide === "function",
-});
-
 // ---------- Live UI render ----------
 
 // Keep exactly ONE active listener
@@ -525,6 +519,11 @@ if (offeredToMe) {
   });
 }
 
+console.log("✅ app.js loaded", {
+  hasUnlock: typeof unlockAudio === "function",
+  hasBeepStop: typeof stopOfferBeepLoop === "function",
+  hasAccept: typeof acceptRide === "function",
+});
 // Call it ONCE
 subscribeQueue();
 
