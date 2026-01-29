@@ -23,28 +23,9 @@
       <p class="hint">Enter your info, then tap <strong>Join Queue</strong>.</p>
 
       <div class="row">
-        <input
-          id="driverName"
-          class="input"
-          placeholder="Driver name (e.g., Billy)"
-          autocomplete="off"
-        />
-
-        <input
-          id="driverColor"
-          class="input"
-          placeholder="Car color (e.g., Black)"
-          autocomplete="off"
-        />
-
-        <input
-          id="driverPlate"
-          class="input"
-          placeholder="Cab Number (e.g., 762)"
-          autocomplete="off"
-        />
-      </div>
-
+        <input id="driverName" class="input" placeholder="Driver name (e.g., Billy)" autocomplete="name">
+        <input id="driverColor" class="input" placeholder="Car color (e.g., Black)" autocomplete="off">
+        <input id="driverPlate" class="input" placeholder="Cab number (e.g., 762)" inputmode="numeric" autocomplete="off">
       <div class="row actions">
         <button id="joinBtn" class="btn">Join Queue</button>
         <button id="leaveBtn" class="btn" disabled>Leave Queue</button>
