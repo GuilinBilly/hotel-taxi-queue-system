@@ -30,6 +30,36 @@ body {
   gap: 18px;
 }
 
+/* 1) Universal sizing: prevents 100% width + padding overflow */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* 2) Prevent any horizontal scroll/bleed */
+html, body { width: 100%; overflow-x: hidden; }
+
+/* 3) Make container a comfortable portfolio width */
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* 4) Cards should never exceed container */
+.card {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* 5) Live Queue list should never “stick out” */
+.queue {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+.queue li {
+  width: 100%;
+}
 /* Make widths behave (prevents "100% + padding" overflow) */
 *, *::before, *::after {
   box-sizing: border-box;
