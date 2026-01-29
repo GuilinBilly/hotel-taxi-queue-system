@@ -92,6 +92,22 @@ html, body {
   font-size: 26px;
 }
 
+/* Make container center its children consistently */
+.container{
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 16px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* key */
+  gap: 18px;             /* if you want spacing between cards */
+}
+
+/* Each card should fill the container width */
+.card{
+  width: 100%;
+}
 .row {
   display: flex;
   gap: 12px;
