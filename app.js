@@ -31,6 +31,20 @@ const joinBtn = document.getElementById("joinBtn");
 const leaveBtn = document.getElementById("leaveBtn");
 const acceptBtn = document.getElementById("acceptBtn");
 
+function setStatus(msg) {
+  const el = document.getElementById("statusMsg");
+  if (!el) return;           // ✅ prevents null errors
+  el.textContent = msg || "";
+}
+
+function updateEmptyState() {
+  const list = document.getElementById("queueList");
+  const empty = document.getElementById("queueEmpty");
+  if (!list || !empty) return;   // ✅ prevents null errors
+
+  empty.style.display = list.children.length ? "none" : "block";
+}
+
 function lockDriverInputs(locked) {
   driverNameInput.disabled = locked;
   driverColorInput.disabled = locked;
