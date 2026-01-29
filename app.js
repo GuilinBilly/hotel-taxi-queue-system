@@ -343,7 +343,8 @@ const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT
 }
 async function acceptRide() {
   unlockAudio(); // 🔑 required
-  if (!offeredCache) return alert("No active offer right now.");
+  stopOfferBeepLoop();  // ✅ stop immediately on click (even if accept fails)
+              if (!offeredCache) return alert("No active offer right now.");
 
   const offerKey = offeredCache.key;
 
@@ -352,6 +353,7 @@ async function acceptRide() {
   if (!snap.exists()) {
     offeredCache = null;
     refreshAcceptUI();
+    stopOfferBeepLoop(); // extra safety
     return alert("Offer no longer exists.");
   }
 
