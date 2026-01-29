@@ -422,7 +422,12 @@ async function resetDemo() {
   offeredCache = null;
   refreshAcceptUI();
 }
-// ---------- Live UI render ----------
+
+console.log("✅ app.js loaded", {
+  hasUnlock: typeof unlockAudio === "function",
+  hasBeepStop: typeof stopOfferBeepLoop === "function",
+  hasAccept: typeof acceptRide === "function",
+});
 
 // ---------- Live UI render ----------
 
