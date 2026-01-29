@@ -30,6 +30,26 @@ body {
   gap: 18px;
 }
 
+/* Make widths behave (prevents "100% + padding" overflow) */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Prevent any tiny horizontal scroll/overflow */
+html, body {
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 16px; /* gives breathing room on the sides */
+}
+
+.card {
+  width: 100%;
+  max-width: 100%;
+}
 .card{
   background: #fff;
   border-radius: 14px;
