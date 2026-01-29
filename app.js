@@ -53,7 +53,6 @@ const offerInfo = document.getElementById("offerInfo");
 joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
 acceptBtn.onclick = acceptRide;
-
 callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
@@ -76,7 +75,7 @@ let offerBeepStopTimeoutId = null;
 
 // Track which offer we've already started beeping for (prevents re-start every render)
 let lastBeepOfferStartedAt = null;
-
+let suppressOfferBeep = false; // prevents onValue from re-starting beep while we're accepting
 // ---------- Helpers (SINGLE COPY ONLY) ----------
 function norm(s) {
   return (s ?? "").toString().trim().toLowerCase();
@@ -492,7 +491,11 @@ active
     offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
 
     // Start/stop continuous offer beep (only for THIS driver)
-const offeredToMe = offeredCache && myDriverKey && isMeForOffer(offeredCache.val);
+const offeredToMe =
+  !suppressOfferBeep &&
+  offeredCache &&
+  myDriverKey &&
+  isMeForOffer(offeredCache.val);
 
 if (offeredToMe) {
   startOfferBeepLoop(25000);
