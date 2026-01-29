@@ -449,88 +449,88 @@ function subscribeQueue() {
   }
 
   unsubscribeQueue = onValue(queueRef, (snap) => {
-    // Clear UI (single render pass)
-    queueList.innerHTML = "";
-    calledBox.textContent = "";
-    offeredCache = null;
+  // Clear UI (single render pass)
+  queueList.innerHTML = "";
+  calledBox.textContent = "";
+  offeredCache = null;
 
-    if (!snap.exists()) {
+  // ✅ queue is empty right now
+  updateEmptyState();
+
+  if (!snap.exists()) {
+    refreshAcceptUI();
+    return;
+  }
+
+  const now = Date.now();
+  const data = snap.val() || {};
+  const entries = Object.entries(data);
+
+  // ✅ Your safety block (keep)
+  if (myDriverKey) {
+    const mine = data[myDriverKey];
+
+    if (!mine || mine.status === "LEFT") {
+      sessionStorage.removeItem("htqs.driverKey");
+      myDriverKey = null;
+      lockDriverInputs(false);
+
+      driverNameInput.value = "";
+      driverColorInput.value = "";
+      driverPlateInput.value = "";
+
+      offeredCache = null;
+      stopOfferBeepLoop();
       refreshAcceptUI();
+
+      // ✅ UI is empty (still), so update empty-state once
+      updateEmptyState();
       return;
     }
-
-    const now = Date.now();
-    const entries = Object.entries(snap.val() || {});
-
-    // ✅ ADD THIS BLOCK RIGHT HERE
-  if (myDriverKey) {
-  const mine = (snap.val() || {})[myDriverKey];
-
-  // ✅ clear if record is missing OR LEFT
-  if (!mine || mine.status === "LEFT") {
-    sessionStorage.removeItem("htqs.driverKey");
-    myDriverKey = null;
-    lockDriverInputs(false);
-
-    driverNameInput.value = "";
-    driverColorInput.value = "";
-    driverPlateInput.value = "";
-
-   offeredCache = null;
-   stopOfferBeepLoop();   // stop immediately
-   refreshAcceptUI();     // then update UI
-   return;
   }
-}
 
-  // now continue with your existing logic:
-  // const active = ...
-  // active.slice().sort(...).forEach(...)    
-    
-    // Active = not LEFT
-    const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT");
-    
-    // Render stable order by joinedAt
-  // Render stable order by joinedAt (ACTIVE only, so LEFT drivers disappear)
-active
-  .slice()
-  .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
-  .forEach(([k, v], i) => {
-    const li = document.createElement("li");
+  // Active = not LEFT
+  const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT");
 
-    const status = (v.status ?? "WAITING").toUpperCase();
-    li.classList.add("queue-item", `status-${status.toLowerCase()}`);
+  active
+    .slice()
+    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
+    .forEach(([k, v], i) => {
+      const li = document.createElement("li");
+      const status = (v.status ?? "WAITING").toUpperCase();
+      li.classList.add("queue-item", `status-${status.toLowerCase()}`);
 
-    li.innerHTML = `
-      <span class="pos">${i + 1}.</span>
-      <span class="driver">${v.name} ${v.carColor ?? ""} ${v.plate}</span>
-      <span class="badge">${status}</span>
-    `;
+      li.innerHTML = `
+        <span class="pos">${i + 1}.</span>
+        <span class="driver">${v.name} ${v.carColor ?? ""} ${v.plate}</span>
+        <span class="badge">${status}</span>
+      `;
 
-    queueList.appendChild(li);
-  });
-    // Cache the single active offer (oldest offerStartedAt wins)
-    const offered = entries
-      .filter(([_, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
-      .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
+      queueList.appendChild(li);
+    });
 
-    offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
+  // ✅ After render is complete (best place)
+  updateEmptyState();
 
-    // Start/stop continuous offer beep (only for THIS driver)
-const offeredToMe =
-  !suppressOfferBeep &&
-  offeredCache &&
-  myDriverKey &&
-  isMeForOffer(offeredCache.val);
+  // Cache the single active offer (oldest offerStartedAt wins)
+  const offered = entries
+    .filter(([_, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
+    .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
 
-if (offeredToMe) {
-  startOfferBeepLoop(25000);
-} else {
-  stopOfferBeepLoop();
-}
-    refreshAcceptUI();
-    calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
-  });
+  offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
+
+  const offeredToMe =
+    !suppressOfferBeep &&
+    offeredCache &&
+    myDriverKey &&
+    isMeForOffer(offeredCache.val);
+
+  if (offeredToMe) startOfferBeepLoop(25000);
+  else stopOfferBeepLoop();
+
+  refreshAcceptUI();
+  calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
+});
 }
 
 console.log("✅ app.js loaded", {
@@ -555,6 +555,7 @@ resetBtn.onclick = resetDemo;
 // Keep Accept UI updated while typing
 driverNameInput.oninput = refreshAcceptUI;
 driverPlateInput.oninput = refreshAcceptUI;
+updateEmptyState();
 
 // Optional debug helpers
 window.debug = {
