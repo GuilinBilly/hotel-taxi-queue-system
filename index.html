@@ -40,6 +40,7 @@
     <section class="card section queue" aria-labelledby="queue-title">
       <h2 id="queue-title">Live Queue</h2>
       <p class="helper">Drivers are served in order. Doorman calls the next taxi.</p>
+      <p id="queueEmpty" class="empty">No drivers waiting yet.</p>
       <ul id="queueList" class="queue"></ul>
     </section>
 
@@ -48,7 +49,7 @@
       <h2 id="doorman-title">Doorman Control</h2>
       <p class="helper">Enter PIN to dispatch the next taxi.</p>
       <p class="hint">PIN required to dispatch.</p>
-
+      <p id="statusMsg" class="status" aria-live="polite"></p>
       <div class="row">
         <input
           id="doormanPin"
