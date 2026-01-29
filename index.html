@@ -15,52 +15,57 @@
 
 <main class="container">
 
-  <section class="card">
+  <!-- Driver Check-In -->
+<section class="card section driver">
   <h2>Driver Check-In</h2>
 
   <div class="row">
-    <input id="driverName" class="input" placeholder="Driver name (e.g., Billy)" autocomplete="off">
+    <input
+      id="driverName"
+      class="input"
+      placeholder="Driver name (e.g., Billy)"
+      autocomplete="off"
+    >
 
-    <input id="driverColor" class="input" placeholder="Car color (e.g., Black)" autocomplete="off">
+    <input
+      id="driverColor"
+      class="input"
+      placeholder="Car color (e.g., Black)"
+      autocomplete="off"
+    >
 
-    <input id="driverPlate" class="input" placeholder="Cab Number (e.g. 762)" autocomplete="off">
-
-    
+    <input
+      id="driverPlate"
+      class="input"
+      placeholder="Cab Number (e.g. 762)"
+      autocomplete="off"
+    >
   </div>
+</section>
 
- <div class="row actions">
-  <button id="joinBtn" class="btn primary">Join Queue</button>
-  <button id="leaveBtn" class="btn">Leave Queue</button>
-  <button id="acceptBtn" class="btn success" disabled>Accept Ride</button>
-  <span id="offerInfo" class="hint"></span>
-</div>
-
-<div class="row">
-  <span class="hint">Tip: enter your name + plate, then Leave.</span>
-</div>
-     
-  </section>
-
-  <section class="card">
-    <h2>Live Queue</h2>
+<!-- Live Queue -->
+<section class="card section queue">
+  <h2>Live Queue</h2>
   <ul id="queueList" class="queue"></ul>
+</section>
 
-  </section>
-
-  <section class="card">
+<!-- Doorman Control -->
+<section class="card section doorman">
   <h2>Doorman Control</h2>
 
   <div class="row">
-    <input id="doormanPin" class="input" placeholder="Enter doorman PIN" type="password" inputmode="numeric">
+    <input
+      id="doormanPin"
+      class="input"
+      placeholder="Enter doorman PIN"
+      type="password"
+      inputmode="numeric"
+    >
+
     <button id="callNextBtn" class="btn danger">Call Next Taxi</button>
     <button id="completeBtn" class="btn">Complete Pickup</button>
     <button id="resetBtn" class="btn danger">Reset Demo</button>
   </div>
-
-  <p class="hint">PIN required to dispatch.</p>
-
-  <!-- NEW: shows who is currently CALLED -->
-  <div id="calledBox" class="calledBox"></div>
 </section>
 </main>
 
