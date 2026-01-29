@@ -277,6 +277,7 @@ async function joinQueue() {
   }
 }
 async function leaveQueue() {
+  stopOfferBeepLoop();
   // Must have joined from THIS device/session
   if (!myDriverKey) return alert("You haven't joined from this device yet.");
 
@@ -389,6 +390,7 @@ async function acceptRide() {
   }
 }
 async function completePickup() {
+  stopOfferBeepLoop();
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
 
   const snap = await get(queueRef);
