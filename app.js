@@ -365,6 +365,7 @@ async function acceptRide() {
     if (v.status !== "OFFERED" || (v.offerExpiresAt ?? 0) <= Date.now()) {
       offeredCache = null;
       refreshAcceptUI();
+      stopOfferBeepLoop(); // ✅ add this for symmetry
       return alert("Offer expired. Please wait for the next call.");
     }
 
