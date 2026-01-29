@@ -1,166 +1,150 @@
-* { box-sizing: border-box; }
+/* =========================
+   HTQS – Clean, stable layout
+   (Fixes “Live Queue shifted left” + removes duplicate container rules)
+   ========================= */
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
-  color: #111;
+:root{
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --text: #111;
+  --muted: #555;
+  --border: #e6e6e6;
+
+  /* Section accents (color layers) */
+  --driver: #2f7dd1;
+  --queue:  #6f42c1;
+  --doorman:#c92a2a;
+
+  --shadow: 0 10px 24px rgba(0,0,0,0.08);
 }
 
+* { box-sizing: border-box; }
+
+html, body{
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body{
+  font-family: Arial, sans-serif;
+  color: var(--text);
+  background: radial-gradient(1200px 500px at 50% 0%, #ffffff 0%, var(--bg) 65%);
+}
+
+/* Header */
 .header{
   text-align: center;
-  padding: 24px 12px 8px;
+  padding: 28px 16px 10px;
 }
 
 .header h1{
   margin: 0;
   font-size: 34px;
+  letter-spacing: 0.2px;
 }
 
 .subtitle{
   margin: 8px 0 0;
-  color: #444;
+  color: var(--muted);
 }
 
+/* ✅ ONE container rule (no duplicates) */
 .container{
-  max-width: 720px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 12px;
+  padding: 0 16px 28px;
   display: grid;
   gap: 18px;
 }
 
-/* 1) Universal sizing: prevents 100% width + padding overflow */
-*, *::before, *::after { box-sizing: border-box; }
-
-/* 2) Prevent any horizontal scroll/bleed */
-html, body { width: 100%; overflow-x: hidden; }
-
-/* 3) Make container a comfortable portfolio width */
-.container {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 0 16px;
-}
-
-/* 4) Cards should never exceed container */
-.card {
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-/* 5) Live Queue list should never “stick out” */
-.queue {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  width: 100%;
-}
-.queue li {
-  width: 100%;
-}
-/* Make widths behave (prevents "100% + padding" overflow) */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-/* Prevent any tiny horizontal scroll/overflow */
-html, body {
-  overflow-x: hidden;
-}
-
-.container {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 0 16px; /* gives breathing room on the sides */
-}
-
-.card {
-  width: 100%;
-  max-width: 100%;
-}
+/* Cards */
 .card{
-  background: #fff;
-  border-radius: 14px;
+  width: 100%;
+  background: var(--card);
+  border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(0,0,0,0.03);
 }
 
 .card h2{
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   font-size: 26px;
 }
 
-/* Make container center its children consistently */
-.container{
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 0 16px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;   /* key */
-  gap: 18px;             /* if you want spacing between cards */
+.hint{
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--muted);
 }
 
-/* Each card should fill the container width */
-.card{
-  width: 100%;
+/* Section “color layers” (subtle but distinct) */
+.section.driver{
+  border-left: 7px solid var(--driver);
+  background: linear-gradient(90deg, rgba(47,125,209,0.07), rgba(255,255,255,0) 55%);
 }
-.row {
+
+.section.queue{
+  border-left: 7px solid var(--queue);
+  background: linear-gradient(90deg, rgba(111,66,193,0.07), rgba(255,255,255,0) 55%);
+}
+
+.section.doorman{
+  border-left: 7px solid var(--doorman);
+  background: linear-gradient(90deg, rgba(201,42,42,0.07), rgba(255,255,255,0) 55%);
+}
+
+/* Rows + Inputs */
+.row{
   display: flex;
-  gap: 12px;
   flex-wrap: wrap;
+  gap: 12px;
   align-items: center;
-}
-
-.input {
-  flex: 1;
-  min-width: 180px;
 }
 
 .input{
-  width: min(420px, 100%);
+  flex: 1 1 240px;
+  min-width: 180px;
+  width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #d9d9d9;
   border-radius: 10px;
   font-size: 16px;
+  outline: none;
+  background: #fff;
 }
 
-.actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
+.input:focus{
+  border-color: #b8b8b8;
 }
 
-.btn {
-  white-space: nowrap;
-  flex: 0 0 auto;
-}
+/* Buttons */
 .btn{
   padding: 10px 14px;
-  border: 1px solid #ddd;
+  border: 1px solid #d0d0d0;
   border-radius: 10px;
   background: #fff;
   cursor: pointer;
   font-size: 16px;
+  white-space: nowrap;
 }
 
 .btn:hover{ filter: brightness(0.97); }
-
-.btn.primary{
-  border-color: #222;
+.btn:disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
+.btn.primary{ border-color: #222; }
 .btn.danger{
-  border-color: #c33;
+  border: 2px solid var(--doorman);
+  color: var(--doorman);
 }
-
-.hint{
-  font-size: 13px;
-  color: #555;
+.btn.danger:hover{
+  background: var(--doorman);
+  color: #fff;
 }
 
 /* Queue list */
@@ -175,60 +159,20 @@ html, body {
 
 .queue li{
   border: 1px solid #eee;
-  border-radius: 10px;
-  padding: 10px 12px;
-  text-align: left;
-}
-
-.calledBox {
-  margin-top: 12px;
-  padding: 12px;
   border-radius: 12px;
-  background: #f7f7f7;
-  font-size: 16px;
-}
-.statusTag {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  border: 1px solid #ddd;
-  margin-left: 10px;
-}
-.btn {
-  white-space: nowrap;
-  flex: 0 0 auto;
-}
-.btn { 
-  white-space: nowrap;
-  flex: 0 0 auto;
+  padding: 10px 12px;
 }
 
-.btn.success {
-  border: 1px solid #22c55e;
-}
-.btn.success:hover {
-  background: #f0fdf4;
-}
-
-/* Queue item layout */
+/* Optional: if your JS renders a richer “queue-item” layout */
 .queue-item{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.queue-item .pos{
-  opacity:0.7;
-  min-width: 2ch;
-}
-
-.queue-item .driver{
-  flex:1;
-}
-
-/* Badge base */
+.queue-item .pos{ opacity: 0.7; min-width: 2ch; }
+.queue-item .driver{ flex: 1; }
 .queue-item .badge{
   font-size: 12px;
   padding: 4px 10px;
@@ -238,27 +182,13 @@ html, body {
   font-weight: 600;
 }
 
-/* Status variants */
-.queue-item.status-waiting .badge{
-  background: #f5f5f5;
-}
+.queue-item.status-waiting .badge{ background:#f5f5f5; }
+.queue-item.status-offered  .badge{ background:#fff3cd; border-color:#f0d38a; }
+.queue-item.status-accepted .badge{ background:#d1f7d6; border-color:#8fdaa0; }
 
-.queue-item.status-offered .badge{
-  background: #fff3cd;
-  border-color: #f0d38a;
-}
-
-.queue-item.status-accepted .badge{
-  background: #d1f7d6;
-  border-color: #8fdaa0;
-}
-
-.btn.danger {
-  border: 2px solid #b00020;
-  color: #b00020;
-  background: white;
-}
-.btn.danger:hover {
-  background: #b00020;
-  color: white;
+/* Small screens */
+@media (max-width: 520px){
+  .header h1{ font-size: 28px; }
+  .card{ padding: 16px; }
+  .card h2{ font-size: 22px; }
 }
