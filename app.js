@@ -341,43 +341,53 @@ const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT
   });
 }
 async function acceptRide() {
-  unlockAudio(); // 🔑 required
-  stopOfferBeepLoop();  // ✅ stop immediately on click (even if accept fails)
-              if (!offeredCache) return alert("No active offer right now.");
+  unlockAudio();                 // 🔑 user gesture
+  suppressOfferBeep = true;       // ✅ prevent re-start while we process
+  stopOfferBeepLoop();            // ✅ stop immediately on click
 
-  const offerKey = offeredCache.key;
+  try {
+    if (!offeredCache) return alert("No active offer right now.");
 
-  // Fresh read (reliability)
-  const snap = await get(ref(db, "queue/" + offerKey));
-  if (!snap.exists()) {
+    const offerKey = offeredCache.key;
+
+    // Fresh read (reliability)
+    const snap = await get(ref(db, "queue/" + offerKey));
+    if (!snap.exists()) {
+      offeredCache = null;
+      refreshAcceptUI();
+      return alert("Offer no longer exists.");
+    }
+
+    const v = snap.val();
+
+    // Must still be valid
+    if (v.status !== "OFFERED" || (v.offerExpiresAt ?? 0) <= Date.now()) {
+      offeredCache = null;
+      refreshAcceptUI();
+      return alert("Offer expired. Please wait for the next call.");
+    }
+
+    // Must match the driver typing name+plate
+    if (!isMeForOffer(v)) {
+      return alert("This offer is not for you. Check your Name + Plate.");
+    }
+
+    await update(ref(db, "queue/" + offerKey), {
+      pin: WRITE_PIN,
+      status: "ACCEPTED",
+      offerStartedAt: null,
+      offerExpiresAt: null
+    });
+
+    // Local cleanup (UI will also refresh from onValue)
     offeredCache = null;
     refreshAcceptUI();
+  } finally {
+    // Always restore normal behavior
+    suppressOfferBeep = false;
     stopOfferBeepLoop(); // extra safety
-    return alert("Offer no longer exists.");
   }
-
-  const v = snap.val();
-
-  // Must still be valid
-  if (v.status !== "OFFERED" || (v.offerExpiresAt ?? 0) <= Date.now()) {
-    offeredCache = null;
-    refreshAcceptUI();
-    return alert("Offer expired. Please wait for the next call.");
-  }
-
-  // Must match the driver typing name+plate
-  if (!isMeForOffer(v)) {
-    return alert("This offer is not for you. Check your Name + Plate.");
-  }
-
-  await update(ref(db, "queue/" + offerKey), {
-    pin: WRITE_PIN,
-    status: "ACCEPTED",
-    offerStartedAt: null,
-    offerExpiresAt: null
-  });
 }
-
 async function completePickup() {
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
 
