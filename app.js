@@ -491,6 +491,7 @@ function subscribeQueue() {
       refreshAcceptUI();
 
       // ✅ UI is empty (still), so update empty-state once
+      setOfferPulse(false);
       updateEmptyState();
       return;
     }
