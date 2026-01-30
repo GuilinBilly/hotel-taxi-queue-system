@@ -533,9 +533,8 @@ function subscribeQueue() {
     myDriverKey &&
     isMeForOffer(offeredCache.val);
 
-  if (offeredToMe) startOfferBeepLoop(25000);
-  else stopOfferBeepLoop();
-
+    stopOfferBeepLoop();           // make 100% sure sound is OFF
+    setOfferPulse(!!offeredToMe);  // turn pulse on/off
   refreshAcceptUI();
   calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
 });
