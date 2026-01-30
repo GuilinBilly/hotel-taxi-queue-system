@@ -45,6 +45,13 @@ function updateEmptyState() {
   empty.style.display = list.children.length ? "none" : "block";
 }
 
+function setOfferPulse(on) {
+  const acceptBtnEl = document.getElementById("acceptBtn");
+  const driverCardEl = document.querySelector(".card.driver");
+
+  if (acceptBtnEl) acceptBtnEl.classList.toggle("is-offered", !!on);
+  if (driverCardEl) driverCardEl.classList.toggle("is-offered", !!on);
+}
 function lockDriverInputs(locked) {
   driverNameInput.disabled = locked;
   driverColorInput.disabled = locked;
