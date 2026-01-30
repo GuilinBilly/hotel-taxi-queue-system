@@ -192,3 +192,40 @@ body{
   .card{ padding: 16px; }
   .card h2{ font-size: 22px; }
 }
+/* ============================
+   Premium visual pulse (no sound)
+   ============================ */
+
+@keyframes softPulseGlow {
+  0%   { box-shadow: 0 0 0 0 rgba(70, 120, 255, 0.0); }
+  50%  { box-shadow: 0 0 0 10px rgba(70, 120, 255, 0.14); }
+  100% { box-shadow: 0 0 0 0 rgba(70, 120, 255, 0.0); }
+}
+
+/* Pulse the Accept button when an offer is for THIS driver */
+#acceptBtn.is-offered {
+  animation: softPulseGlow 1.6s ease-in-out infinite;
+}
+
+/* Add a subtle “ring” around Driver Check-In card */
+.card.driver.is-offered {
+  position: relative;
+}
+
+.card.driver.is-offered::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 16px;
+  pointer-events: none;
+  animation: softPulseGlow 1.6s ease-in-out infinite;
+}
+
+/* Accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  #acceptBtn.is-offered,
+  .card.driver.is-offered::after {
+    animation: none;
+    box-shadow: 0 0 0 6px rgba(70, 120, 255, 0.12);
+  }
+}
