@@ -131,6 +131,19 @@ body{
   white-space: nowrap;
 }
 
+.toggle{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:14px;
+  color:#333;
+  margin-top:8px;
+}
+.toggle input{
+  width:18px;
+  height:18px;
+}
+
 .btn:hover{ filter: brightness(0.97); }
 .btn:disabled{
   opacity: 0.45;
