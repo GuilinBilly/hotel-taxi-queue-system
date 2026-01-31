@@ -61,6 +61,24 @@ function lockDriverInputs(locked) {
   leaveBtn.disabled = !locked; // optional but recommended
 }
 
+let soundEnabled = true;
+
+function loadSoundPref() {
+  const saved = localStorage.getItem("htqs.soundEnabled");
+  soundEnabled = saved === null ? true : saved === "true";
+  const toggle = document.getElementById("soundToggle");
+  if (toggle) toggle.checked = soundEnabled;
+}
+
+function wireSoundToggle() {
+  const toggle = document.getElementById("soundToggle");
+  if (!toggle) return;
+  toggle.addEventListener("change", () => {
+    soundEnabled = toggle.checked;
+    localStorage.setItem("htqs.soundEnabled", String(soundEnabled));
+    if (!soundEnabled) stopOfferBeepLoop(); // safety: stop immediately when muted
+  });
+}
 const callNextBtn = document.getElementById("callNextBtn");
 const completeBtn = document.getElementById("completeBtn");
 const doormanPinInput = document.getElementById("doormanPin");
@@ -69,6 +87,8 @@ const queueList = document.getElementById("queueList");
 const calledBox = document.getElementById("calledBox");
 const resetBtn = document.getElementById("resetBtn");
 const offerInfo = document.getElementById("offerInfo");
+
+
 
 //  Hook up UI events (put right here)
 joinBtn.onclick = joinQueue;
@@ -97,6 +117,8 @@ let offerBeepStopTimeoutId = null;
 // Track which offer we've already started beeping for (prevents re-start every render)
 let lastBeepOfferStartedAt = null;
 let suppressOfferBeep = false; // prevents onValue from re-starting beep while we're accepting
+
+
 // ---------- Helpers (SINGLE COPY ONLY) ----------
 function norm(s) {
   return (s ?? "").toString().trim().toLowerCase();
@@ -239,8 +261,6 @@ async function expireOffersNow() {
   );
 }
 
-
-
 // ---------- Driver actions ----------
 async function joinQueue() {
    unlockAudio(); // 🔑 required
@@ -366,6 +386,8 @@ async function acceptRide() {
   unlockAudio();                 // 🔑 user gesture
   suppressOfferBeep = true;       // ✅ prevent re-start while we process
   stopOfferBeepLoop();            // ✅ stop immediately on click
+  loadSoundPref();
+  wireSoundToggle();  
 
   try {
     if (!offeredCache) return alert("No active offer right now.");
@@ -527,15 +549,20 @@ function subscribeQueue() {
 
   offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
 
-  const offeredToMe =
-    !suppressOfferBeep &&
-    offeredCache &&
-    myDriverKey &&
-    isMeForOffer(offeredCache.val);
+ const offeredToMe =
+  !!offeredCache &&
+  !!myDriverKey &&
+  isMeForOffer(offeredCache.val);
 
-    stopOfferBeepLoop();           // make 100% sure sound is OFF
-    setOfferPulse(!!offeredToMe);  // turn pulse on/off
-  refreshAcceptUI();
+setOfferPulse(offeredToMe); // ✅ ONE place only
+
+if (offeredToMe && soundEnabled && !suppressOfferBeep) {
+  startOfferBeepLoop(25000);
+} else {
+  stopOfferBeepLoop();
+}
+
+refreshAcceptUI();    
   calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
 });
 }
