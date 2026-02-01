@@ -19,6 +19,25 @@ const firebaseConfig = {
   appId: "1:900324034014:web:4e6cf9b46567a9ee17494f"
 };
 
+let isConnected = true;
+
+function wireConnectionBadge() {
+  // RTDB special path for connection status
+  const connectedRef = ref(db, ".info/connected");
+
+  onValue(connectedRef, (snap) => {
+    isConnected = snap.val() === true;
+
+    // Optional: show a small banner / console hint
+    const el = document.getElementById("netStatus");
+    if (el) {
+      el.textContent = isConnected ? "Online" : "Reconnecting…";
+      el.classList.toggle("offline", !isConnected);
+    }
+
+    if (!isConnected) console.warn("⚠️ RTDB disconnected — UI may be stale until reconnect");
+  });
+}
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const queueRef = ref(db, "queue");
