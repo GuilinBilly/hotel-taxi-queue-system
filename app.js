@@ -508,11 +508,7 @@ function subscribeQueue() {
       return;
     }
 
-    // Truly empty queue (online)
-    queueList.innerHTML = "";
-    calledBox.textContent = "";
-    offeredCache = null;
-
+    
     updateEmptyState();
     refreshAcceptUI();
     return;
