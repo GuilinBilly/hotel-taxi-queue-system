@@ -578,6 +578,9 @@ function subscribeQueue() {
 
 setOfferPulse(offeredToMe); // ✅ ONE place only
 
+function canPlayAlerts() {
+  return soundEnabled && !document.hidden;
+}    
 if (offeredToMe && soundEnabled && !suppressOfferBeep) {
   startOfferBeepLoop(25000);
 } else {
@@ -595,6 +598,7 @@ console.log("✅ app.js loaded", {
   hasAccept: typeof acceptRide === "function",
 });
 // Call it ONCE
+wireConnectionBadge();
 subscribeQueue();
 
 // Expire loop (single place)
