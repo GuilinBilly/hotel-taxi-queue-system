@@ -608,7 +608,7 @@ if (offeredToMe && canPlayAlerts() && !suppressOfferBeep) {
 refreshAcceptUI();    
   calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
 });
-}
+
 
 console.log("✅ app.js loaded", {
   hasUnlock: typeof unlockAudio === "function",
