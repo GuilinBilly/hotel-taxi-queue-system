@@ -500,31 +500,39 @@ function subscribeQueue() {
   }
 
  unsubscribeQueue = onValue(queueRef, (snap) => {
-  // If snapshot is empty...
+
+  // 1) Snapshot empty
   if (!snap.exists()) {
-    // If we're offline/reconnecting, do NOT wipe UI (avoid "everything disappeared")
+
+    // If offline/reconnecting: keep whatever UI we already had
     if (!isConnected) {
       console.warn("⚠️ Offline/reconnecting: keeping last UI");
       return;
     }
 
+    // Online + truly empty queue → NOW it’s safe to clear
+    queueList.innerHTML = "";
+    calledBox.textContent = "";
+    offeredCache = null;
+
+    stopOfferBeepLoop();     // optional but good safety
+    setOfferPulse(false);    // optional
     updateEmptyState();
     refreshAcceptUI();
     return;
   }
 
-  // From here down: we have data (online)
-  // Clear UI for a clean render pass
+  // 2) We have data (online)
+  const data = snap.val() || {};
+  const entries = Object.entries(data);
+  const now = Date.now();
+
+  // Now do your clean render pass
   queueList.innerHTML = "";
   calledBox.textContent = "";
   offeredCache = null;
 
-  // ...then continue with your normal render logic using snap.val()
-  const now = Date.now();
-  const data = snap.val() || {};
-  const entries = Object.entries(data);
-
-  // (keep the rest of your existing code below...)
+  // ...rest of your existing render logic...
 });
   
   // ✅ Your safety block (keep)
