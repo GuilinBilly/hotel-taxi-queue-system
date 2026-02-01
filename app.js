@@ -88,8 +88,6 @@ const calledBox = document.getElementById("calledBox");
 const resetBtn = document.getElementById("resetBtn");
 const offerInfo = document.getElementById("offerInfo");
 
-
-
 //  Hook up UI events (put right here)
 joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
