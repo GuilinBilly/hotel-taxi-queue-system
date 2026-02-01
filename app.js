@@ -457,7 +457,7 @@ async function resetDemo() {
   if (!confirm("Reset demo? This will clear the entire queue.")) return;
 
    
-  // Wipe /queue completely (delete children one-by-one so rules on /queue/$driverId apply)
+ // Wipe /queue completely (delete children one-by-one so rules on /queue/$driverId apply)
   const snap = await get(queueRef);
   if (!snap.exists()) return;
 
