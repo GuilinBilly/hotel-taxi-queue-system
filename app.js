@@ -508,10 +508,31 @@ function subscribeQueue() {
   // ✅ queue is empty right now
   updateEmptyState();
 
-  if (!snap.exists()) {
-    refreshAcceptUI();
+  // If snapshot is empty...
+if (!snap.exists()) {
+  // If we're offline/reconnecting, do NOT wipe UI (avoid "everything disappeared")
+  if (!isConnected) {
+    console.warn("⚠️ Offline/reconnecting: keeping last UI");
     return;
   }
+
+  // Truly empty queue (online) → now it's safe to clear UI
+  queueList.innerHTML = "";
+  calledBox.textContent = "";
+  offeredCache = null;
+
+  updateEmptyState();
+  refreshAcceptUI();
+  return;
+}
+
+// From here down: we have data (online)
+// Clear UI for a clean render pass
+queueList.innerHTML = "";
+calledBox.textContent = "";
+offeredCache = null;
+
+// ...then continue with your normal render logic using snap.val()
 
   const now = Date.now();
   const data = snap.val() || {};
@@ -581,7 +602,7 @@ setOfferPulse(offeredToMe); // ✅ ONE place only
 function canPlayAlerts() {
   return soundEnabled && !document.hidden;
 }    
-if (offeredToMe && soundEnabled && !suppressOfferBeep) {
+if (offeredToMe && canPlayAlerts() && !suppressOfferBeep) {
   startOfferBeepLoop(25000);
 } else {
   stopOfferBeepLoop();
@@ -600,6 +621,10 @@ console.log("✅ app.js loaded", {
 // Call it ONCE
 wireConnectionBadge();
 subscribeQueue();
+
+// Unlock audio on the first user interaction anywhere (helps iOS/Android reliability)
+window.addEventListener("pointerdown", unlockAudio, { once: true });
+window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
 
 // Expire loop (single place)
 setInterval(expireOffersNow, 1000);
