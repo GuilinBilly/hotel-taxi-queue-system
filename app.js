@@ -74,10 +74,15 @@ function wireSoundToggle() {
   const toggle = document.getElementById("soundToggle");
   if (!toggle) return;
   toggle.addEventListener("change", () => {
-    soundEnabled = toggle.checked;
-    localStorage.setItem("htqs.soundEnabled", String(soundEnabled));
-    if (!soundEnabled) stopOfferBeepLoop(); // safety: stop immediately when muted
-  });
+  soundEnabled = toggle.checked;
+  localStorage.setItem("htqs.soundEnabled", String(soundEnabled));
+
+  if (soundEnabled) {
+    unlockAudio(); // ✅ ensure allowed immediately
+  } else {
+    stopOfferBeepLoop(); // safety
+  }
+});
 }
 const callNextBtn = document.getElementById("callNextBtn");
 const completeBtn = document.getElementById("completeBtn");
