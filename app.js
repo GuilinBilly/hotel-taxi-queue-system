@@ -508,7 +508,6 @@ function subscribeQueue() {
       return;
     }
 
-    
     updateEmptyState();
     refreshAcceptUI();
     return;
