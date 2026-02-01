@@ -27,6 +27,17 @@ html, body{
   overflow-x: hidden;
 }
 
+.netStatus{
+  font-size: 12px;
+  opacity: 0.7;
+  margin: 6px auto 0;
+  width: fit-content;
+}
+.netStatus.offline{
+  opacity: 1;
+  font-weight: 600;
+}
+
 body{
   font-family: Arial, sans-serif;
   color: var(--text);
