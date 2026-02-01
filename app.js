@@ -527,14 +527,11 @@ function subscribeQueue() {
   const entries = Object.entries(data);
   const now = Date.now();
 
-  // Now do your clean render pass
+  // Clean render pass
   queueList.innerHTML = "";
   calledBox.textContent = "";
   offeredCache = null;
 
-  // ...rest of your existing render logic...
-});
-  
   // ✅ Your safety block (keep)
   if (myDriverKey) {
     const mine = data[myDriverKey];
@@ -552,7 +549,6 @@ function subscribeQueue() {
       stopOfferBeepLoop();
       refreshAcceptUI();
 
-      // ✅ UI is empty (still), so update empty-state once
       setOfferPulse(false);
       updateEmptyState();
       return;
@@ -579,7 +575,6 @@ function subscribeQueue() {
       queueList.appendChild(li);
     });
 
-  // ✅ After render is complete (best place)
   updateEmptyState();
 
   // Cache the single active offer (oldest offerStartedAt wins)
@@ -589,26 +584,28 @@ function subscribeQueue() {
 
   offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
 
- const offeredToMe =
-  !!offeredCache &&
-  !!myDriverKey &&
-  isMeForOffer(offeredCache.val);
+  const offeredToMe =
+    !!offeredCache &&
+    !!myDriverKey &&
+    isMeForOffer(offeredCache.val);
 
-setOfferPulse(offeredToMe); // ✅ ONE place only
+  setOfferPulse(offeredToMe);
 
-function canPlayAlerts() {
-  return soundEnabled && !document.hidden;
-}    
-if (offeredToMe && canPlayAlerts() && !suppressOfferBeep) {
-  startOfferBeepLoop(25000);
-} else {
-  stopOfferBeepLoop();
-}
+  // (Optional) move this function outside later — but it's OK here for now
+  function canPlayAlerts() {
+    return soundEnabled && !document.hidden;
+  }
 
-refreshAcceptUI();    
+  if (offeredToMe && canPlayAlerts() && !suppressOfferBeep) {
+    startOfferBeepLoop(25000);
+  } else {
+    stopOfferBeepLoop();
+  }
+
+  refreshAcceptUI();
   calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
-});
 
+}); // ✅ THE ONLY closing. Must be the very last line of this block.
 
 console.log("✅ app.js loaded", {
   hasUnlock: typeof unlockAudio === "function",
