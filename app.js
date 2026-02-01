@@ -499,45 +499,39 @@ function subscribeQueue() {
     unsubscribeQueue();
   }
 
-  unsubscribeQueue = onValue(queueRef, (snap) => {
-  // Clear UI (single render pass)
-  queueList.innerHTML = "";
-  calledBox.textContent = "";
-  offeredCache = null;
-
-  // ✅ queue is empty right now
-  updateEmptyState();
-
+ unsubscribeQueue = onValue(queueRef, (snap) => {
   // If snapshot is empty...
-if (!snap.exists()) {
-  // If we're offline/reconnecting, do NOT wipe UI (avoid "everything disappeared")
-  if (!isConnected) {
-    console.warn("⚠️ Offline/reconnecting: keeping last UI");
+  if (!snap.exists()) {
+    // If we're offline/reconnecting, do NOT wipe UI (avoid "everything disappeared")
+    if (!isConnected) {
+      console.warn("⚠️ Offline/reconnecting: keeping last UI");
+      return;
+    }
+
+    // Truly empty queue (online)
+    queueList.innerHTML = "";
+    calledBox.textContent = "";
+    offeredCache = null;
+
+    updateEmptyState();
+    refreshAcceptUI();
     return;
   }
 
-  // Truly empty queue (online) → now it's safe to clear UI
+  // From here down: we have data (online)
+  // Clear UI for a clean render pass
   queueList.innerHTML = "";
   calledBox.textContent = "";
   offeredCache = null;
 
-  updateEmptyState();
-  refreshAcceptUI();
-  return;
-}
-
-// From here down: we have data (online)
-// Clear UI for a clean render pass
-queueList.innerHTML = "";
-calledBox.textContent = "";
-offeredCache = null;
-
-// ...then continue with your normal render logic using snap.val()
-
+  // ...then continue with your normal render logic using snap.val()
   const now = Date.now();
   const data = snap.val() || {};
   const entries = Object.entries(data);
 
+  // (keep the rest of your existing code below...)
+});
+  
   // ✅ Your safety block (keep)
   if (myDriverKey) {
     const mine = data[myDriverKey];
