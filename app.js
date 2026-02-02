@@ -529,11 +529,6 @@ function subscribeQueue() {
     const data = snap.val() || {};
     const entries = Object.entries(data);
 
-    // Clean render pass
-    queueList.innerHTML = "";
-    calledBox.textContent = "";
-    offeredCache = null;
-
     // ✅ Your safety block (keep)
     if (myDriverKey) {
       const mine = data[myDriverKey];
@@ -556,7 +551,12 @@ function subscribeQueue() {
         return;
       }
     }
-
+    
+    // Clean render pass (only once we know we're staying in the render path)
+    queueList.innerHTML = "";
+    calledBox.textContent = "";
+    offeredCache = null;
+    
     // Active = not LEFT
     const active = entries
       .filter(([_, v]) => v && (v.status ?? "WAITING") !== "LEFT")
