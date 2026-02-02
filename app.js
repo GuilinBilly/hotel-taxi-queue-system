@@ -318,6 +318,19 @@ async function acceptRide() {
   offeredCache = null;
 }
 
+async function leaveQueue() {
+  if (!myDriverKey) return;
+
+  await update(ref(db, "queue/" + myDriverKey), {
+    status: "LEFT",
+  });
+
+  sessionStorage.removeItem("htqs.driverKey");
+  myDriverKey = null;
+
+  lockDriverInputs(false);
+  refreshAcceptUI();
+}
 async function completePickup() {
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
 
