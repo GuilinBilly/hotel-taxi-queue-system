@@ -493,75 +493,77 @@ async function resetDemo() {
 // Keep exactly ONE active listener
 let unsubscribeQueue = null;
 
+function canPlayAlerts() {
+  return soundEnabled && !document.hidden;
+}
+
 function subscribeQueue() {
-  // If we already subscribed, unsubscribe first (prevents double-render)
+  // Keep exactly ONE active listener
   if (typeof unsubscribeQueue === "function") {
     unsubscribeQueue();
   }
 
- unsubscribeQueue = onValue(queueRef, (snap) => {
+  unsubscribeQueue = onValue(queueRef, (snap) => {
+    // 1) Snapshot empty
+    if (!snap.exists()) {
+      // If offline/reconnecting: keep whatever UI we already had
+      if (!isConnected) {
+        console.warn("⚠️ Offline/reconnecting: keeping last UI");
+        return;
+      }
 
-  // 1) Snapshot empty
-  if (!snap.exists()) {
+      // Online + truly empty queue → NOW it’s safe to clear
+      queueList.innerHTML = "";
+      calledBox.textContent = "";
+      offeredCache = null;
 
-    // If offline/reconnecting: keep whatever UI we already had
-    if (!isConnected) {
-      console.warn("⚠️ Offline/reconnecting: keeping last UI");
+      stopOfferBeepLoop();
+      setOfferPulse(false);
+      updateEmptyState();
+      refreshAcceptUI();
       return;
     }
 
-    // Online + truly empty queue → NOW it’s safe to clear
+    // 2) We have data (online)
+    const now = Date.now();
+    const data = snap.val() || {};
+    const entries = Object.entries(data);
+
+    // Clean render pass
     queueList.innerHTML = "";
     calledBox.textContent = "";
     offeredCache = null;
 
-    stopOfferBeepLoop();     // optional but good safety
-    setOfferPulse(false);    // optional
-    updateEmptyState();
-    refreshAcceptUI();
-    return;
-  }
+    // ✅ Your safety block (keep)
+    if (myDriverKey) {
+      const mine = data[myDriverKey];
 
-  // 2) We have data (online)
-  const data = snap.val() || {};
-  const entries = Object.entries(data);
-  const now = Date.now();
+      if (!mine || mine.status === "LEFT") {
+        sessionStorage.removeItem("htqs.driverKey");
+        myDriverKey = null;
+        lockDriverInputs(false);
 
-  // Clean render pass
-  queueList.innerHTML = "";
-  calledBox.textContent = "";
-  offeredCache = null;
+        driverNameInput.value = "";
+        driverColorInput.value = "";
+        driverPlateInput.value = "";
 
-  // ✅ Your safety block (keep)
-  if (myDriverKey) {
-    const mine = data[myDriverKey];
+        offeredCache = null;
+        stopOfferBeepLoop();
+        refreshAcceptUI();
 
-    if (!mine || mine.status === "LEFT") {
-      sessionStorage.removeItem("htqs.driverKey");
-      myDriverKey = null;
-      lockDriverInputs(false);
-
-      driverNameInput.value = "";
-      driverColorInput.value = "";
-      driverPlateInput.value = "";
-
-      offeredCache = null;
-      stopOfferBeepLoop();
-      refreshAcceptUI();
-
-      setOfferPulse(false);
-      updateEmptyState();
-      return;
+        setOfferPulse(false);
+        updateEmptyState();
+        return;
+      }
     }
-  }
 
-  // Active = not LEFT
-  const active = entries.filter(([k, v]) => v && (v.status ?? "WAITING") !== "LEFT");
+    // Active = not LEFT
+    const active = entries
+      .filter(([_, v]) => v && (v.status ?? "WAITING") !== "LEFT")
+      .slice()
+      .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
-  active
-    .slice()
-    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0))
-    .forEach(([k, v], i) => {
+    active.forEach(([k, v], i) => {
       const li = document.createElement("li");
       const status = (v.status ?? "WAITING").toUpperCase();
       li.classList.add("queue-item", `status-${status.toLowerCase()}`);
@@ -575,37 +577,33 @@ function subscribeQueue() {
       queueList.appendChild(li);
     });
 
-  updateEmptyState();
+    updateEmptyState();
 
-  // Cache the single active offer (oldest offerStartedAt wins)
-  const offered = entries
-    .filter(([_, v]) => v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
-    .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
+    // Cache the single active offer (oldest offerStartedAt wins)
+    const offered = entries
+      .filter(([_, v]) => v && v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
+      .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
 
-  offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
+    offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
 
-  const offeredToMe =
-    !!offeredCache &&
-    !!myDriverKey &&
-    isMeForOffer(offeredCache.val);
+    const offeredToMe =
+      !!offeredCache &&
+      !!myDriverKey &&
+      isMeForOffer(offeredCache.val);
 
-  setOfferPulse(offeredToMe);
+    setOfferPulse(offeredToMe);
 
-  // (Optional) move this function outside later — but it's OK here for now
-  function canPlayAlerts() {
-    return soundEnabled && !document.hidden;
-  }
+    if (offeredToMe && canPlayAlerts() && !suppressOfferBeep) {
+      startOfferBeepLoop(25000);
+    } else {
+      stopOfferBeepLoop();
+    }
 
-  if (offeredToMe && canPlayAlerts() && !suppressOfferBeep) {
-    startOfferBeepLoop(25000);
-  } else {
-    stopOfferBeepLoop();
-  }
-
-  refreshAcceptUI();
-  calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
-
-}); // ✅ THE ONLY closing. Must be the very last line of this block.
+    refreshAcceptUI();
+    calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
+  });
+}  
+  // ✅ THE ONLY closing. Must be the very last line of this block.
 
 console.log("✅ app.js loaded", {
   hasUnlock: typeof unlockAudio === "function",
