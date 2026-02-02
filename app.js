@@ -605,16 +605,20 @@ function subscribeQueue() {
 }  
   // ✅ THE ONLY closing. Must be the very last line of this block.
 
+// ----------------------------
+// App boot (run once)
+// ----------------------------
 console.log("✅ app.js loaded", {
   hasUnlock: typeof unlockAudio === "function",
   hasBeepStop: typeof stopOfferBeepLoop === "function",
   hasAccept: typeof acceptRide === "function",
 });
+
 // Call it ONCE
 wireConnectionBadge();
 subscribeQueue();
 
-// Unlock audio on the first user interaction anywhere (helps iOS/Android reliability)
+// Unlock audio on first interaction (mobile-friendly)
 window.addEventListener("pointerdown", unlockAudio, { once: true });
 window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
 
@@ -632,6 +636,7 @@ resetBtn.onclick = resetDemo;
 // Keep Accept UI updated while typing
 driverNameInput.oninput = refreshAcceptUI;
 driverPlateInput.oninput = refreshAcceptUI;
+
 updateEmptyState();
 
 // Optional debug helpers
@@ -639,5 +644,5 @@ window.debug = {
   norm,
   isMeForOffer,
   refreshAcceptUI,
-  getOfferedCache: () => offeredCache
+  getOfferedCache: () => offeredCache,
 };
