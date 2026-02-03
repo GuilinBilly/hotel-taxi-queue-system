@@ -190,18 +190,6 @@ function unlockAudio() {
   });
 }
 
-function updateSoundHint() {
-  const el = document.getElementById("soundHint");
-  if (!el) return;
-
-  if (audioUnlocked) {
-    el.style.display = "none";
-    el.textContent = "";
-  } else {
-    el.style.display = "block";
-    el.textContent = "🔊 Tap anywhere to enable sound alerts";
-  }
-}
 function playOfferTone() {
   if (!audioCtx || !audioUnlocked) return;
 
