@@ -172,6 +172,7 @@ function wireConnectionBadge() {
 // -----------------------------
 // SOUND
 // -----------------------------
+
 function unlockAudio() {
   if (audioUnlocked) return;
 
@@ -214,7 +215,6 @@ function playOfferTone() {
     console.warn("playOfferTone failed:", e);
   }
 }
-
 function stopOfferBeepLoop() {
   clearInterval(offerBeepIntervalId);
   clearTimeout(offerBeepStopTimeoutId);
