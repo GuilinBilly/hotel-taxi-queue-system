@@ -1,3 +1,6 @@
+// app.js (final cleaned version)
+
+// Firebase (App + RTDB)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
   getDatabase,
@@ -9,9 +12,16 @@ import {
   update,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-// ---------------------------------
-// Firebase config
-// ---------------------------------
+// Firebase Auth (Anonymous)
+import {
+  getAuth,
+  signInAnonymously,
+  onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+// -----------------------------
+// CONFIG
+// -----------------------------
 const firebaseConfig = {
   apiKey: "AIzaSyAFpipCO1XuETiPzuCptlTJhpHy4v7teo4",
   authDomain: "htqs-afa97.firebaseapp.com",
@@ -22,23 +32,24 @@ const firebaseConfig = {
   appId: "1:900324034014:web:4e6cf9b46567a9ee17494f",
 };
 
-// ---------------------------------
-// ✅ DOORMAN PIN (YOU MUST SET THIS)
-// ---------------------------------
-const DOORMAN_PIN = "1234"; // <- change to your desired PIN
+// ✅ Change this to your real doorman PIN
+const DOORMAN_PIN = "2468";
 
-let isConnected = true;
+// Offer timing
+const OFFER_MS = 25000;
 
-// ---------------------------------
-// Initialize App & DB
-// ---------------------------------
+// -----------------------------
+// INIT
+// -----------------------------
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
+
 const queueRef = ref(db, "queue");
 
-// ---------------------------------
-// DOM Elements
-// ---------------------------------
+// -----------------------------
+// DOM
+// -----------------------------
 const driverNameInput = document.getElementById("driverName");
 const driverColorInput = document.getElementById("driverColor");
 const driverPlateInput = document.getElementById("driverPlate");
@@ -46,7 +57,6 @@ const driverPlateInput = document.getElementById("driverPlate");
 const joinBtn = document.getElementById("joinBtn");
 const leaveBtn = document.getElementById("leaveBtn");
 const acceptBtn = document.getElementById("acceptBtn");
-
 const callNextBtn = document.getElementById("callNextBtn");
 const completeBtn = document.getElementById("completeBtn");
 const resetBtn = document.getElementById("resetBtn");
@@ -55,28 +65,79 @@ const doormanPinInput = document.getElementById("doormanPin");
 
 const queueList = document.getElementById("queueList");
 const calledBox = document.getElementById("calledBox");
-const offerInfo = document.getElementById("offerInfo");
 
-// ---------------------------------
-// Local state
-// ---------------------------------
+const offerInfo = document.getElementById("offerInfo"); // optional
+const netStatus = document.getElementById("netStatus"); // optional
+const queueEmpty = document.getElementById("queueEmpty"); // optional
+const soundToggle = document.getElementById("soundToggle"); // optional
+
+// -----------------------------
+// STATE
+// -----------------------------
+let isConnected = true;
+
 let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 let offeredCache = null;
 
 let soundEnabled = true;
 let suppressOfferBeep = false;
 
-// ---------------------------------
-// Sound helper state
-// ---------------------------------
+// Audio
 let audioCtx = null;
 let audioUnlocked = false;
 let offerBeepIntervalId = null;
 let offerBeepStopTimeoutId = null;
 
-// ---------------------------------
-// Connection badge (RTDB .info/connected)
-// ---------------------------------
+// Single listener handle
+let unsubscribeQueue = null;
+
+// -----------------------------
+// HELPERS
+// -----------------------------
+function norm(s) {
+  return (s ?? "").toString().trim().toLowerCase();
+}
+
+function updateEmptyState() {
+  if (!queueEmpty || !queueList) return;
+  queueEmpty.style.display = queueList.children.length ? "none" : "block";
+}
+
+function setOfferPulse(on) {
+  const driverCardEl = document.querySelector(".card.driver");
+  if (acceptBtn) acceptBtn.classList.toggle("is-offered", !!on);
+  if (driverCardEl) driverCardEl.classList.toggle("is-offered", !!on);
+}
+
+function lockDriverInputs(locked) {
+  if (driverNameInput) driverNameInput.disabled = locked;
+  if (driverColorInput) driverColorInput.disabled = locked;
+  if (driverPlateInput) driverPlateInput.disabled = locked;
+
+  if (joinBtn) joinBtn.disabled = locked;
+  if (leaveBtn) leaveBtn.disabled = !locked;
+}
+
+function canPlayAlerts() {
+  return soundEnabled && !document.hidden;
+}
+
+function isMeForOffer(v) {
+  if (!v) return false;
+  const inputName = norm(driverNameInput?.value);
+  const inputPlate = norm(driverPlateInput?.value);
+  return inputName && inputPlate && norm(v.name) === inputName && norm(v.plate) === inputPlate;
+}
+
+function refreshAcceptUI() {
+  // Accept enabled only if the offer is for the current typed driver
+  const enabled = !!offeredCache && isMeForOffer(offeredCache.val);
+  if (acceptBtn) acceptBtn.disabled = !enabled;
+}
+
+// -----------------------------
+// CONNECTION BADGE (.info/connected)
+// -----------------------------
 function wireConnectionBadge() {
   const connectedRef = ref(db, ".info/connected");
   let wasConnected = true;
@@ -89,72 +150,16 @@ function wireConnectionBadge() {
     }
     wasConnected = isConnected;
 
-    const el = document.getElementById("netStatus");
-    if (el) {
-      el.textContent = isConnected ? "Online" : "Reconnecting…";
-      el.classList.toggle("offline", !isConnected);
+    if (netStatus) {
+      netStatus.textContent = isConnected ? "Online" : "Reconnecting…";
+      netStatus.classList.toggle("offline", !isConnected);
     }
   });
 }
 
-// ---------------------------------
-// UI Utilities
-// ---------------------------------
-function updateEmptyState() {
-  const empty = document.getElementById("queueEmpty");
-  if (!empty || !queueList) return;
-  empty.style.display = queueList.children.length ? "none" : "block";
-}
-
-function setOfferPulse(on) {
-  const driverCardEl = document.querySelector(".card.driver");
-  if (acceptBtn) acceptBtn.classList.toggle("is-offered", !!on);
-  if (driverCardEl) driverCardEl.classList.toggle("is-offered", !!on);
-}
-
-function lockDriverInputs(locked) {
-  driverNameInput.disabled = locked;
-  driverColorInput.disabled = locked;
-  driverPlateInput.disabled = locked;
-
-  joinBtn.disabled = locked;
-  leaveBtn.disabled = !locked;
-}
-
-function norm(s) {
-  return (s ?? "").toString().trim().toLowerCase();
-}
-
-function isMeForOffer(v) {
-  if (!v) return false;
-  const inputName = norm(driverNameInput.value);
-  const inputPlate = norm(driverPlateInput.value);
-  return inputName && inputPlate && norm(v.name) === inputName && norm(v.plate) === inputPlate;
-}
-
-function canPlayAlerts() {
-  return soundEnabled && !document.hidden;
-}
-
-function refreshAcceptUI() {
-  const offeredToMe =
-    !!offeredCache &&
-    !!myDriverKey &&
-    isMeForOffer(offeredCache.val) &&
-    (offeredCache.val.offerExpiresAt ?? 0) > Date.now();
-
-  if (acceptBtn) acceptBtn.disabled = !offeredToMe;
-
-  if (offerInfo) {
-    offerInfo.textContent = offeredCache
-      ? `Offer: ${offeredCache.val.name} (${offeredCache.val.plate})`
-      : "";
-  }
-}
-
-// ---------------------------------
-// Sound & Beep Logic
-// ---------------------------------
+// -----------------------------
+// SOUND
+// -----------------------------
 function unlockAudio() {
   if (audioUnlocked) return;
 
@@ -163,14 +168,13 @@ function unlockAudio() {
 
   if (!audioCtx) audioCtx = new Ctx();
 
-  audioCtx.resume()
+  audioCtx
+    .resume()
     .then(() => {
       audioUnlocked = true;
       console.log("Audio unlocked");
     })
-    .catch((e) => {
-      console.warn("Audio unlock blocked:", e);
-    });
+    .catch((e) => console.warn("Audio unlock blocked:", e));
 }
 
 function playOfferTone() {
@@ -202,82 +206,64 @@ function stopOfferBeepLoop() {
   offerBeepStopTimeoutId = null;
 }
 
-function startOfferBeepLoop(maxMs = 25000) {
+function startOfferBeepLoop(maxMs = OFFER_MS) {
   stopOfferBeepLoop();
   playOfferTone();
 
-  offerBeepIntervalId = setInterval(() => {
-    playOfferTone();
-  }, 1200);
-
-  offerBeepStopTimeoutId = setTimeout(() => {
-    stopOfferBeepLoop();
-  }, maxMs);
+  offerBeepIntervalId = setInterval(playOfferTone, 1200);
+  offerBeepStopTimeoutId = setTimeout(stopOfferBeepLoop, maxMs);
 }
 
 function loadSoundPref() {
   const saved = localStorage.getItem("htqs.soundEnabled");
   soundEnabled = saved === null ? true : saved === "true";
-
-  const toggle = document.getElementById("soundToggle");
-  if (toggle) toggle.checked = soundEnabled;
+  if (soundToggle) soundToggle.checked = soundEnabled;
 }
 
 function wireSoundToggle() {
-  const toggle = document.getElementById("soundToggle");
-  if (!toggle) return;
+  if (!soundToggle) return;
 
-  toggle.addEventListener("change", () => {
-    soundEnabled = toggle.checked;
+  soundToggle.addEventListener("change", () => {
+    soundEnabled = soundToggle.checked;
     localStorage.setItem("htqs.soundEnabled", String(soundEnabled));
     if (soundEnabled) unlockAudio();
     else stopOfferBeepLoop();
   });
 }
 
-// ---------------------------------
-// Expire offers (auto bump WAITING)
-// ---------------------------------
-async function expireOffersNow() {
-  const snap = await get(queueRef);
-  if (!snap.exists()) return;
-
-  const now = Date.now();
-  const entries = Object.entries(snap.val());
-
-  let bump = 0;
-
-  await Promise.all(entries.map(async ([k, v]) => {
-    const expired = v.status === "OFFERED" && (v.offerExpiresAt ?? 0) <= now;
-    if (!expired) return;
-
-    await update(ref(db, "queue/" + k), {
-      status: "WAITING",
-      offerStartedAt: null,
-      offerExpiresAt: null,
-      joinedAt: now + (bump++),
-    });
-  }));
+// -----------------------------
+// AUTH (Anonymous)
+// -----------------------------
+async function ensureSignedIn() {
+  try {
+    await signInAnonymously(auth);
+  } catch (e) {
+    console.error("Anonymous sign-in failed:", e);
+  }
 }
 
-// ---------------------------------
-// Driver / Doorman actions
-// ---------------------------------
+// -----------------------------
+// CORE ACTIONS
+// -----------------------------
 async function joinQueue() {
   unlockAudio();
 
   try {
-    if (!driverNameInput.value.trim() || !driverPlateInput.value.trim()) {
-      alert("Enter name and plate.");
+    const name = driverNameInput.value.trim();
+    const plate = driverPlateInput.value.trim();
+    const carColor = driverColorInput.value.trim();
+
+    if (!name || !plate) {
+      alert("Enter name and cab number.");
       return;
     }
 
-    const driverKey = `${norm(driverNameInput.value)}_${norm(driverPlateInput.value)}`;
+    const driverKey = `${norm(name)}_${norm(plate)}`;
     const driverRef = ref(db, "queue/" + driverKey);
 
+    // If previously LEFT, remove so it can rejoin cleanly
     const existingSnap = await get(driverRef);
     const existing = existingSnap.exists() ? existingSnap.val() : null;
-
     if (existing && existing.status === "LEFT") {
       await remove(driverRef);
     }
@@ -289,9 +275,9 @@ async function joinQueue() {
 
     await set(driverRef, {
       status: "WAITING",
-      name: driverNameInput.value.trim(),
-      carColor: driverColorInput.value.trim(),
-      plate: driverPlateInput.value.trim(),
+      name,
+      carColor,
+      plate,
       joinedAt,
       offerStartedAt: null,
       offerExpiresAt: null,
@@ -299,11 +285,12 @@ async function joinQueue() {
 
     myDriverKey = driverKey;
     sessionStorage.setItem("htqs.driverKey", driverKey);
-
     lockDriverInputs(true);
     refreshAcceptUI();
+
+    console.log("joinQueue success", driverKey);
   } catch (err) {
-    console.error(err);
+    console.error("joinQueue error:", err);
     alert("Join failed");
   }
 }
@@ -312,27 +299,42 @@ async function leaveQueue() {
   try {
     if (!myDriverKey) return;
 
-    await update(ref(db, "queue/" + myDriverKey), {
-      status: "LEFT",
-      offerStartedAt: null,
-      offerExpiresAt: null,
-    });
+    await update(ref(db, "queue/" + myDriverKey), { status: "LEFT" });
 
     sessionStorage.removeItem("htqs.driverKey");
     myDriverKey = null;
+    lockDriverInputs(false);
 
-    offeredCache = null;
-    suppressOfferBeep = false;
     stopOfferBeepLoop();
     setOfferPulse(false);
-
-    lockDriverInputs(false);
     refreshAcceptUI();
-    updateEmptyState();
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error("leaveQueue error:", err);
     alert("Leave failed");
   }
+}
+
+async function expireOffersNow() {
+  const snap = await get(queueRef);
+  if (!snap.exists()) return;
+
+  const now = Date.now();
+  const entries = Object.entries(snap.val());
+  let bump = 0;
+
+  await Promise.all(
+    entries.map(async ([k, v]) => {
+      const isExpired = v.status === "OFFERED" && (v.offerExpiresAt ?? 0) <= now;
+      if (!isExpired) return;
+
+      await update(ref(db, "queue/" + k), {
+        status: "WAITING",
+        offerStartedAt: null,
+        offerExpiresAt: null,
+        joinedAt: now + bump++,
+      });
+    })
+  );
 }
 
 async function callNext() {
@@ -348,7 +350,7 @@ async function callNext() {
     .filter(([_, v]) => (v.status ?? "WAITING") === "WAITING")
     .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
-  if (waiting.length === 0) return alert("No WAITING taxis.");
+  if (!waiting.length) return alert("No WAITING taxis.");
 
   const [key] = waiting[0];
   const now = Date.now();
@@ -356,7 +358,7 @@ async function callNext() {
   await update(ref(db, "queue/" + key), {
     status: "OFFERED",
     offerStartedAt: now,
-    offerExpiresAt: now + 25000,
+    offerExpiresAt: now + OFFER_MS,
   });
 }
 
@@ -372,10 +374,12 @@ async function acceptRide() {
   const snap = await get(ref(db, "queue/" + offerKey));
   if (!snap.exists()) return alert("Offer disappeared.");
 
-  const v = snap.val();
+  const v subdivision = snap.val();
+
   if (v.status !== "OFFERED" || (v.offerExpiresAt ?? 0) <= Date.now()) {
     return alert("Offer expired — wait for next call.");
   }
+
   if (!isMeForOffer(v)) {
     return alert("This offer is not for you.");
   }
@@ -392,6 +396,7 @@ async function acceptRide() {
 
 async function completePickup() {
   stopOfferBeepLoop();
+
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
 
   const snap = await get(queueRef);
@@ -404,9 +409,7 @@ async function completePickup() {
 }
 
 async function resetDemo() {
-  const pin = doormanPinInput.value.trim();
-  if (pin !== DOORMAN_PIN) return alert("Invalid PIN.");
-
+  if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Invalid PIN.");
   if (!confirm("Reset demo? This will clear the entire queue.")) return;
 
   const snap = await get(queueRef);
@@ -416,22 +419,21 @@ async function resetDemo() {
   await Promise.all(keys.map((k) => remove(ref(db, "queue/" + k))));
 
   offeredCache = null;
+  stopOfferBeepLoop();
+  setOfferPulse(false);
   refreshAcceptUI();
-  updateEmptyState();
 }
 
-// ---------------------------------
-// Live UI render
-// ---------------------------------
-let unsubscribeQueue = null;
-
+// -----------------------------
+// LIVE RENDER (single onValue)
+// -----------------------------
 function subscribeQueue() {
   if (typeof unsubscribeQueue === "function") unsubscribeQueue();
 
   unsubscribeQueue = onValue(queueRef, (snap) => {
-    // Snapshot empty
+    // If empty and offline, keep current UI
     if (!snap.exists()) {
-      if (!isConnected) return; // offline/reconnecting: keep last UI
+      if (!isConnected) return;
       queueList.innerHTML = "";
       calledBox.textContent = "";
       offeredCache = null;
@@ -446,17 +448,13 @@ function subscribeQueue() {
     const data = snap.val() || {};
     const entries = Object.entries(data);
 
-    // ✅ Driver-left cleanup
+    // Safety: if my driver got removed/LEFT
     if (myDriverKey) {
       const mine = data[myDriverKey];
       if (!mine || mine.status === "LEFT") {
         sessionStorage.removeItem("htqs.driverKey");
         myDriverKey = null;
         lockDriverInputs(false);
-
-        offeredCache = null;
-        stopOfferBeepLoop();
-        setOfferPulse(false);
       }
     }
 
@@ -467,40 +465,35 @@ function subscribeQueue() {
 
     const active = entries
       .filter(([_, v]) => v && (v.status ?? "WAITING") !== "LEFT")
+      .slice()
       .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
-    active.forEach(([_, v], i) => {
+    active.forEach(([k, v], i) => {
       const li = document.createElement("li");
       const status = (v.status ?? "WAITING").toUpperCase();
-      li.className = `queue-item status-${status.toLowerCase()}`;
-
+      li.classList.add("queue-item", `status-${status.toLowerCase()}`);
       li.innerHTML = `
         <span class="pos">${i + 1}.</span>
         <span class="driver">${v.name} ${v.carColor ?? ""} ${v.plate}</span>
         <span class="badge">${status}</span>
       `;
-
       queueList.appendChild(li);
     });
 
     updateEmptyState();
 
-    // Offer selection
+    // Find oldest OFFERED that hasn't expired
     const offered = entries
       .filter(([_, v]) => v && v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
       .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
 
     offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
 
-    const offeredToMe =
-      !!offeredCache &&
-      !!myDriverKey &&
-      isMeForOffer(offeredCache.val);
-
+    const offeredToMe = !!offeredCache && !!myDriverKey && isMeForOffer(offeredCache.val);
     setOfferPulse(offeredToMe);
 
     if (offeredToMe && canPlayAlerts() && !suppressOfferBeep) {
-      startOfferBeepLoop(25000);
+      startOfferBeepLoop(OFFER_MS);
     } else {
       stopOfferBeepLoop();
     }
@@ -510,40 +503,42 @@ function subscribeQueue() {
   });
 }
 
-// ---------------------------------
-// App boot (run once)
-// ---------------------------------
+// -----------------------------
+// BOOT
+// -----------------------------
 console.log("✅ app.js loaded");
+
+// Auth first (fixes PERMISSION_DENIED if you set rules to auth != null)
+ensureSignedIn();
+
+onAuthStateChanged(auth, (user) => {
+  if (user) console.log("✅ Signed in (anonymous)", user.uid);
+});
+
 wireConnectionBadge();
 loadSoundPref();
 wireSoundToggle();
 subscribeQueue();
 
-// Unlock audio on first interaction (mobile friendly)
+// Mobile audio unlock
 window.addEventListener("pointerdown", unlockAudio, { once: true });
 window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
 
 // Expire loop
 setInterval(expireOffersNow, 1000);
 
-// Button wiring
+// Buttons
 joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
-callNextBtn.onclick = callNext;
 acceptBtn.onclick = acceptRide;
+callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
 
-// Keep Accept UI updated while typing
+// Keep UI updated while typing
 driverNameInput.oninput = refreshAcceptUI;
 driverPlateInput.oninput = refreshAcceptUI;
 
+lockDriverInputs(!!myDriverKey);
 updateEmptyState();
-
-// Optional debug helpers
-window.debug = {
-  norm,
-  isMeForOffer,
-  refreshAcceptUI,
-  getOfferedCache: () => offeredCache,
-};
+refreshAcceptUI();
