@@ -180,14 +180,18 @@ function unlockAudio() {
 
   if (!audioCtx) audioCtx = new Ctx();
 
-  audioCtx.resume().then(() => {
-    audioUnlocked = true;
-    console.log("Audio unlocked");
-    updateSoundHint();   // ✅ ADD THIS
-  }).catch((e) => {
-    console.warn("Audio unlock blocked:", e);
-    updateSoundHint();   // ✅ ADD THIS
-  });
+  audioCtx
+    .resume()
+    .then(() => {
+      audioUnlocked = true;
+      console.log("Audio unlocked");
+      updateSoundHint();
+    })
+    .catch((e) => {
+      console.warn("Audio unlock blocked:", e);
+      updateSoundHint();
+    });
+}
 
 function playOfferTone() {
   if (!audioCtx || !audioUnlocked) return;
