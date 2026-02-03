@@ -33,7 +33,7 @@ const firebaseConfig = {
 };
 
 // ✅ Change this to your real doorman PIN
-const DOORMAN_PIN = "2468";
+const DOORMAN_PIN = "1400";
 
 // Offer timing
 const OFFER_MS = 25000;
