@@ -188,7 +188,6 @@ function unlockAudio() {
     console.warn("Audio unlock blocked:", e);
     updateSoundHint();   // ✅ ADD THIS
   });
-)
 
 function playOfferTone() {
   if (!audioCtx || !audioUnlocked) return;
