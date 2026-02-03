@@ -547,8 +547,15 @@ wireSoundToggle();
 subscribeQueue();
 
 // Mobile audio unlock
-window.addEventListener("pointerdown", unlockAudio, { once: true });
-window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
+window.addEventListener("pointerdown", () => {
+  unlockAudio();
+  updateSoundHint();
+}, { once: true });
+
+window.addEventListener("touchstart", () => {
+  unlockAudio();
+  updateSoundHint();
+}, { once: true, passive: true });
 
 // Expire loop
 setInterval(expireOffersNow, 1000);
