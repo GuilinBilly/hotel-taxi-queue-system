@@ -363,6 +363,7 @@ async function expireOffersNow() {
 }
 
 async function callNext() {
+   unlockAudio(); // ✅ ensure sound is allowed
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
 
   await expireOffersNow();
@@ -388,8 +389,7 @@ async function callNext() {
 }
 
 async function acceptRide() {
-  unlockAudio();
-
+  unlockAudio(); // ✅ ensure sound is allowed
   suppressOfferBeep = true;
   stopOfferBeepLoop();
 
