@@ -374,8 +374,8 @@ async function acceptRide() {
   const snap = await get(ref(db, "queue/" + offerKey));
   if (!snap.exists()) return alert("Offer disappeared.");
 
-  const v subdivision = snap.val();
-
+  const v = snap.val();
+  
   if (v.status !== "OFFERED" || (v.offerExpiresAt ?? 0) <= Date.now()) {
     return alert("Offer expired — wait for next call.");
   }
