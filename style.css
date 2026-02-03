@@ -246,6 +246,19 @@ body{
   animation: softPulseGlow 1.6s ease-in-out infinite;
 }
 
+.sound-hint {
+  display: none;                /* hidden by default */
+  margin: 12px auto;
+  padding: 10px 14px;
+  max-width: 360px;
+  text-align: center;
+  font-size: 14px;
+  color: #333;
+  background: #fff3cd;
+  border: 1px solid #ffe69c;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
 /* Accessibility: respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   #acceptBtn.is-offered,
