@@ -122,6 +122,18 @@ function canPlayAlerts() {
   return soundEnabled && !document.hidden;
 }
 
+function updateSoundHint() {
+  const el = document.getElementById("soundHint");
+  if (!el) return;
+
+  if (audioUnlocked) {
+    el.style.display = "none";
+    el.textContent = "";
+  } else {
+    el.style.display = "block";
+    el.textContent = "🔊 Tap anywhere to enable sound alerts";
+  }
+}
 function isMeForOffer(v) {
   if (!v) return false;
   const inputName = norm(driverNameInput?.value);
@@ -168,15 +180,15 @@ function unlockAudio() {
 
   if (!audioCtx) audioCtx = new Ctx();
 
-  audioCtx
-    .resume()
-    .then(() => {
-      audioUnlocked = true;
-      console.log("Audio unlocked");
-    })
-    .catch((e) => console.warn("Audio unlock blocked:", e));
+  audioCtx.resume().then(() => {
+    audioUnlocked = true;
+    console.log("Audio unlocked");
+    updateSoundHint();   // ✅ ADD THIS
+  }).catch((e) => {
+    console.warn("Audio unlock blocked:", e);
+    updateSoundHint();   // ✅ ADD THIS
+  });
 }
-
 function playOfferTone() {
   if (!audioCtx || !audioUnlocked) return;
 
@@ -510,6 +522,7 @@ console.log("✅ app.js loaded");
 
 // Auth first (fixes PERMISSION_DENIED if you set rules to auth != null)
 ensureSignedIn();
+updateSoundHint();
 
 onAuthStateChanged(auth, (user) => {
   if (user) console.log("✅ Signed in (anonymous)", user.uid);
