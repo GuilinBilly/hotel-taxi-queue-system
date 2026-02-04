@@ -147,6 +147,21 @@ function refreshAcceptUI() {
   if (acceptBtn) acceptBtn.disabled = !enabled;
 }
 
+let toastTimer = null;
+
+function showToast(msg, type = "ok", ms = 1800) {
+  const el = document.getElementById("toast");
+  if (!el) return;
+
+  el.className = `toast show ${type}`;
+  el.textContent = msg;
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    el.className = "toast";
+    el.textContent = "";
+  }, ms);
+}
 // -----------------------------
 // CONNECTION BADGE (.info/connected)
 // -----------------------------
