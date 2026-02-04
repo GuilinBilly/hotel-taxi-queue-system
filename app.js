@@ -321,7 +321,9 @@ async function joinQueue() {
     const name = normSpaces(driverNameInput.value);
     const plate = normPlate(driverPlateInput.value);
     const carColor = titleCase(driverColorInput.value);
-
+    driverNameInput.value = name;
+    driverPlateInput.value = plate;
+    driverColorInput.value = carColor;
     if (!name || !plate) {
       alert("Enter name and cab number.");
       return;
