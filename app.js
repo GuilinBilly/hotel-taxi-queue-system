@@ -180,6 +180,24 @@ function setBusy(on, msg = "Working…") {
   // Optional: show a tiny toast while busy (not required)
   if (on) showToast(msg, "warn", 1200);
 }
+
+// -----------------------------
+// INPUT POLISH (C1)
+// -----------------------------
+function normSpaces(s) {
+  return (s || "").trim().replace(/\s+/g, " ");
+}
+
+function normPlate(s) {
+  // Trim + uppercase, keep spaces as single space
+  return normSpaces(s).toUpperCase();
+}
+
+function titleCase(s) {
+  s = normSpaces(s).toLowerCase();
+  if (!s) return "";
+  return s.replace(/\b\w/g, (c) => c.toUpperCase());
+}
 // -----------------------------
 // CONNECTION BADGE (.info/connected)
 // -----------------------------
