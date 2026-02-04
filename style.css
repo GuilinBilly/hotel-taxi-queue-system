@@ -27,6 +27,30 @@ html, body{
   overflow-x: hidden;
 }
 
+.toast{
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+
+  display: none;
+  max-width: 520px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.12);
+
+  background: #111;
+  color: #fff;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
+
+.toast.show{ display: block; }
+.toast.ok{ background: #111; }
+.toast.warn{ background: #7a4a00; }
+.toast.err{ background: #7a1010; }
+
 .netStatus{
   font-size: 12px;
   opacity: 0.7;
