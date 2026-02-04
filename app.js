@@ -424,6 +424,8 @@ async function callNext() {
 }
 
 async function acceptRide() {
+  if (isBusy) return;            // ✅ add
+  setBusy(true, "Joining…");      // ✅ add
   unlockAudio(); // ✅ ensure sound is allowed
   suppressOfferBeep = true;
   stopOfferBeepLoop();
@@ -452,9 +454,12 @@ async function acceptRide() {
 
   offeredCache = null;
   refreshAcceptUI();
+   setBusy(false);               // ✅ add
 }
 
 async function completePickup() {
+  if (isBusy) return;            // ✅ add
+  setBusy(true, "Joining…");      // ✅ add
   stopOfferBeepLoop();
 
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
@@ -466,9 +471,12 @@ async function completePickup() {
   if (!accepted) return alert("No ACCEPTED ride to complete.");
 
   await remove(ref(db, "queue/" + accepted[0]));
+  setBusy(false);               // ✅ add
 }
 
 async function resetDemo() {
+  if (isBusy) return;            // ✅ add
+  setBusy(true, "Joining…");      // ✅ add
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Invalid PIN.");
   if (!confirm("Reset demo? This will clear the entire queue.")) return;
 
@@ -482,6 +490,7 @@ async function resetDemo() {
   stopOfferBeepLoop();
   setOfferPulse(false);
   refreshAcceptUI();
+  setBusy(false);               // ✅ add
 }
 
 // -----------------------------
