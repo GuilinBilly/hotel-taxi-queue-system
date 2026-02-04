@@ -320,6 +320,7 @@ async function joinQueue() {
     refreshAcceptUI();
 
     console.log("joinQueue success", driverKey);
+    showToast("Joined queue ✅", "ok");
   } catch (err) {
     console.error("joinQueue error:", err);
     alert("Join failed");
