@@ -195,6 +195,15 @@ body{
   color: #fff;
 }
 
+.btn.is-loading {
+  opacity: 0.75;
+  cursor: wait;
+  transform: translateY(0); /* prevents press jiggle */
+}
+.btn.is-loading::after {
+  content: "…";
+}
+
 /* Queue list */
 .queue{
   list-style: none;
