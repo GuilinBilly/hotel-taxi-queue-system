@@ -350,6 +350,8 @@ async function joinQueue() {
 }
 
 async function leaveQueue() {
+  if (isBusy) return;             // ✅ add
+  setBusy(true, "Joining…");      // ✅ add
   try {
     if (!myDriverKey) return;
 
@@ -365,6 +367,7 @@ async function leaveQueue() {
   } catch (err) {
     console.error("leaveQueue error:", err);
     alert("Leave failed");
+    setBusy(false);               // ✅ add
   }
 }
 
@@ -392,7 +395,9 @@ async function expireOffersNow() {
 }
 
 async function callNext() {
-   unlockAudio(); // ✅ ensure sound is allowed
+  if (isBusy) return;            // ✅ add
+  setBusy(true, "Joining…");      // ✅ add
+  unlockAudio(); // ✅ ensure sound is allowed
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
 
   await expireOffersNow();
@@ -414,7 +419,8 @@ async function callNext() {
     status: "OFFERED",
     offerStartedAt: now,
     offerExpiresAt: now + OFFER_MS,
-  });
+    setBusy(false);               // ✅ add
+    });
 }
 
 async function acceptRide() {
