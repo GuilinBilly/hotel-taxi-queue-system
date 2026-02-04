@@ -295,6 +295,8 @@ async function ensureSignedIn() {
 // CORE ACTIONS
 // -----------------------------
 async function joinQueue() {
+  if (isBusy) return;           // ✅ add
+  setBusy(true, "Joining…");    // ✅ add
   unlockAudio();
 
   try {
@@ -341,7 +343,9 @@ async function joinQueue() {
     showToast("Joined queue ✅", "ok");
   } catch (err) {
     console.error("joinQueue error:", err);
+    showToast("Join failed — try again", "err", 2400);  // ✅ replace alert
     alert("Join failed");
+    setBusy(false);               // ✅ add
   }
 }
 
