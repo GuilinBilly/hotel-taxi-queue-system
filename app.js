@@ -318,9 +318,9 @@ async function joinQueue() {
   unlockAudio();
 
   try {
-    const name = driverNameInput.value.trim();
-    const plate = driverPlateInput.value.trim();
-    const carColor = driverColorInput.value.trim();
+    const name = normSpaces(driverNameInput.value);
+    const plate = normPlate(driverPlateInput.value);
+    const carColor = titleCase(driverColorInput.value);
 
     if (!name || !plate) {
       alert("Enter name and cab number.");
