@@ -147,57 +147,6 @@ function refreshAcceptUI() {
   if (acceptBtn) acceptBtn.disabled = !enabled;
 }
 
-let toastTimer = null;
-
-function showToast(msg, type = "ok", ms = 1800) {
-  const el = document.getElementById("toast");
-  if (!el) return;
-
-  el.className = `toast show ${type}`;
-  el.textContent = msg;
-
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    el.className = "toast";
-    el.textContent = "";
-  }, ms);
-}
-
-let isBusy = false;
-
-function setBusy(on, msg = "Working…") {
-  isBusy = on;
-
-  // Disable buttons while working
-  const btnIds = ["joinBtn", "leaveBtn", "acceptBtn", "callNextBtn", "completeBtn", "resetBtn"];
-  btnIds.forEach((id) => {
-    const b = document.getElementById(id);
-    if (!b) return;
-    b.disabled = on || b.classList.contains("disabled"); // keeps your existing disabled logic
-    b.classList.toggle("is-loading", on);
-  });
-
-  // Optional: show a tiny toast while busy (not required)
-  if (on) showToast(msg, "warn", 1200);
-}
-
-// -----------------------------
-// INPUT POLISH (C1)
-// -----------------------------
-function normSpaces(s) {
-  return (s || "").trim().replace(/\s+/g, " ");
-}
-
-function normPlate(s) {
-  // Trim + uppercase, keep spaces as single space
-  return normSpaces(s).toUpperCase();
-}
-
-function titleCase(s) {
-  s = normSpaces(s).toLowerCase();
-  if (!s) return "";
-  return s.replace(/\b\w/g, (c) => c.toUpperCase());
-}
 // -----------------------------
 // CONNECTION BADGE (.info/connected)
 // -----------------------------
@@ -313,17 +262,13 @@ async function ensureSignedIn() {
 // CORE ACTIONS
 // -----------------------------
 async function joinQueue() {
-  if (isBusy) return;           // ✅ add
-  setBusy(true, "Joining…");    // ✅ add
   unlockAudio();
 
   try {
-    const name = normSpaces(driverNameInput.value);
-    const plate = normPlate(driverPlateInput.value);
-    const carColor = titleCase(driverColorInput.value);
-    driverNameInput.value = name;
-    driverPlateInput.value = plate;
-    driverColorInput.value = carColor;
+    const name = driverNameInput.value.trim();
+    const plate = driverPlateInput.value.trim();
+    const carColor = driverColorInput.value.trim();
+
     if (!name || !plate) {
       alert("Enter name and cab number.");
       return;
@@ -360,18 +305,13 @@ async function joinQueue() {
     refreshAcceptUI();
 
     console.log("joinQueue success", driverKey);
-    showToast("Joined queue ✅", "ok");
   } catch (err) {
     console.error("joinQueue error:", err);
-    showToast("Join failed — try again", "err", 2400);  // ✅ replace alert
     alert("Join failed");
-    setBusy(false);               // ✅ add
   }
 }
 
 async function leaveQueue() {
-  if (isBusy) return;             // ✅ add
-  setBusy(true, "Joining…");      // ✅ add
   try {
     if (!myDriverKey) return;
 
@@ -387,7 +327,6 @@ async function leaveQueue() {
   } catch (err) {
     console.error("leaveQueue error:", err);
     alert("Leave failed");
-    setBusy(false);               // ✅ add
   }
 }
 
@@ -415,9 +354,7 @@ async function expireOffersNow() {
 }
 
 async function callNext() {
-  if (isBusy) return;            // ✅ add
-  setBusy(true, "Joining…");      // ✅ add
-  unlockAudio(); // ✅ ensure sound is allowed
+   unlockAudio(); // ✅ ensure sound is allowed
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
 
   await expireOffersNow();
@@ -439,13 +376,10 @@ async function callNext() {
     status: "OFFERED",
     offerStartedAt: now,
     offerExpiresAt: now + OFFER_MS,
-    setBusy(false);               // ✅ add
-    });
+  });
 }
 
 async function acceptRide() {
-  if (isBusy) return;            // ✅ add
-  setBusy(true, "Joining…");      // ✅ add
   unlockAudio(); // ✅ ensure sound is allowed
   suppressOfferBeep = true;
   stopOfferBeepLoop();
@@ -474,12 +408,9 @@ async function acceptRide() {
 
   offeredCache = null;
   refreshAcceptUI();
-   setBusy(false);               // ✅ add
 }
 
 async function completePickup() {
-  if (isBusy) return;            // ✅ add
-  setBusy(true, "Joining…");      // ✅ add
   stopOfferBeepLoop();
 
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
@@ -491,12 +422,9 @@ async function completePickup() {
   if (!accepted) return alert("No ACCEPTED ride to complete.");
 
   await remove(ref(db, "queue/" + accepted[0]));
-  setBusy(false);               // ✅ add
 }
 
 async function resetDemo() {
-  if (isBusy) return;            // ✅ add
-  setBusy(true, "Joining…");      // ✅ add
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Invalid PIN.");
   if (!confirm("Reset demo? This will clear the entire queue.")) return;
 
@@ -510,7 +438,6 @@ async function resetDemo() {
   stopOfferBeepLoop();
   setOfferPulse(false);
   refreshAcceptUI();
-  setBusy(false);               // ✅ add
 }
 
 // -----------------------------
