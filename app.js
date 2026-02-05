@@ -439,8 +439,8 @@ async function callNext() {
     status: "OFFERED",
     offerStartedAt: now,
     offerExpiresAt: now + OFFER_MS,
-    setBusy(false);               // ✅ add
     });
+  setBusy(false);               // ✅ add
 }
 
 async function acceptRide() {
