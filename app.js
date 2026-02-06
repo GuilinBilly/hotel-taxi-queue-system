@@ -417,7 +417,7 @@ async function expireOffersNow() {
 
 async function callNext() {
  // 🔒 Guard #1 — prevent action while offline
-}  if (!isConnected) {
+  if (!isConnected) {
   showToast("Offline — try again in a moment", "warn", 2000);
   return;
 }  
