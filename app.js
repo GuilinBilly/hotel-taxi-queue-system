@@ -203,7 +203,7 @@ function titleCase(s) {
 // -----------------------------
 let isConnected = true;
 
-
+let isBusy = false;
 function setBusy(on) {
   isBusy = on;
 
