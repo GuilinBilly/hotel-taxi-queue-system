@@ -74,7 +74,7 @@ const soundToggle = document.getElementById("soundToggle"); // optional
 // -----------------------------
 // STATE
 // -----------------------------
-let isConnected = true;
+
 
 let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 let offeredCache = null;
