@@ -416,22 +416,25 @@ async function expireOffersNow() {
 }
 
 async function callNext() {
- // 🔒 Guard #1 — prevent action while offline
+  // Guard #1 — offline
   if (!isConnected) {
-  showToast("Offline — try again in a moment", "warn", 2000);
-  return;
-}  
-// 🔒 Guard #2 — prevent double-clicks
-if (isBusy) return;
-
-  // ✅ Check PIN BEFORE setting busy
-  if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
-    showToast("Wrong PIN", "err", 1800);   // or alert("Wrong PIN")
+    if (typeof showToast === "function") showToast("Offline — try again in a moment", "warn", 2000);
+    else alert("Offline — try again in a moment");
     return;
   }
 
-  setBusy(true, "Calling next…");
+  // Guard #2 — double-click
+  if (isBusy) return;
+
+  // PIN check first (don’t lock UI if PIN is wrong)
+  if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
+    if (typeof showToast === "function") showToast("Wrong PIN", "err", 1800);
+    else alert("Wrong PIN");
+    return;
+  }
+
   unlockAudio();
+  setBusy(true);
 
   try {
     await expireOffersNow();
@@ -445,7 +448,8 @@ if (isBusy) return;
       .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
     if (!waiting.length) {
-      showToast("No WAITING taxis.", "warn", 2000); // or alert(...)
+      if (typeof showToast === "function") showToast("No WAITING taxis.", "warn", 2000);
+      else alert("No WAITING taxis.");
       return;
     }
 
@@ -458,14 +462,16 @@ if (isBusy) return;
       offerExpiresAt: now + OFFER_MS,
     });
 
-    showToast("Offer sent ✅", "ok", 1500);
+    if (typeof showToast === "function") showToast("Offer sent ✅", "ok", 1500);
   } catch (err) {
     console.error("callNext error:", err);
-    showToast("Call Next failed", "err", 2200);
+    if (typeof showToast === "function") showToast("Call Next failed — check connection", "err", 2500);
+    else alert("Call Next failed — check connection");
   } finally {
-    setBusy(false); // ✅ always runs
+    setBusy(false);
   }
 }
+
 async function acceptRide() {
   if (isBusy) return;            // ✅ add
   setBusy(true, "Joining…");      // ✅ add
