@@ -202,6 +202,20 @@ function titleCase(s) {
 // CONNECTION BADGE (.info/connected)
 // -----------------------------
 let isConnected = true;
+
+let isBusy = false;
+
+function setBusy(on) {
+  isBusy = on;
+
+  // disable action buttons while working
+  const ids = ["joinBtn", "leaveBtn", "acceptBtn", "callNextBtn", "completeBtn", "resetBtn"];
+  ids.forEach((id) => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.disabled = on || b.disabled; // keep existing disabled logic
+  });
+}
 function wireConnectionBadge() {
   const connectedRef = ref(db, ".info/connected");
   let wasConnected = true;
