@@ -201,6 +201,7 @@ function titleCase(s) {
 // -----------------------------
 // CONNECTION BADGE (.info/connected)
 // -----------------------------
+let isConnected = true;
 function wireConnectionBadge() {
   const connectedRef = ref(db, ".info/connected");
   let wasConnected = true;
@@ -415,7 +416,13 @@ async function expireOffersNow() {
 }
 
 async function callNext() {
-  if (isBusy) return;
+ // 🔒 Guard #1 — prevent action while offline
+}  if (!isConnected) {
+  showToast("Offline — try again in a moment", "warn", 2000);
+  return;
+}  
+// 🔒 Guard #2 — prevent double-clicks
+if (isBusy) return;
 
   // ✅ Check PIN BEFORE setting busy
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
