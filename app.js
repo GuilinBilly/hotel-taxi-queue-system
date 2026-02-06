@@ -524,24 +524,38 @@ async function completePickup() {
 }
 
 async function resetDemo() {
-  if (isBusy) return;            // ✅ add
-  setBusy(true, "Joining…");      // ✅ add
+  if (!isConnected) {
+    if (typeof showToast === "function") showToast("Offline — try again in a moment", "warn", 2000);
+    else alert("Offline — try again in a moment");
+    return;
+  }
+  if (isBusy) return;
+
   if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Invalid PIN.");
   if (!confirm("Reset demo? This will clear the entire queue.")) return;
 
-  const snap = await get(queueRef);
-  if (!snap.exists()) return;
+  setBusy(true);
+  try {
+    const snap = await get(queueRef);
+    if (!snap.exists()) return;
 
-  const keys = Object.keys(snap.val());
-  await Promise.all(keys.map((k) => remove(ref(db, "queue/" + k))));
+    const keys = Object.keys(snap.val());
+    await Promise.all(keys.map((k) => remove(ref(db, "queue/" + k))));
 
-  offeredCache = null;
-  stopOfferBeepLoop();
-  setOfferPulse(false);
-  refreshAcceptUI();
-  setBusy(false);               // ✅ add
+    offeredCache = null;
+    stopOfferBeepLoop();
+    setOfferPulse(false);
+    refreshAcceptUI();
+
+    if (typeof showToast === "function") showToast("Demo reset ✅", "ok", 1500);
+  } catch (err) {
+    console.error("resetDemo error:", err);
+    if (typeof showToast === "function") showToast("Reset failed — check connection", "err", 2500);
+    else alert("Reset failed — check connection");
+  } finally {
+    setBusy(false);
+  }
 }
-
 // -----------------------------
 // LIVE RENDER (single onValue)
 // -----------------------------
