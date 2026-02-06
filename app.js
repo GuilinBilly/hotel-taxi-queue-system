@@ -415,34 +415,49 @@ async function expireOffersNow() {
 }
 
 async function callNext() {
-  if (isBusy) return;            // ✅ add
-  setBusy(true, "Joining…");      // ✅ add
-  unlockAudio(); // ✅ ensure sound is allowed
-  if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
+  if (isBusy) return;
 
-  await expireOffersNow();
+  setBusy(true, "Calling...");
+  unlockAudio(); // ensure sound is allowed
 
-  const snap = await get(queueRef);
-  const data = snap.exists() ? snap.val() : {};
-  const entries = Object.entries(data);
+  try {
+    if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
+      alert("Wrong PIN");
+      return;
+    }
 
-  const waiting = entries
-    .filter(([_, v]) => (v.status ?? "WAITING") === "WAITING")
-    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+    await expireOffersNow();
 
-  if (!waiting.length) return alert("No WAITING taxis.");
+    const snap = await get(queueRef);
+    const data = snap.exists() ? snap.val() : {};
+    const entries = Object.entries(data);
 
-  const [key] = waiting[0];
-  const now = Date.now();
+    const waiting = entries
+      .filter(([_, v]) => (v.status ?? "WAITING") === "WAITING")
+      .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
-  await update(ref(db, "queue/" + key), {
-    status: "OFFERED",
-    offerStartedAt: now,
-    offerExpiresAt: now + OFFER_MS,
+    if (!waiting.length) {
+      alert("No WAITING taxis.");
+      return;
+    }
+
+    const [key] = waiting[0];
+    const now = Date.now();
+
+    await update(ref(db, "queue/" + key), {
+      status: "OFFERED",
+      offerStartedAt: now,
+      offerExpiresAt: now + OFFER_MS,
     });
-  setBusy(false);               // ✅ add
-}
 
+    // Optional (nice): showToast("Offered next taxi ✅", "ok");
+  } catch (err) {
+    console.error("callNext error:", err);
+    alert("Call Next failed — check console");
+  } finally {
+    setBusy(false); // ✅ ALWAYS runs, even after returns/errors
+  }
+}
 async function acceptRide() {
   if (isBusy) return;            // ✅ add
   setBusy(true, "Joining…");      // ✅ add
