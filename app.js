@@ -417,15 +417,16 @@ async function expireOffersNow() {
 async function callNext() {
   if (isBusy) return;
 
-  setBusy(true, "Calling...");
-  unlockAudio(); // ensure sound is allowed
+  // ✅ Check PIN BEFORE setting busy
+  if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
+    showToast("Wrong PIN", "err", 1800);   // or alert("Wrong PIN")
+    return;
+  }
+
+  setBusy(true, "Calling next…");
+  unlockAudio();
 
   try {
-    if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
-      alert("Wrong PIN");
-      return;
-    }
-
     await expireOffersNow();
 
     const snap = await get(queueRef);
@@ -437,7 +438,7 @@ async function callNext() {
       .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
     if (!waiting.length) {
-      alert("No WAITING taxis.");
+      showToast("No WAITING taxis.", "warn", 2000); // or alert(...)
       return;
     }
 
@@ -450,12 +451,12 @@ async function callNext() {
       offerExpiresAt: now + OFFER_MS,
     });
 
-    // Optional (nice): showToast("Offered next taxi ✅", "ok");
+    showToast("Offer sent ✅", "ok", 1500);
   } catch (err) {
     console.error("callNext error:", err);
-    alert("Call Next failed — check console");
+    showToast("Call Next failed", "err", 2200);
   } finally {
-    setBusy(false); // ✅ ALWAYS runs, even after returns/errors
+    setBusy(false); // ✅ always runs
   }
 }
 async function acceptRide() {
