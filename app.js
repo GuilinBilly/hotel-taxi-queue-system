@@ -323,17 +323,19 @@ async function ensureSignedIn() {
 // CORE ACTIONS
 // -----------------------------
 async function joinQueue() {
-  if (isBusy) return;           // ✅ add
-  setBusy(true, "Joining…");    // ✅ add
+  if (isBusy) return;
+  setBusy(true, "Joining…");
   unlockAudio();
 
   try {
     const name = normSpaces(driverNameInput.value);
     const plate = normPlate(driverPlateInput.value);
     const carColor = titleCase(driverColorInput.value);
+
     driverNameInput.value = name;
     driverPlateInput.value = plate;
     driverColorInput.value = carColor;
+
     if (!name || !plate) {
       alert("Enter name and cab number.");
       return;
@@ -342,9 +344,9 @@ async function joinQueue() {
     const driverKey = `${norm(name)}_${norm(plate)}`;
     const driverRef = ref(db, "queue/" + driverKey);
 
-    // If previously LEFT, remove so it can rejoin cleanly
     const existingSnap = await get(driverRef);
     const existing = existingSnap.exists() ? existingSnap.val() : null;
+
     if (existing && existing.status === "LEFT") {
       await remove(driverRef);
     }
@@ -366,6 +368,7 @@ async function joinQueue() {
 
     myDriverKey = driverKey;
     sessionStorage.setItem("htqs.driverKey", driverKey);
+
     lockDriverInputs(true);
     refreshAcceptUI();
 
@@ -373,12 +376,12 @@ async function joinQueue() {
     showToast("Joined queue ✅", "ok");
   } catch (err) {
     console.error("joinQueue error:", err);
-    showToast("Join failed — try again", "err", 2400);  // ✅ replace alert
+    showToast("Join failed — try again", "err", 2400);
     alert("Join failed");
-    setBusy(false);               // ✅ add
+  } finally {
+    setBusy(false);
   }
 }
-
 async function leaveQueue() {
   if (isBusy) return;             // ✅ add
   setBusy(true, "Joining…");      // ✅ add
