@@ -523,23 +523,27 @@ async function acceptRide() {
     setBusy(false);
   }
 }
+
 async function completePickup() {
-  if (isBusy) return;            // ✅ add
-  setBusy(true, "Joining…");      // ✅ add
-  stopOfferBeepLoop();
+  if (isBusy) return;
+  setBusy(true, "Completing…");
 
-  if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
+  try {
+    stopOfferBeepLoop();
 
-  const snap = await get(queueRef);
-  if (!snap.exists()) return;
+    if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
 
-  const accepted = Object.entries(snap.val()).find(([_, v]) => v.status === "ACCEPTED");
-  if (!accepted) return alert("No ACCEPTED ride to complete.");
+    const snap = await get(queueRef);
+    if (!snap.exists()) return;
 
-  await remove(ref(db, "queue/" + accepted[0]));
-  setBusy(false);               // ✅ add
+    const accepted = Object.entries(snap.val()).find(([_, v]) => v.status === "ACCEPTED");
+    if (!accepted) return alert("No ACCEPTED ride to complete.");
+
+    await remove(ref(db, "queue/" + accepted[0]));
+  } finally {
+    setBusy(false);
+  }
 }
-
 async function resetDemo() {
   if (!isConnected) {
     if (typeof showToast === "function") showToast("Offline — try again in a moment", "warn", 2000);
