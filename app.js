@@ -163,7 +163,7 @@ function showToast(msg, type = "ok", ms = 1800) {
   }, ms);
 }
 
-let isBusy = false;
+
 
 function setBusy(on, msg = "Working…") {
   isBusy = on;
