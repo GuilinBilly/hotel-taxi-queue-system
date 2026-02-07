@@ -383,8 +383,9 @@ async function joinQueue() {
   }
 }
 async function leaveQueue() {
-  if (isBusy) return;             // ✅ add
-  setBusy(true, "Joining…");      // ✅ add
+  if (isBusy) return;
+  setBusy(true, "Leaving…");
+
   try {
     if (!myDriverKey) return;
 
@@ -392,18 +393,18 @@ async function leaveQueue() {
 
     sessionStorage.removeItem("htqs.driverKey");
     myDriverKey = null;
-    lockDriverInputs(false);
 
+    lockDriverInputs(false);
     stopOfferBeepLoop();
     setOfferPulse(false);
     refreshAcceptUI();
   } catch (err) {
     console.error("leaveQueue error:", err);
     alert("Leave failed");
-    setBusy(false);               // ✅ add
+  } finally {
+    setBusy(false);
   }
 }
-
 async function expireOffersNow() {
   const snap = await get(queueRef);
   if (!snap.exists()) return;
