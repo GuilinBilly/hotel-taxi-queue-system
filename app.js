@@ -486,39 +486,43 @@ async function callNext() {
 }
 
 async function acceptRide() {
-  if (isBusy) return;            // ✅ add
-  setBusy(true, "Joining…");      // ✅ add
-  unlockAudio(); // ✅ ensure sound is allowed
-  suppressOfferBeep = true;
-  stopOfferBeepLoop();
+  if (isBusy) return;
+  setBusy(true, "Accepting…");
+  unlockAudio();
 
-  if (!offeredCache) return alert("No active offer.");
+  try {
+    suppressOfferBeep = true;
+    stopOfferBeepLoop();
 
-  const offerKey = offeredCache.key;
-  const snap = await get(ref(db, "queue/" + offerKey));
-  if (!snap.exists()) return alert("Offer disappeared.");
+    if (!offeredCache) return alert("No active offer.");
 
-  const v = snap.val();
-  
-  if (v.status !== "OFFERED" || (v.offerExpiresAt ?? 0) <= Date.now()) {
-    return alert("Offer expired — wait for next call.");
+    const offerKey = offeredCache.key;
+
+    const snap = await get(ref(db, "queue/" + offerKey));
+    if (!snap.exists()) return alert("Offer disappeared.");
+
+    const v = snap.val();
+
+    if (v.status !== "OFFERED" || (v.offerExpiresAt ?? 0) <= Date.now()) {
+      return alert("Offer expired — wait for next call.");
+    }
+
+    if (!isMeForOffer(v)) {
+      return alert("This offer is not for you.");
+    }
+
+    await update(ref(db, "queue/" + offerKey), {
+      status: "ACCEPTED",
+      offerStartedAt: null,
+      offerExpiresAt: null,
+    });
+
+    offeredCache = null;
+    refreshAcceptUI();
+  } finally {
+    setBusy(false);
   }
-
-  if (!isMeForOffer(v)) {
-    return alert("This offer is not for you.");
-  }
-
-  await update(ref(db, "queue/" + offerKey), {
-    status: "ACCEPTED",
-    offerStartedAt: null,
-    offerExpiresAt: null,
-  });
-
-  offeredCache = null;
-  refreshAcceptUI();
-   setBusy(false);               // ✅ add
 }
-
 async function completePickup() {
   if (isBusy) return;            // ✅ add
   setBusy(true, "Joining…");      // ✅ add
