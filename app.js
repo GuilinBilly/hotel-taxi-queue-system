@@ -202,18 +202,31 @@ function titleCase(s) {
 // CONNECTION BADGE (.info/connected)
 // -----------------------------
 let isConnected = true;
+let isBusy = false;
 
-
-function setBusy(on) {
+function setBusy(on, msg = "Working…") {
   isBusy = on;
 
-  // disable action buttons while working
   const ids = ["joinBtn", "leaveBtn", "acceptBtn", "callNextBtn", "completeBtn", "resetBtn"];
   ids.forEach((id) => {
     const b = document.getElementById(id);
     if (!b) return;
-    b.disabled = on || b.disabled; // keep existing disabled logic
+
+    // Save original disabled state only once (so we can restore it)
+    if (b.dataset.prevDisabled == null) b.dataset.prevDisabled = String(b.disabled);
+
+    if (on) {
+      b.disabled = true;
+      b.classList.add("is-loading");
+    } else {
+      b.disabled = (b.dataset.prevDisabled === "true");
+      b.classList.remove("is-loading");
+      delete b.dataset.prevDisabled;
+    }
   });
+
+  // Optional toast while busy
+  if (on && typeof showToast === "function") showToast(msg, "warn", 1200);
 }
 function wireConnectionBadge() {
   const connectedRef = ref(db, ".info/connected");
