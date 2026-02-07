@@ -164,23 +164,6 @@ function showToast(msg, type = "ok", ms = 1800) {
 }
 
 
-
-function setBusy(on, msg = "Working…") {
-  isBusy = on;
-
-  // Disable buttons while working
-  const btnIds = ["joinBtn", "leaveBtn", "acceptBtn", "callNextBtn", "completeBtn", "resetBtn"];
-  btnIds.forEach((id) => {
-    const b = document.getElementById(id);
-    if (!b) return;
-    b.disabled = on || b.classList.contains("disabled"); // keeps your existing disabled logic
-    b.classList.toggle("is-loading", on);
-  });
-
-  // Optional: show a tiny toast while busy (not required)
-  if (on) showToast(msg, "warn", 1200);
-}
-
 // -----------------------------
 // INPUT POLISH (C1)
 // -----------------------------
