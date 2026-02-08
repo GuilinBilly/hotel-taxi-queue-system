@@ -168,10 +168,11 @@ function findOfferForMe(data) {
 }
 function refreshAcceptUI() {
   const hasOfferForMe = !!offeredCache;
+
   if (acceptBtn) acceptBtn.disabled = !hasOfferForMe || isBusy;
 
-  // If you have a pulse/animation helper:
-  setOfferPulse(hasOfferForMe);
+  // If you have pulse helper, drive it ONLY from offeredCache
+  if (typeof setOfferPulse === "function") setOfferPulse(hasOfferForMe);
 
   // Safety: if no offer, ensure beep stops
   if (!hasOfferForMe) stopOfferBeepLoop();
