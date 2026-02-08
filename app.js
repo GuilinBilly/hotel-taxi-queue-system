@@ -148,6 +148,7 @@ function findOfferForMe(data) {
   const match = entries.find(([_, v]) => {
     if (!v) return false;
     if ((v.status ?? "WAITING") !== "OFFERED") return false;
+    if ((v.offerExpiresAt ?? 0) <= now) return false; // ✅ ignore expired
     return isMeForOffer(v);
   });
 
