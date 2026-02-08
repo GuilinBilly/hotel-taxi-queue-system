@@ -588,6 +588,13 @@ async function resetDemo() {
     setOfferPulse(false);
     refreshAcceptUI();
 
+    if (!offeredCache) {
+  stopOfferBeepLoop();
+  setOfferPulse(false);
+} else {
+  setOfferPulse(true);
+  if (soundEnabled && !suppressOfferBeep) startOfferBeepLoop();
+}
     if (typeof showToast === "function") showToast("Demo reset ✅", "ok", 1500);
   } catch (err) {
     console.error("resetDemo error:", err);
