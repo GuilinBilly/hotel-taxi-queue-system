@@ -662,24 +662,26 @@ function subscribeQueue() {
 
     updateEmptyState();
 
-    // Find oldest OFFERED that hasn't expired
-    const offered = entries
-      .filter(([_, v]) => v && v.status === "OFFERED" && (v.offerExpiresAt ?? 0) > now)
-      .sort((a, b) => (a[1].offerStartedAt ?? 0) - (b[1].offerStartedAt ?? 0));
+    // ✅ ONLY cache an OFFERED entry if it's for THIS driver (prevents wrong beep/pulse)
+offeredCache = findOfferForMe(data);
 
-    offeredCache = offered.length ? { key: offered[0][0], val: offered[0][1] } : null;
+// ✅ Make Accept UI depend ONLY on offeredCache
+refreshAcceptUI();
 
-    const offeredToMe = !!offeredCache && !!myDriverKey && isMeForOffer(offeredCache.val);
-    setOfferPulse(offeredToMe);
+// ✅ Beep/pulse depend ONLY on offeredCache
+if (!offeredCache) {
+  stopOfferBeepLoop();
+  setOfferPulse(false);
+  calledBox.textContent = "";
+} else {
+  setOfferPulse(true);
 
-    if (offeredToMe && canPlayAlerts() && !suppressOfferBeep) {
-      startOfferBeepLoop(OFFER_MS);
-    } else {
-      stopOfferBeepLoop();
-    }
+  if (canPlayAlerts() && !suppressOfferBeep) {
+    startOfferBeepLoop(OFFER_MS);
+  }
 
-    refreshAcceptUI();
-    calledBox.textContent = offeredCache ? "Now Offering: " + offeredCache.val.name : "";
+  calledBox.textContent = "Now Offering: " + offeredCache.val.name;
+}
   });
 }
 
