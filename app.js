@@ -156,12 +156,17 @@ function findOfferForMe(data) {
   const [key, v] = match;
   return { key, val: v };
 }
-function refreshAcceptUI() {
-  // Accept enabled only if the offer is for the current typed driver
-  const enabled = !!offeredCache && isMeForOffer(offeredCache.val);
-  if (acceptBtn) acceptBtn.disabled = !enabled;
-}
 
+function refreshAcceptUI() {
+  const hasOfferForMe = !!offeredCache;
+  if (acceptBtn) acceptBtn.disabled = !hasOfferForMe || isBusy;
+
+  // If you have a pulse/animation helper:
+  setOfferPulse(hasOfferForMe);
+
+  // Safety: if no offer, ensure beep stops
+  if (!hasOfferForMe) stopOfferBeepLoop();
+}
 let toastTimer = null;
 
 function showToast(msg, type = "ok", ms = 1800) {
