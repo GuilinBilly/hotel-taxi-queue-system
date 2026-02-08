@@ -141,6 +141,21 @@ function isMeForOffer(v) {
   return inputName && inputPlate && norm(v.name) === inputName && norm(v.plate) === inputPlate;
 }
 
+function findOfferForMe(data) {
+  const entries = Object.entries(data || {});
+
+  // Find the first OFFERED entry that is for THIS driver
+  const match = entries.find(([_, v]) => {
+    if (!v) return false;
+    if ((v.status ?? "WAITING") !== "OFFERED") return false;
+    return isMeForOffer(v);
+  });
+
+  if (!match) return null;
+
+  const [key, v] = match;
+  return { key, val: v };
+}
 function refreshAcceptUI() {
   // Accept enabled only if the offer is for the current typed driver
   const enabled = !!offeredCache && isMeForOffer(offeredCache.val);
