@@ -672,22 +672,24 @@ function subscribeQueue() {
 
     updateEmptyState();
 
-    // ✅ ONLY cache an OFFERED entry if it's for THIS driver (prevents wrong beep/pulse)
+    // ✅ ONLY cache an OFFERED entry if it's for THIS driver
 offeredCache = findOfferForMe(data);
 
-// ✅ Make Accept UI depend ONLY on offeredCache
+// ✅ Accept UI depends ONLY on offeredCache
 refreshAcceptUI();
 
-// ✅ Beep/pulse depend ONLY on offeredCache
+// ✅ Beep/pulse depends ONLY on offeredCache
 if (!offeredCache) {
   stopOfferBeepLoop();
-  setOfferPulse(false);
+  if (typeof setOfferPulse === "function") setOfferPulse(false);
   calledBox.textContent = "";
 } else {
-  setOfferPulse(true);
+  if (typeof setOfferPulse === "function") setOfferPulse(true);
 
-  if (canPlayAlerts() && !suppressOfferBeep) {
+  if (canPlayAlerts() && !suppressOfferBeep /* && soundEnabled */) {
     startOfferBeepLoop(OFFER_MS);
+  } else {
+    stopOfferBeepLoop();
   }
 
   calledBox.textContent = "Now Offering: " + offeredCache.val.name;
