@@ -143,12 +143,21 @@ function isMeForOffer(v) {
 
 function findOfferForMe(data) {
   const entries = Object.entries(data || {});
+  const now = Date.now();
 
-  // Find the first OFFERED entry that is for THIS driver
+  // Find the first OFFERED entry that is:
+  // 1) OFFERED
+  // 2) NOT expired
+  // 3) for THIS driver (matches current typed inputs)
   const match = entries.find(([_, v]) => {
     if (!v) return false;
+
     if ((v.status ?? "WAITING") !== "OFFERED") return false;
-    if ((v.offerExpiresAt ?? 0) <= now) return false; // ✅ ignore expired
+
+    // ✅ ignore expired offers
+    if ((v.offerExpiresAt ?? 0) <= now) return false;
+
+    // ✅ must match the current driver inputs
     return isMeForOffer(v);
   });
 
@@ -157,7 +166,6 @@ function findOfferForMe(data) {
   const [key, v] = match;
   return { key, val: v };
 }
-
 function refreshAcceptUI() {
   const hasOfferForMe = !!offeredCache;
   if (acceptBtn) acceptBtn.disabled = !hasOfferForMe || isBusy;
