@@ -634,17 +634,20 @@ function subscribeQueue() {
     // If empty and offline, keep current UI
     if (!snap.exists()) {
       if (!isConnected) return;
+
       queueList.innerHTML = "";
       calledBox.textContent = "";
       offeredCache = null;
+
+      lastOfferKey = null;
       stopOfferBeepLoop();
-      setOfferPulse(false);
+      if (typeof setOfferPulse === "function") setOfferPulse(false);
+
       updateEmptyState();
       refreshAcceptUI();
       return;
     }
 
-    const now = Date.now();
     const data = snap.val() || {};
     const entries = Object.entries(data);
 
@@ -658,10 +661,9 @@ function subscribeQueue() {
       }
     }
 
-    // Render
+    // Render list
     queueList.innerHTML = "";
     calledBox.textContent = "";
-    offeredCache = null;
 
     const active = entries
       .filter(([_, v]) => v && (v.status ?? "WAITING") !== "LEFT")
@@ -682,31 +684,39 @@ function subscribeQueue() {
 
     updateEmptyState();
 
-    // ✅ ONLY cache an OFFERED entry if it's for THIS driver
-offeredCache = findOfferForMe(data);
+    // ✅ Only cache an offer if it’s for THIS driver
+    offeredCache = findOfferForMe(data);
 
-// ✅ Accept UI depends ONLY on offeredCache
-refreshAcceptUI();
+    // ✅ If a NEW offer arrives, allow beeps again
+    const newKey = offeredCache ? offeredCache.key : null;
+    if (newKey && newKey !== lastOfferKey) {
+      suppressOfferBeep = false;
+    }
+    lastOfferKey = newKey;
 
-// ✅ Beep/pulse depends ONLY on offeredCache
-if (!offeredCache) {
-  stopOfferBeepLoop();
-  if (typeof setOfferPulse === "function") setOfferPulse(false);
-  calledBox.textContent = "";
-} else {
-  if (typeof setOfferPulse === "function") setOfferPulse(true);
+    // ✅ UI depends ONLY on offeredCache
+    refreshAcceptUI();
 
-  if (canPlayAlerts() && !suppressOfferBeep /* && soundEnabled */) {
-    startOfferBeepLoop(OFFER_MS);
-  } else {
-    stopOfferBeepLoop();
-  }
+    // ✅ Beep/pulse depends ONLY on offeredCache
+    if (!offeredCache) {
+      stopOfferBeepLoop();
+      if (typeof setOfferPulse === "function") setOfferPulse(false);
+      calledBox.textContent = "";
+      return;
+    }
 
-  calledBox.textContent = "Now Offering: " + offeredCache.val.name;
-}
+    // offeredCache exists (for THIS driver)
+    if (typeof setOfferPulse === "function") setOfferPulse(true);
+
+    calledBox.textContent = "Now Offering: " + offeredCache.val.name;
+
+    if (canPlayAlerts() && !suppressOfferBeep) {
+      startOfferBeepLoop(OFFER_MS);
+    } else {
+      stopOfferBeepLoop();
+    }
   });
 }
-
 // -----------------------------
 // BOOT
 // -----------------------------
