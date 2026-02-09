@@ -169,9 +169,10 @@ function findOfferForMe(data) {
 function refreshAcceptUI() {
   const hasOfferForMe = !!offeredCache;
 
-  if (acceptBtn) acceptBtn.disabled = !hasOfferForMe || isBusy;
+  const btn = document.getElementById("acceptBtn");
+  if (btn) btn.disabled = !hasOfferForMe;   // ✅ ONLY offer controls disabled
 
-  // If you have pulse helper, drive it ONLY from offeredCache
+  // Optional: if you want pulse driven here (either here OR in subscribeQueue, not both)
   if (typeof setOfferPulse === "function") setOfferPulse(hasOfferForMe);
 
   // Safety: if no offer, ensure beep stops
