@@ -218,39 +218,25 @@ let isBusy = false;
 function setBusy(on, msg = "Working…") {
   isBusy = on;
 
-  // Buttons temporarily locked during async work
   const ids = ["joinBtn", "leaveBtn", "acceptBtn", "callNextBtn", "completeBtn", "resetBtn"];
 
   ids.forEach((id) => {
     const b = document.getElementById(id);
     if (!b) return;
 
-    if (on) {
-      // Save current disabled state each time we go busy
-      b.dataset.prevDisabled = String(b.disabled);
-      b.disabled = true;
-      b.classList.add("is-loading");
-    } else {
-      // Restore previous state for most buttons...
-      if (id !== "acceptBtn") {
-        b.disabled = (b.dataset.prevDisabled === "true");
-      } else {
-        // ...but for Accept, ALWAYS let refreshAcceptUI() decide later
-        b.disabled = false;
-      }
-
-      b.classList.remove("is-loading");
-      delete b.dataset.prevDisabled;
-    }
+    b.disabled = !!on;
+    b.classList.toggle("is-loading", !!on);
   });
 
-  // After unlocking, recompute the real states (especially Accept / Leave)
-  if (!on && typeof refreshAcceptUI === "function") {
-    refreshAcceptUI();
+  if (!on) {
+    // IMPORTANT: when we unlock, re-apply "real" enabled/disabled rules
+    if (typeof refreshAcceptUI === "function") refreshAcceptUI();
+    if (typeof refreshJoinLeaveUI === "function") refreshJoinLeaveUI(); // if you have it
   }
 
   if (on && typeof showToast === "function") showToast(msg, "warn", 1200);
 }
+
 function wireConnectionBadge() {
   const connectedRef = ref(db, ".info/connected");
   let wasConnected = true;
