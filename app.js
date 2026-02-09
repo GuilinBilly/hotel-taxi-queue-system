@@ -672,7 +672,14 @@ function subscribeQueue() {
 
     // ✅ Only cache an offer if it’s for THIS driver
     offeredCache = findOfferForMe(data);
-
+    // If a NEW offer arrives, allow beep again
+if (!offeredCache) {
+  lastOfferKey = null;
+  suppressOfferBeep = false;
+} else if (offeredCache.key !== lastOfferKey) {
+  lastOfferKey = offeredCache.key;
+  suppressOfferBeep = false;
+}
     // ✅ If a NEW offer arrives, allow beeps again
     const newKey = offeredCache ? offeredCache.key : null;
     if (newKey && newKey !== lastOfferKey) {
