@@ -88,6 +88,9 @@ let audioUnlocked = false;
 let offerBeepIntervalId = null;
 let offerBeepStopTimeoutId = null;
 
+let lastOfferKey = null;
+let suppressOfferBeep = false; // make sure it exists only once in the whole file
+
 // Single listener handle
 let unsubscribeQueue = null;
 
