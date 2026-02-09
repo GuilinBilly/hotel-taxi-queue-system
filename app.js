@@ -145,19 +145,13 @@ function findOfferForMe(data) {
   const entries = Object.entries(data || {});
   const now = Date.now();
 
-  // Find the first OFFERED entry that is:
-  // 1) OFFERED
-  // 2) NOT expired
-  // 3) for THIS driver (matches current typed inputs)
   const match = entries.find(([_, v]) => {
     if (!v) return false;
-
     if ((v.status ?? "WAITING") !== "OFFERED") return false;
 
-    // ✅ ignore expired offers
+    // ignore expired offers if timestamp exists
     if ((v.offerExpiresAt ?? 0) <= now) return false;
 
-    // ✅ must match the current driver inputs
     return isMeForOffer(v);
   });
 
