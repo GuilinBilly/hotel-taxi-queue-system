@@ -221,18 +221,23 @@ let isBusy = false;
 function setBusy(on, msg = "Working…") {
   isBusy = on;
 
+  // Buttons that should be temporarily locked while we do async work
   const ids = ["joinBtn", "leaveBtn", "acceptBtn", "callNextBtn", "completeBtn", "resetBtn"];
+
   ids.forEach((id) => {
     const b = document.getElementById(id);
     if (!b) return;
 
-    // Save original disabled state only once (so we can restore it)
-    if (b.dataset.prevDisabled == null) b.dataset.prevDisabled = String(b.disabled);
+    // Save original disabled state ONCE (so we can restore it)
+    if (b.dataset.prevDisabled == null) {
+      b.dataset.prevDisabled = String(b.disabled);
+    }
 
     if (on) {
       b.disabled = true;
       b.classList.add("is-loading");
     } else {
+      // Restore original disabled state
       b.disabled = (b.dataset.prevDisabled === "true");
       b.classList.remove("is-loading");
       delete b.dataset.prevDisabled;
