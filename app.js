@@ -850,6 +850,8 @@ onAuthStateChanged(auth, (user) => {
 wireConnectionBadge();
 loadSoundPref();
 wireSoundToggle();
+wireSmartInputs();
+refreshJoinUI(); // optional but good
 subscribeQueue();
 
 // Mobile audio unlock
