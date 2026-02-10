@@ -61,9 +61,6 @@ const callNextBtn = document.getElementById("callNextBtn");
 const completeBtn = document.getElementById("completeBtn");
 const resetBtn = document.getElementById("resetBtn");
 
-wireSmartInputs();
-refreshJoinUI(); // optional extra safety
-
 const doormanPinInput = document.getElementById("doormanPin");
 
 const queueList = document.getElementById("queueList");
