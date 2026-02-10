@@ -257,6 +257,126 @@ function wireConnectionBadge() {
 }
 
 // -----------------------------
+// C2 — SMART INPUT UX
+// -----------------------------
+const INPUT_STORE_KEY = "htqs.inputs.v1";
+
+function getInputs() {
+  return {
+    name: normSpaces(driverNameInput?.value),
+    carColor: normSpaces(driverColorInput?.value),
+    plate: normPlate(driverPlateInput?.value),
+  };
+}
+
+// Decide what is "valid enough" to Join
+function canJoinNow() {
+  const { name, plate } = getInputs();
+
+  // required: name + plate (you can also require color if you want)
+  if (!name) return false;
+  if (!plate) return false;
+
+  // optional: basic plate sanity (adjust if you want)
+  // allow letters, numbers, space, dash
+  if (!/^[A-Z0-9 -]+$/.test(plate)) return false;
+
+  return true;
+}
+
+// Enable/disable Join button based on input state + other conditions
+function refreshJoinUI() {
+  const joinBtn = document.getElementById("joinBtn");
+  if (!joinBtn) return;
+
+  // Don't enable Join while busy
+  if (isBusy) {
+    joinBtn.disabled = true;
+    return;
+  }
+
+  // If already joined (myDriverKey exists), Join should be disabled
+  if (myDriverKey) {
+    joinBtn.disabled = true;
+    return;
+  }
+
+  joinBtn.disabled = !canJoinNow();
+}
+
+// Save inputs to localStorage
+function saveInputs() {
+  try {
+    const { name, carColor, plate } = getInputs();
+    localStorage.setItem(INPUT_STORE_KEY, JSON.stringify({ name, carColor, plate }));
+  } catch (_) {}
+}
+
+// Restore inputs from localStorage
+function restoreInputs() {
+  try {
+    const raw = localStorage.getItem(INPUT_STORE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+
+    if (driverNameInput && data.name) driverNameInput.value = data.name;
+    if (driverColorInput && data.carColor) driverColorInput.value = data.carColor;
+    if (driverPlateInput && data.plate) driverPlateInput.value = data.plate;
+  } catch (_) {}
+}
+
+// Format inputs *without fighting the cursor*:
+// - do formatting on blur/change instead of every keystroke
+function wireSmartInputs() {
+  if (!driverNameInput || !driverColorInput || !driverPlateInput) return;
+
+  // Restore saved values once
+  restoreInputs();
+  refreshJoinUI();
+
+  // Live typing: validate + save (no formatting here)
+  const onTyping = () => {
+    saveInputs();
+    refreshJoinUI();
+
+    // Optional: if offer UI depends on typed inputs, refresh it here
+    if (typeof refreshAcceptUI === "function") refreshAcceptUI();
+  };
+
+  driverNameInput.addEventListener("input", onTyping);
+  driverColorInput.addEventListener("input", onTyping);
+  driverPlateInput.addEventListener("input", onTyping);
+
+  // On blur: apply formatting
+  driverNameInput.addEventListener("blur", () => {
+    driverNameInput.value = titleCase(driverNameInput.value);
+    saveInputs();
+    refreshJoinUI();
+    if (typeof refreshAcceptUI === "function") refreshAcceptUI();
+  });
+
+  driverColorInput.addEventListener("blur", () => {
+    driverColorInput.value = titleCase(driverColorInput.value);
+    saveInputs();
+    refreshJoinUI();
+  });
+
+  driverPlateInput.addEventListener("blur", () => {
+    driverPlateInput.value = normPlate(driverPlateInput.value);
+    saveInputs();
+    refreshJoinUI();
+    if (typeof refreshAcceptUI === "function") refreshAcceptUI();
+  });
+
+  // Optional: pressing Enter in plate field triggers Join (if valid)
+  driverPlateInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (canJoinNow() && typeof joinQueue === "function") joinQueue();
+    }
+  });
+}
+// -----------------------------
 // SOUND
 // -----------------------------
 
