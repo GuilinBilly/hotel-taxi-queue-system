@@ -514,7 +514,8 @@ async function joinQueue() {
       offerStartedAt: null,
       offerExpiresAt: null,
     });
-
+    refreshJoinUI();
+    
     myDriverKey = driverKey;
     sessionStorage.setItem("htqs.driverKey", driverKey);
 
@@ -540,6 +541,8 @@ async function leaveQueue() {
 
     await update(ref(db, "queue/" + myDriverKey), { status: "LEFT" });
 
+    refreshJoinUI();
+    
     sessionStorage.removeItem("htqs.driverKey");
     myDriverKey = null;
 
@@ -767,6 +770,7 @@ function subscribeQueue() {
         sessionStorage.removeItem("htqs.driverKey");
         myDriverKey = null;
         lockDriverInputs(false);
+        refreshJoinUI();
       }
     }
 
