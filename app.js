@@ -906,8 +906,9 @@ if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
 
 // Update tracking globals for next tick
 lastOfferWasForMe = hasOfferNow;
-lastOfferKeyForMe = offerKeyNow;    
-    // If a NEW offer arrives, allow beep again
+lastOfferKeyForMe = offerKeyNow;
+    
+// If a NEW offer arrives, allow beep again
 if (!offeredCache) {
   lastOfferKey = null;
   suppressOfferBeep = false;
