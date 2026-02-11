@@ -554,29 +554,40 @@ async function leaveQueue() {
     setBusy(false);
   }
 }
+
 async function expireOffersNow() {
   const snap = await get(queueRef);
   if (!snap.exists()) return;
 
   const now = Date.now();
-  const entries = Object.entries(snap.val());
+  const entries = Object.entries(snap.val() || {});
   let bump = 0;
 
   await Promise.all(
     entries.map(async ([k, v]) => {
-      const isExpired = v.status === "OFFERED" && (v.offerExpiresAt ?? 0) <= now;
+      if (!v) return;
+
+      const isExpired =
+        (v.status ?? "WAITING") === "OFFERED" &&
+        (v.offerExpiresAt ?? 0) <= now;
+
       if (!isExpired) return;
 
+      // C3: mark it as "missed" so the driver UI can show a toast if desired
       await update(ref(db, "queue/" + k), {
         status: "WAITING",
         offerStartedAt: null,
         offerExpiresAt: null,
+
+        lastMissedAt: now,     // ✅ key for C3 UX
+        lastMissedOfferAt: now, // optional duplicate name if you prefer
+
+        // keep fairness: put them at end (your original behavior)
         joinedAt: now + bump++,
       });
     })
   );
 }
-
 async function callNext() {
   // Guard #1 — offline
   if (!isConnected) {
