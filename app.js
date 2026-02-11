@@ -599,14 +599,35 @@ async function callNext() {
   setBusy(true);
 
   try {
+    const now = Date.now();
+
+    // 1) Expire any expired offers first
     await expireOffersNow();
 
+    // 2) Pull fresh queue
     const snap = await get(queueRef);
     const data = snap.exists() ? snap.val() : {};
     const entries = Object.entries(data);
 
+    // 3) C3 rule: do NOT create a new offer if one is still active
+    const activeOffer = entries.find(([_, v]) =>
+      v &&
+      (v.status ?? "WAITING") === "OFFERED" &&
+      (v.offerExpiresAt ?? 0) > now
+    );
+
+    if (activeOffer) {
+      const [, v] = activeOffer;
+      const name = v?.name ?? "a driver";
+      const secs = Math.ceil(((v.offerExpiresAt ?? now) - now) / 1000);
+      if (typeof showToast === "function") showToast(`Already offering ${name} (${secs}s left)`, "warn", 2200);
+      else alert(`Already offering ${name} (${secs}s left)`);
+      return;
+    }
+
+    // 4) Find oldest WAITING
     const waiting = entries
-      .filter(([_, v]) => (v.status ?? "WAITING") === "WAITING")
+      .filter(([_, v]) => (v && (v.status ?? "WAITING") === "WAITING"))
       .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
     if (!waiting.length) {
@@ -616,12 +637,14 @@ async function callNext() {
     }
 
     const [key] = waiting[0];
-    const now = Date.now();
 
+    // 5) Set OFFERED
     await update(ref(db, "queue/" + key), {
       status: "OFFERED",
       offerStartedAt: now,
       offerExpiresAt: now + OFFER_MS,
+      lastOfferedAt: now,        // C3: helpful for UI/debug
+      lastOfferedBy: "doorman",  // optional
     });
 
     if (typeof showToast === "function") showToast("Offer sent ✅", "ok", 1500);
@@ -633,7 +656,6 @@ async function callNext() {
     setBusy(false);
   }
 }
-
 async function acceptRide() {
   if (isBusy) return;
   setBusy(true, "Accepting…");
