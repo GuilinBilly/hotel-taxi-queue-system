@@ -79,6 +79,12 @@ const soundToggle = document.getElementById("soundToggle"); // optional
 let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 let offeredCache = null;
 
+// C3: offer lifecycle UX (driver-side)
+let lastOfferWasForMe = false;
+let lastOfferKeyForMe = null;
+let offerCountdownTimer = null;
+
+let lastOfferKey = null;      // also offer-related
 let soundEnabled = true;
 let suppressOfferBeep = false;
 
@@ -87,9 +93,6 @@ let audioCtx = null;
 let audioUnlocked = false;
 let offerBeepIntervalId = null;
 let offerBeepStopTimeoutId = null;
-
-let lastOfferKey = null;
-
 
 // Single listener handle
 let unsubscribeQueue = null;
