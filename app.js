@@ -167,16 +167,32 @@ function findOfferForMe(data) {
   return { key, val: v };
 }
 function refreshAcceptUI() {
-  const hasOfferForMe = !!offeredCache;
-
   const btn = document.getElementById("acceptBtn");
-  if (btn) btn.disabled = !hasOfferForMe; // keep this simple
+  if (!btn) return;
 
-  // Pulse/animation driven ONLY by offeredCache
-  if (typeof setOfferPulse === "function") setOfferPulse(hasOfferForMe);
+  const now = Date.now();
 
-  // Safety: if no offer, ensure beep stops
-  if (!hasOfferForMe) stopOfferBeepLoop();
+  const hasOffer =
+    !!offeredCache &&
+    (offeredCache.status ?? "WAITING") === "OFFERED";
+
+  const notExpired =
+    hasOffer &&
+    (offeredCache.offerExpiresAt ?? 0) > now;
+
+  const canAccept = hasOffer && notExpired && !isBusy;
+
+  btn.disabled = !canAccept;
+
+  // Pulse animation driven ONLY by valid offer
+  if (typeof setOfferPulse === "function") {
+    setOfferPulse(canAccept);
+  }
+
+  // Safety: if no valid offer, ensure beep stops
+  if (!canAccept) {
+    stopOfferBeepLoop();
+  }
 }
 let toastTimer = null;
 
