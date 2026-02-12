@@ -167,31 +167,31 @@ function findOfferForMe(data) {
   return { key, val: v };
 }
 function refreshAcceptUI() {
-  const btn = document.getElementById("acceptBtn");
-  if (!btn) return;
+  if (!acceptBtn) return;
+
+  // offeredCache might be {key, val} OR a direct object
+  const offer = offeredCache?.val ?? offeredCache;
+
+  const hasOffer = !!offer;
+  const status = (offer?.status ?? "").toUpperCase();
 
   const now = Date.now();
+  const expiresAt = offer?.offerExpiresAt ?? 0;
+  const notExpired = !expiresAt || expiresAt > now;
 
-  const hasOffer =
-    !!offeredCache &&
-    (offeredCache.status ?? "WAITING") === "OFFERED";
+  const canAccept = hasOffer && status === "OFFERED" && notExpired;
 
-  const notExpired =
-    hasOffer &&
-    (offeredCache.offerExpiresAt ?? 0) > now;
+  acceptBtn.disabled = !canAccept;
 
-  const canAccept = hasOffer && notExpired && !isBusy;
+  // Pulse + beep should follow "canAccept"
+  if (typeof setOfferPulse === "function") setOfferPulse(canAccept);
 
-  btn.disabled = !canAccept;
-
-  // Pulse animation driven ONLY by valid offer
-  if (typeof setOfferPulse === "function") {
-    setOfferPulse(canAccept);
-  }
-
-  // Safety: if no valid offer, ensure beep stops
-  if (!canAccept) {
-    stopOfferBeepLoop();
+  if (canAccept) {
+    // start beeps only if allowed
+    if (!suppressOfferBeep && soundEnabled) startOfferBeepLoop?.();
+  } else {
+    stopOfferBeepLoop?.();
+    suppressOfferBeep = false; // reset so next offer can beep
   }
 }
 let toastTimer = null;
