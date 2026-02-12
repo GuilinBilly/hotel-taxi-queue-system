@@ -737,6 +737,7 @@ async function acceptRide() {
   } catch (err) {
     console.error("acceptRide error:", err);
     showToast?.("Accept failed", "err", 2000);
+    suppressOfferBeep = false; 
   } finally {
     setBusy(false);
     refreshAcceptUI();
