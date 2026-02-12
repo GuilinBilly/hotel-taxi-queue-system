@@ -686,45 +686,62 @@ async function callNext() {
     setBusy(false);
   }
 }
+
 async function acceptRide() {
-  if (isBusy) return;
-  setBusy(true, "Accepting…");
+  if (!offeredCache || !myDriverKey) return;
+
+  const offer = offeredCache?.val ?? offeredCache;
+  const key = offeredCache?.key ?? myDriverKey;
+
+  const now = Date.now();
+  const expiresAt = offer?.offerExpiresAt ?? 0;
+
+  if ((offer?.status ?? "").toUpperCase() !== "OFFERED") return;
+  if (expiresAt && expiresAt <= now) return;
+
   unlockAudio();
 
+  // Stop UX immediately
+  suppressOfferBeep = true;
+  stopOfferBeepLoop?.();
+  if (typeof setOfferPulse === "function") setOfferPulse(false);
+
+  setBusy(true);
+
   try {
-    suppressOfferBeep = true;
-    stopOfferBeepLoop();
+    // Re-read latest to prevent race condition
+    const snap = await get(ref(db, "queue/" + key));
+    if (!snap.exists()) return;
 
-    if (!offeredCache) return alert("No active offer.");
+    const latest = snap.val();
+    const latestStatus = (latest.status ?? "").toUpperCase();
+    const latestExpires = latest.offerExpiresAt ?? 0;
 
-    const offerKey = offeredCache.key;
-
-    const snap = await get(ref(db, "queue/" + offerKey));
-    if (!snap.exists()) return alert("Offer disappeared.");
-
-    const v = snap.val();
-
-    if (v.status !== "OFFERED" || (v.offerExpiresAt ?? 0) <= Date.now()) {
-      return alert("Offer expired — wait for next call.");
+    if (latestStatus !== "OFFERED") {
+      showToast?.("Offer no longer available", "warn", 2000);
+      return;
     }
 
-    if (!isMeForOffer(v)) {
-      return alert("This offer is not for you.");
+    if (latestExpires && latestExpires <= Date.now()) {
+      showToast?.("Offer expired", "warn", 2000);
+      return;
     }
 
-    await update(ref(db, "queue/" + offerKey), {
+    await update(ref(db, "queue/" + key), {
       status: "ACCEPTED",
-      offerStartedAt: null,
-      offerExpiresAt: null,
+      acceptedAt: Date.now(),
     });
 
-    offeredCache = null;
-    refreshAcceptUI();
+    showToast?.("Accepted ✅", "ok", 1500);
+
+  } catch (err) {
+    console.error("acceptRide error:", err);
+    showToast?.("Accept failed", "err", 2000);
   } finally {
     setBusy(false);
+    refreshAcceptUI();
   }
 }
-
 async function completePickup() {
   if (isBusy) return;
   setBusy(true, "Completing…");
