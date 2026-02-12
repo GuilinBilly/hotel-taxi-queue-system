@@ -708,10 +708,15 @@ async function acceptRide() {
 
   setBusy(true);
 
+  let accepted = false; // ✅ track success
+
   try {
     // Re-read latest to prevent race condition
     const snap = await get(ref(db, "queue/" + key));
-    if (!snap.exists()) return;
+    if (!snap.exists()) {
+      showToast?.("Offer no longer available", "warn", 2000);
+      return;
+    }
 
     const latest = snap.val();
     const latestStatus = (latest.status ?? "").toUpperCase();
@@ -732,13 +737,17 @@ async function acceptRide() {
       acceptedAt: Date.now(),
     });
 
+    accepted = true; // ✅ success
+    suppressOfferBeep = true; // keep silent after accept
     showToast?.("Accepted ✅", "ok", 1500);
 
   } catch (err) {
     console.error("acceptRide error:", err);
     showToast?.("Accept failed", "err", 2000);
-    suppressOfferBeep = false; 
   } finally {
+    // ✅ Key fix: if accept did NOT succeed, allow future beeps again
+    if (!accepted) suppressOfferBeep = false;
+
     setBusy(false);
     refreshAcceptUI();
   }
