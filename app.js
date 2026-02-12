@@ -995,3 +995,14 @@ driverPlateInput.oninput = refreshAcceptUI;
 lockDriverInputs(!!myDriverKey);
 updateEmptyState();
 refreshAcceptUI();
+
+window.HTQS = {
+  state: () => ({
+    isConnected,
+    soundEnabled,
+    audioUnlocked,
+    suppressOfferBeep,
+    offeredCache,
+    offerBeepIntervalId
+  })
+};
