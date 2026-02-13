@@ -915,7 +915,7 @@ if (!hasOfferNow) {
 suppressOfferBeep = false;        // 🔥 allow next offer to beep
 stopOfferBeepLoop?.();            // safe-call
 if (typeof setOfferPulse === "function") setOfferPulse(false);
-  suppressOfferBeep = false;
+ 
 } else {
   const offerObj = offeredCache.val ?? offeredCache;
   const startedAt = offerObj?.offerStartedAt ?? 0; // MUST use offerStartedAt
