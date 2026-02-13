@@ -897,7 +897,7 @@ if (!hasOfferNow) {
     startOfferBeepLoop?.();
     if (typeof setOfferPulse === "function") setOfferPulse(true);
   }
-}    
+   
   }
 // -----------------------------
 // C3: Offer lifecycle UX (driver-side)
