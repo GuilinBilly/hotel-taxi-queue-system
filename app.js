@@ -885,7 +885,7 @@ if (!hasOfferNow) {
   if (typeof setOfferPulse === "function") setOfferPulse(false);
 } else {
   const offerObj = offeredCache.val ?? offeredCache;
-  const startedAt = offerObj?.offerStartedAt ?? offerObj?.offerExpiresAt ?? 0;
+  const startedAt = offerObj?.offerStartedAt ?? 0;
   const sigNow = `${offeredCache.key}:${startedAt}`;
 
   // Only treat it as "new" when startedAt changes
