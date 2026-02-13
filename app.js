@@ -571,7 +571,15 @@ async function leaveQueue() {
 
   try {
     if (!myDriverKey) return;
+    // ✅ Safety: don't allow leaving during an active offer/ride
+    const snap = await get(ref(db, "queue/" + myDriverKey));
+    if (!snap.exists()) return;
 
+    const status = (snap.val()?.status ?? "").toUpperCase();
+    if (status === "OFFERED" || status === "ACCEPTED") {
+      showToast?.(`Can't leave while ${status}.`, "warn", 2000);
+      return;
+    }    
     await update(ref(db, "queue/" + myDriverKey), { status: "LEFT" });
 
     refreshJoinUI();
