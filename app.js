@@ -852,7 +852,7 @@ function subscribeQueue() {
       calledBox.textContent = "";
       offeredCache = null;
 
-      lastOfferKey = null;
+      lastOfferSig = null;
       stopOfferBeepLoop();
       if (typeof setOfferPulse === "function") setOfferPulse(false);
 
