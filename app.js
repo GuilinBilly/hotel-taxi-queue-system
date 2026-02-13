@@ -873,9 +873,10 @@ function subscribeQueue() {
 
     updateEmptyState();
 
-    // ✅ Only cache an offer if it’s for THIS driver
-    offeredCache = findOfferForMe(data);
-    // C3: beep trigger should detect a NEW offer, not just the same driver key
+   // ✅ Only cache an offer if it’s for THIS driver
+offeredCache = findOfferForMe(data);
+
+// ✅ C3: Beep/pulse trigger — detect NEW offer by signature (key + offerStartedAt)
 const hasOfferNow = !!offeredCache;
 
 if (!hasOfferNow) {
@@ -885,20 +886,18 @@ if (!hasOfferNow) {
   if (typeof setOfferPulse === "function") setOfferPulse(false);
 } else {
   const offerObj = offeredCache.val ?? offeredCache;
-  const startedAt = offerObj?.offerStartedAt ?? 0;
+  const startedAt = offerObj?.offerStartedAt ?? 0; // important: use offerStartedAt
   const sigNow = `${offeredCache.key}:${startedAt}`;
 
-  // Only treat it as "new" when startedAt changes
+  // Only treat it as "new" when signature changes
   if (sigNow && sigNow !== lastOfferSig) {
     lastOfferSig = sigNow;
 
     suppressOfferBeep = false;
     startOfferBeepLoop?.();
-
     if (typeof setOfferPulse === "function") setOfferPulse(true);
   }
 }    
-    
 }
 // -----------------------------
 // C3: Offer lifecycle UX (driver-side)
