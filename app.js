@@ -897,22 +897,8 @@ if (!hasOfferNow) {
 
     if (typeof setOfferPulse === "function") setOfferPulse(true);
   }
-}    // ---- C3: ensure beep is allowed for NEW offers ----
-const newOfferKey = offeredCache ? offeredCache.key : null;
-
-// Offer ended → cleanup
-if (!newOfferKey) {
-  lastOfferKey = null;
-  suppressOfferBeep = false;      // allow next offer to beep
-  stopOfferBeepLoop();
-} else {
-  // New offer arrived (key changed) → allow beep again + restart loop
-  if (newOfferKey !== lastOfferKey) {
-    lastOfferKey = newOfferKey;
-    suppressOfferBeep = false;    // IMPORTANT: re-enable beeps for new offer
-    stopOfferBeepLoop();          // avoid duplicate timers
-    startOfferBeepLoop();         // start beeping now
-  }
+}    
+    
 }
 // -----------------------------
 // C3: Offer lifecycle UX (driver-side)
