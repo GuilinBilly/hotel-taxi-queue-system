@@ -912,9 +912,10 @@ const offerKeyNow = hasOfferNow ? offeredCache.key : null;
 // ---- A) Beep/Pulse trigger using signature (key + offerStartedAt) ----
 if (!hasOfferNow) {
   lastOfferSig = null;
+suppressOfferBeep = false;        // 🔥 allow next offer to beep
+stopOfferBeepLoop?.();            // safe-call
+if (typeof setOfferPulse === "function") setOfferPulse(false);
   suppressOfferBeep = false;
-  stopOfferBeepLoop?.();
-  if (typeof setOfferPulse === "function") setOfferPulse(false);
 } else {
   const offerObj = offeredCache.val ?? offeredCache;
   const startedAt = offerObj?.offerStartedAt ?? 0; // MUST use offerStartedAt
