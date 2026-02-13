@@ -853,6 +853,7 @@ function subscribeQueue() {
       offeredCache = null;
 
       lastOfferSig = null;
+      suppressOfferBeep = false;
       stopOfferBeepLoop();
       if (typeof setOfferPulse === "function") setOfferPulse(false);
 
