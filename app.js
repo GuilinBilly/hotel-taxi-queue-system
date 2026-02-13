@@ -84,7 +84,7 @@ let lastOfferWasForMe = false;
 let lastOfferKeyForMe = null;
 let offerCountdownTimer = null;
 
-let lastOfferKey = null;      // also offer-related
+let lastOfferSig = null; // key + startedAt
 let soundEnabled = true;
 let suppressOfferBeep = false;
 
