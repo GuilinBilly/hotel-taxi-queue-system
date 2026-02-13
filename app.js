@@ -898,7 +898,7 @@ if (!hasOfferNow) {
     if (typeof setOfferPulse === "function") setOfferPulse(true);
   }
 }    
-}
+
 // -----------------------------
 // C3: Offer lifecycle UX (driver-side)
 // Put this RIGHT AFTER: offeredCache = findOfferForMe(data);
