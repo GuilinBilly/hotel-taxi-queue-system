@@ -876,9 +876,15 @@ function subscribeQueue() {
    // ✅ Only cache an offer if it’s for THIS driver
 offeredCache = findOfferForMe(data);
 
-// ✅ C3: Beep/pulse trigger — detect NEW offer by signature (key + offerStartedAt)
-const hasOfferNow = !!offeredCache;
+// =============================
+// C3: Beep/pulse + "Offer missed" + countdown
+// Put this RIGHT AFTER: offeredCache = findOfferForMe(data);
+// =============================
 
+const hasOfferNow = !!offeredCache;
+const offerKeyNow = hasOfferNow ? offeredCache.key : null;
+
+// ---- A) Beep/Pulse trigger using signature (key + offerStartedAt) ----
 if (!hasOfferNow) {
   lastOfferSig = null;
   suppressOfferBeep = false;
@@ -886,64 +892,48 @@ if (!hasOfferNow) {
   if (typeof setOfferPulse === "function") setOfferPulse(false);
 } else {
   const offerObj = offeredCache.val ?? offeredCache;
-  const startedAt = offerObj?.offerStartedAt ?? 0; // important: use offerStartedAt
+  const startedAt = offerObj?.offerStartedAt ?? 0; // MUST use offerStartedAt
   const sigNow = `${offeredCache.key}:${startedAt}`;
 
-  // Only treat it as "new" when signature changes
   if (sigNow && sigNow !== lastOfferSig) {
     lastOfferSig = sigNow;
 
     suppressOfferBeep = false;
     startOfferBeepLoop?.();
     if (typeof setOfferPulse === "function") setOfferPulse(true);
-   }
-   
   }
-// -----------------------------
-// C3: Offer lifecycle UX (driver-side)
-// Put this RIGHT AFTER: offeredCache = findOfferForMe(data);
-// -----------------------------
+}
 
+// ---- B) "Offer missed" toast when an offer for YOU ends ----
 const mineNow = myDriverKey ? data[myDriverKey] : null;
 
-// Offer exists for THIS driver if offeredCache is set
-const hasOfferNow = !!offeredCache;
-const offerKeyNow = hasOfferNow ? offeredCache.key : null;
-
-// If an offer just ended, show "missed" ONLY if we are back to WAITING
-// (This avoids false "missed" when you accepted and became ACCEPTED.)
 if (lastOfferWasForMe && !hasOfferNow) {
   const statusNow = (mineNow?.status ?? "WAITING").toUpperCase();
 
+  // show missed only if you are back to WAITING (not ACCEPTED)
   if (statusNow === "WAITING") {
     if (typeof showToast === "function") showToast("Offer missed ⏰ — back to WAITING", "warn", 2200);
   }
 
-  // Stop countdown display
+  // stop countdown
   if (offerCountdownTimer) {
     clearInterval(offerCountdownTimer);
     offerCountdownTimer = null;
   }
 
-  // Optional: clear countdown text if you have a label area
-  const offerInfo = document.getElementById("offerInfo"); // keep if you have it
+  const offerInfo = document.getElementById("offerInfo");
   if (offerInfo) offerInfo.textContent = "";
 }
 
-// If a NEW offer starts (or offer key changes), restart countdown timer
+// ---- C) Countdown restart when NEW offer for YOU starts ----
 if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
-  // reset any previous timer
   if (offerCountdownTimer) {
     clearInterval(offerCountdownTimer);
     offerCountdownTimer = null;
   }
 
-  // Optional: show a toast when you get called
-  if (typeof showToast === "function") showToast("You’re being called 🚕", "ok", 1400);
-
-  const offerInfo = document.getElementById("offerInfo"); // optional element
+  const offerInfo = document.getElementById("offerInfo");
   offerCountdownTimer = setInterval(() => {
-    // If offer vanished, stop timer
     if (!offeredCache) {
       clearInterval(offerCountdownTimer);
       offerCountdownTimer = null;
@@ -951,18 +941,14 @@ if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
       return;
     }
 
-    const v = offeredCache.val || {};
+    const v = offeredCache.val ?? offeredCache;
     const msLeft = Math.max(0, (v.offerExpiresAt ?? 0) - Date.now());
     const secLeft = Math.ceil(msLeft / 1000);
 
-    // Optional UI text (only if element exists)
     if (offerInfo) {
-      offerInfo.textContent = secLeft > 0
-        ? `Offer expires in ${secLeft}s`
-        : `Offer expired`;
+      offerInfo.textContent = secLeft > 0 ? `Offer expires in ${secLeft}s` : `Offer expired`;
     }
 
-    // If expired, stop timer (RTDB will flip to WAITING soon anyway)
     if (secLeft <= 0) {
       clearInterval(offerCountdownTimer);
       offerCountdownTimer = null;
@@ -970,25 +956,9 @@ if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
   }, 250);
 }
 
-// Update tracking globals for next tick
+// Track for next onValue tick
 lastOfferWasForMe = hasOfferNow;
 lastOfferKeyForMe = offerKeyNow;
-    
-// If a NEW offer arrives, allow beep again
-if (!offeredCache) {
-  lastOfferKey = null;
-  suppressOfferBeep = false;
-} else if (offeredCache.key !== lastOfferKey) {
-  lastOfferKey = offeredCache.key;
-  suppressOfferBeep = false;
-}
-    // ✅ If a NEW offer arrives, allow beeps again
-    const newKey = offeredCache ? offeredCache.key : null;
-    if (newKey && newKey !== lastOfferKey) {
-      suppressOfferBeep = false;
-    }
-    lastOfferKey = newKey;
-
     // ✅ UI depends ONLY on offeredCache
     refreshAcceptUI();
 
