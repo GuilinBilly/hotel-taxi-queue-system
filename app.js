@@ -511,16 +511,33 @@ async function joinQueue() {
 
     const existingSnap = await get(driverRef);
     const existing = existingSnap.exists() ? existingSnap.val() : null;
+    const status = (existing?.status ?? "").toUpperCase();
 
-    if (existing && existing.status === "LEFT") {
+    // ✅ If record is already active, recover state and do NOT overwrite
+    if (existing && status !== "LEFT") {
+      myDriverKey = driverKey;
+      sessionStorage.setItem("htqs.driverKey", driverKey);
+
+      lockDriverInputs(true);
+      refreshJoinUI();
+      refreshAcceptUI();
+
+      showToast?.(`Already in queue (${status})`, "warn", 1800);
+      console.log("joinQueue ignored (already active)", driverKey, status);
+      return;
+    }
+
+    // Clean up old LEFT record
+    if (existing && status === "LEFT") {
       await remove(driverRef);
     }
 
     const joinedAt =
-      existing && existing.status !== "LEFT" && existing.joinedAt != null
+      existing && status !== "LEFT" && existing.joinedAt != null
         ? existing.joinedAt
         : Date.now();
 
+    // ✅ Normal join: safe to create fresh record
     await set(driverRef, {
       status: "WAITING",
       name,
@@ -530,12 +547,12 @@ async function joinQueue() {
       offerStartedAt: null,
       offerExpiresAt: null,
     });
-    refreshJoinUI();
-    
+
     myDriverKey = driverKey;
     sessionStorage.setItem("htqs.driverKey", driverKey);
 
     lockDriverInputs(true);
+    refreshJoinUI();
     refreshAcceptUI();
 
     console.log("joinQueue success", driverKey);
