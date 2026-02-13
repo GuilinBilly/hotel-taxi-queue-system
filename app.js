@@ -875,8 +875,29 @@ function subscribeQueue() {
 
     // ✅ Only cache an offer if it’s for THIS driver
     offeredCache = findOfferForMe(data);
-    
-    // ---- C3: ensure beep is allowed for NEW offers ----
+    // C3: beep trigger should detect a NEW offer, not just the same driver key
+const hasOfferNow = !!offeredCache;
+
+if (!hasOfferNow) {
+  lastOfferSig = null;
+  suppressOfferBeep = false;
+  stopOfferBeepLoop?.();
+  if (typeof setOfferPulse === "function") setOfferPulse(false);
+} else {
+  const offerObj = offeredCache.val ?? offeredCache;
+  const startedAt = offerObj?.offerStartedAt ?? offerObj?.offerExpiresAt ?? 0;
+  const sigNow = `${offeredCache.key}:${startedAt}`;
+
+  // Only treat it as "new" when startedAt changes
+  if (sigNow && sigNow !== lastOfferSig) {
+    lastOfferSig = sigNow;
+
+    suppressOfferBeep = false;
+    startOfferBeepLoop?.();
+
+    if (typeof setOfferPulse === "function") setOfferPulse(true);
+  }
+}    // ---- C3: ensure beep is allowed for NEW offers ----
 const newOfferKey = offeredCache ? offeredCache.key : null;
 
 // Offer ended → cleanup
