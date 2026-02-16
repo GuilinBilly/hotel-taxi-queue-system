@@ -125,7 +125,6 @@ function lockDriverInputs(locked) {
 }
 
 function canPlayAlerts() {
-  function canPlayAlerts() {
   return soundEnabled && audioUnlocked;
 }
 
