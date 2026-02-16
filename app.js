@@ -856,7 +856,15 @@ function subscribeQueue() {
       suppressOfferBeep = false;
       stopOfferBeepLoop();
       if (typeof setOfferPulse === "function") setOfferPulse(false);
-
+      
+      // ✅ ADD THIS: if queue is empty, nobody is “joined”
+  if (myDriverKey) {
+    sessionStorage.removeItem("htqs.driverKey");
+    myDriverKey = null;
+    lockDriverInputs(false);
+    refreshJoinUI();
+    refreshAcceptUI();
+  }
       updateEmptyState();
       refreshAcceptUI();
       return;
