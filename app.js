@@ -1055,14 +1055,6 @@ lastOfferKeyForMe = offerKeyNow;
 
     // offeredCache exists (for THIS driver)
     if (typeof setOfferPulse === "function") setOfferPulse(true);
-
-    calledBox.textContent = "Now Offering: " + offeredCache.val.name;
-    // offeredCache exists (for THIS driver)
-    if (typeof setOfferPulse === "function") setOfferPulse(true);
-    calledBox.textContent = "Now Offering: " + (offeredCache.val?.name ?? offeredCache.val?.plate ?? "");
-
-    // offeredCache exists (for THIS driver)
-    if (typeof setOfferPulse === "function") setOfferPulse(true);
     calledBox.textContent = "Now Offering: " + (offeredCache.val?.name ?? offeredCache.val?.driverName ?? "");
 
     // 🔥 Force re-unlock / re-resume right when an offer arrives
