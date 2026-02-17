@@ -1068,6 +1068,28 @@ setInterval(expireOffersNow, 1000);
 joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
 acceptBtn.onclick = acceptRide;
+const testBeepBtn = document.getElementById("testBeepBtn");
+
+testBeepBtn?.addEventListener("click", async () => {
+  console.log("🔔 Test beep clicked");
+
+  // Force Safari to resume audio
+  unlockAudio();
+  await audioCtx?.resume?.();
+
+  // Ensure beep is allowed
+  suppressOfferBeep = false;
+
+  // Play short beep
+  startOfferBeepLoop(800);
+  setTimeout(() => stopOfferBeepLoop(), 900);
+
+  console.log("Beep state:", {
+    soundEnabled,
+    audioUnlocked,
+    ctxState: audioCtx?.state
+  });
+});
 callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
