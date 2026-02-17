@@ -1058,7 +1058,9 @@ lastOfferKeyForMe = offerKeyNow;
     calledBox.textContent = "Now Offering: " + (offeredCache.val?.name ?? offeredCache.val?.driverName ?? "");
 
     // 🔥 Safari fix: force re-resume right when an offer arrives
-forceResumeAudio("offer-arrived").then(() => {
+    forceResumeAudio("offer-arrived")
+    .catch(() => {})   // ignore errors, continue
+    .then(() => {
   unlockAudio(); // safe no-op if already unlocked (keeps audioUnlocked + hint in sync)
 
   if (canPlayAlerts() && !suppressOfferBeep) {
