@@ -131,6 +131,23 @@ function lockDriverInputs(locked) {
   if (leaveBtn) leaveBtn.disabled = !locked;
 }
 
+function ensureAudioCtx() {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return;
+
+  // If no ctx, create one
+  if (!audioCtx) {
+    audioCtx = new Ctx();
+    return;
+  }
+
+  // Safari sometimes gets stuck; recreate if state is "interrupted" (or weird)
+  if (audioCtx.state === "interrupted") {
+    try { audioCtx.close?.(); } catch {}
+    audioCtx = new Ctx();
+    audioUnlocked = false; // will re-unlock on next user gesture
+  }
+}
 function canPlayAlerts() {
   return soundEnabled && audioUnlocked;
 }
