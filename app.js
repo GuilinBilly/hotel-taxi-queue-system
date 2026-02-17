@@ -406,23 +406,50 @@ function wireSmartInputs() {
 // SOUND
 // -----------------------------
 
-function ensureAudioCtx() {
+function ensureAudioCtx(reason = "") {
   const Ctx = window.AudioContext || window.webkitAudioContext;
-  if (!Ctx) return;
+  if (!Ctx) return false;
 
-  // If no ctx, create one
   if (!audioCtx) {
     audioCtx = new Ctx();
-    return;
+    return true;
   }
 
-  // Safari sometimes gets stuck; recreate if state is "interrupted" (or weird)
+  // Safari can go weird; if interrupted, recreate
   if (audioCtx.state === "interrupted") {
     try { audioCtx.close?.(); } catch {}
     audioCtx = new Ctx();
-    audioUnlocked = false; // will re-unlock on next user gesture
+    audioUnlocked = false;
+    updateSoundHint?.();
+    return true;
   }
+
+  return true;
 }
+
+async function forceResumeAudio(reason = "") {
+  ensureAudioCtx(reason);
+  if (!audioCtx) return false;
+
+  // try resume
+  try { await audioCtx.resume?.(); } catch {}
+
+  // if still not running, recreate + try again
+  if (audioCtx.state !== "running") {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return false;
+
+    try { await audioCtx.close?.(); } catch {}
+    audioCtx = new Ctx();
+    audioUnlocked = false;
+    updateSoundHint?.();
+
+    try { await audioCtx.resume?.(); } catch {}
+  }
+
+  return audioCtx?.state === "running";
+}
+
 function unlockAudio() {
   if (audioUnlocked) return;
 
