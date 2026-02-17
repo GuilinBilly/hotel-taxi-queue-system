@@ -1070,7 +1070,7 @@ forceResumeAudio("offer-arrived")
       stopOfferBeepLoop();
     }
   });
-     
+  });
 // -----------------------------
 // BOOT
 // -----------------------------
