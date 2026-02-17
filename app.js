@@ -97,6 +97,13 @@ let offerBeepStopTimeoutId = null;
 // Single listener handle
 let unsubscribeQueue = null;
 
+window.htqs = {
+  get soundEnabled() { return soundEnabled; },
+  set soundEnabled(v) { soundEnabled = !!v; },
+  get audioUnlocked() { return audioUnlocked; },
+  canPlayAlerts,
+};
+
 // -----------------------------
 // HELPERS
 // -----------------------------
