@@ -131,23 +131,6 @@ function lockDriverInputs(locked) {
   if (leaveBtn) leaveBtn.disabled = !locked;
 }
 
-function ensureAudioCtx() {
-  const Ctx = window.AudioContext || window.webkitAudioContext;
-  if (!Ctx) return;
-
-  // If no ctx, create one
-  if (!audioCtx) {
-    audioCtx = new Ctx();
-    return;
-  }
-
-  // Safari sometimes gets stuck; recreate if state is "interrupted" (or weird)
-  if (audioCtx.state === "interrupted") {
-    try { audioCtx.close?.(); } catch {}
-    audioCtx = new Ctx();
-    audioUnlocked = false; // will re-unlock on next user gesture
-  }
-}
 function canPlayAlerts() {
   return soundEnabled && audioUnlocked && document.hasFocus();
 }
@@ -423,16 +406,30 @@ function wireSmartInputs() {
 // SOUND
 // -----------------------------
 
-function unlockAudio() {
-  if (audioUnlocked) return;
-
+function ensureAudioCtx() {
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) return;
 
-  if (!audioCtx) audioCtx = new Ctx();
+  // If no ctx, create one
+  if (!audioCtx) {
+    audioCtx = new Ctx();
+    return;
+  }
 
-  audioCtx
-    .resume()
+  // Safari sometimes gets stuck; recreate if state is "interrupted" (or weird)
+  if (audioCtx.state === "interrupted") {
+    try { audioCtx.close?.(); } catch {}
+    audioCtx = new Ctx();
+    audioUnlocked = false; // will re-unlock on next user gesture
+  }
+}
+function unlockAudio() {
+  if (audioUnlocked) return;
+
+  ensureAudioCtx();
+  if (!audioCtx) return;
+
+  audioCtx.resume()
     .then(() => {
       audioUnlocked = true;
       console.log("Audio unlocked");
