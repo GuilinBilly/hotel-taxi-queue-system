@@ -149,7 +149,7 @@ function ensureAudioCtx() {
   }
 }
 function canPlayAlerts() {
-  return soundEnabled && audioUnlocked;
+  return soundEnabled && audioUnlocked && document.hasFocus();
 }
 
 function updateSoundHint() {
