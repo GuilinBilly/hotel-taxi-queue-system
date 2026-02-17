@@ -1066,11 +1066,11 @@ forceResumeAudio("offer-arrived")
 
     if (canPlayAlerts() && !suppressOfferBeep) {
       startOfferBeepLoop(OFFER_MS);
-    } else {
+     } else {
       stopOfferBeepLoop();
-    }
-  });
-  );
+     }
+   });
+  }
 // -----------------------------
 // BOOT
 // -----------------------------
