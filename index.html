@@ -28,10 +28,13 @@
         <input id="driverColor" class="input" placeholder="Car color (e.g., Black)" autocomplete="off">
         <input id="driverPlate" class="input" placeholder="Cab number (e.g., 762)" inputmode="numeric" autocomplete="off">
       <div class="row actions">
-        <button id="joinBtn" class="btn">Join Queue</button>
-        <button id="leaveBtn" class="btn" disabled>Leave Queue</button>
-        <button id="acceptBtn" class="btn outline" disabled>Accept Ride</button>
+         <button id="joinBtn" class="btn">Join Queue</button>
+         <button id="leaveBtn" class="btn" disabled>Leave Queue</button>
+         <button id="acceptBtn" class="btn outline" disabled>Accept Ride</button>
 
+         <!-- DEBUG button -->
+         <button id="testBeepBtn" class="btn outline" type="button">Test Beep</button>
+       </div>
         <!-- status text updated by JS -->
         <span id="offerInfo" class="status" aria-live="polite"></span>
       </div>
