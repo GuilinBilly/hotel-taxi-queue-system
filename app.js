@@ -1016,7 +1016,13 @@ lastOfferKeyForMe = offerKeyNow;
     if (typeof setOfferPulse === "function") setOfferPulse(true);
 
     calledBox.textContent = "Now Offering: " + offeredCache.val.name;
+    // offeredCache exists (for THIS driver)
+    if (typeof setOfferPulse === "function") setOfferPulse(true);
+    calledBox.textContent = "Now Offering: " + (offeredCache.val?.name ?? offeredCache.val?.plate ?? "");
 
+    // 🔥 Force re-unlock / re-resume right when an offer arrives
+    unlockAudio();               // safe (no-op if already unlocked)
+    audioCtx?.resume?.();        // Safari sometimes suspends again
     if (canPlayAlerts() && !suppressOfferBeep) {
       startOfferBeepLoop(OFFER_MS);
     } else {
