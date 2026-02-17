@@ -1057,15 +1057,16 @@ lastOfferKeyForMe = offerKeyNow;
     if (typeof setOfferPulse === "function") setOfferPulse(true);
     calledBox.textContent = "Now Offering: " + (offeredCache.val?.name ?? offeredCache.val?.driverName ?? "");
 
-    // 🔥 Force re-unlock / re-resume right when an offer arrives
-    unlockAudio();               // safe (no-op if already unlocked)
-    audioCtx?.resume?.();        // Safari sometimes suspends again
-    if (canPlayAlerts() && !suppressOfferBeep) {
-      startOfferBeepLoop(OFFER_MS);
-    } else {
-      stopOfferBeepLoop();
-    }
-  });
+    // 🔥 Safari fix: force re-resume right when an offer arrives
+forceResumeAudio("offer-arrived").then(() => {
+  unlockAudio(); // safe no-op if already unlocked (keeps audioUnlocked + hint in sync)
+
+  if (canPlayAlerts() && !suppressOfferBeep) {
+    startOfferBeepLoop(OFFER_MS);
+  } else {
+    stopOfferBeepLoop();
+  }
+});
 }
 // -----------------------------
 // BOOT
