@@ -1117,13 +1117,12 @@ acceptBtn.onclick = acceptRide;
 const testBeepBtn = document.getElementById("testBeepBtn");
 
 testBeepBtn?.addEventListener("click", async () => {
-  console.log("🛎️ Test beep clicked");
+  console.log("🔔 Test beep clicked");
 
+  await forceResumeAudio("test-beep");
   unlockAudio();
-  await audioCtx?.resume?.();
 
   suppressOfferBeep = false;
-
   startOfferBeepLoop(800);
   setTimeout(() => stopOfferBeepLoop(), 900);
 
