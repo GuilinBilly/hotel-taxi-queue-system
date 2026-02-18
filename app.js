@@ -1072,8 +1072,10 @@ forceResumeAudio("offer-arrived")
     } else {
       stopOfferBeepLoop();
     }
-  });  //✅ closes onValue(queueRef, (snap) => { ... })
-  };   //  closes const subscribeQueue = () => { ... }    
+  });  //  ✅ closes the .then(...)
+  });  //  ✅ closes onValue(queueRef, (snap) => { ... })
+  }    // ✅ closes function subscribeQueue() { ... }
+
 // -----------------------------
 // BOOT
 // -----------------------------
