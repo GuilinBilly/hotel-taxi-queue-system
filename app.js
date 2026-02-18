@@ -1042,16 +1042,19 @@ if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
 // Track for next onValue tick
 lastOfferWasForMe = hasOfferNow;
 lastOfferKeyForMe = offerKeyNow;
-    // ✅ UI depends ONLY on offeredCache
-    refreshAcceptUI();
 
-    // ✅ Beep/pulse depends ONLY on offeredCache
-    if (!offeredCache) {
-      stopOfferBeepLoop();
-      if (typeof setOfferPulse === "function") setOfferPulse(false);
-      calledBox.textContent = "";
-      return;
-    }
+// Track for next onValue tick
+lastOfferWasForMe = hasOfferNow;
+lastOfferKeyForMe = offerKeyNow;
+
+// ✅ UI depends ONLY on offeredCache
+refreshAcceptUI();
+
+// ✅ If no offer for me, clear "Now Offering" and stop
+if (!offeredCache) {
+  calledBox.textContent = "";
+  return;
+}
 
 // offeredCache exists (for THIS driver)
 if (typeof setOfferPulse === "function") setOfferPulse(true);
@@ -1062,7 +1065,7 @@ calledBox.textContent =
 forceResumeAudio("offer-arrived")
   .catch(() => {}) // ignore errors, continue
   .then(() => {
-    unlockAudio(); // safe no-op if already unlocked (keeps audioUnlocked + hint in sync)
+    unlockAudio(); // safe no-op if already unlocked
 
     if (canPlayAlerts() && !suppressOfferBeep) {
       startOfferBeepLoop(OFFER_MS);
@@ -1070,7 +1073,8 @@ forceResumeAudio("offer-arrived")
       stopOfferBeepLoop();
     }
   });
-  });
+}); // ✅ closes onValue(queueRef, (snap) => { ... })
+    
 // -----------------------------
 // BOOT
 // -----------------------------
