@@ -1233,7 +1233,8 @@ testBeepBtn?.addEventListener("click", async () => {
 
   await forceResumeAudio("test-beep");
   unlockAudio();
-
+  try { await audioCtx?.resume?.(); } catch {}
+  playTone("offer");
   suppressOfferBeep = false;
   startOfferBeepLoop(800);
   setTimeout(() => stopOfferBeepLoop(), 900);
