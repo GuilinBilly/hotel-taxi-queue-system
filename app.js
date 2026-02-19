@@ -135,6 +135,129 @@ function canPlayAlerts() {
   return soundEnabled && audioUnlocked && document.hasFocus();
 }
 
+// =============================
+// TONE ENGINE (Phase 1)
+// =============================
+
+// Simple “profiles” you can tune later
+const TONE_PROFILES = {
+  offer: {
+    wave: "sine",
+    freq: 880,        // A5
+    dur: 0.12,        // seconds
+    attack: 0.01,
+    decay: 0.10,
+    volume: 0.12,     // base loudness (0..1-ish)
+  },
+  expiring: {
+    wave: "triangle",
+    freq: 988,        // B5
+    dur: 0.10,
+    attack: 0.005,
+    decay: 0.08,
+    volume: 0.16,
+  },
+  accepted: {
+    // A short “two-note” confirmation (sounds nicer than one beep)
+    seq: [
+      { wave: "sine", freq: 659.25, dur: 0.08, attack: 0.005, decay: 0.06, volume: 0.10 }, // E5
+      { wave: "sine", freq: 880,    dur: 0.10, attack: 0.005, decay: 0.08, volume: 0.12 }, // A5
+    ],
+    gap: 0.03, // seconds between notes
+  },
+};
+
+// Low-level: play one oscillator “beep”
+function _playOneBeep(p, opts = {}) {
+  // Don’t even try if alerts shouldn’t play
+  if (typeof canPlayAlerts === "function" && !canPlayAlerts()) return false;
+  if (!audioCtx) return false;
+
+  const t0 = audioCtx.currentTime + (opts.delay ?? 0);
+  const freq = (opts.freq ?? p.freq) * (opts.pitchMul ?? 1);
+  const wave = opts.wave ?? p.wave ?? "sine";
+
+  // Volume scale (lets us do “soft first beep” later)
+  const vol = Math.max(0, (p.volume ?? 0.1) * (opts.volumeMul ?? 1));
+
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = wave;
+    osc.frequency.setValueAtTime(freq, t0);
+
+    // Envelope (attack -> decay)
+    const attack = Math.max(0.001, opts.attack ?? p.attack ?? 0.005);
+    const decay  = Math.max(0.01,  opts.decay  ?? p.decay  ?? 0.08);
+    const endT   = t0 + Math.max(0.02, opts.dur ?? p.dur ?? 0.1);
+
+    // Start near 0 to avoid click
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(vol, t0 + attack);
+    gain.gain.exponentialRampToValueAtTime(0.0001, Math.min(endT, t0 + attack + decay));
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(t0);
+    osc.stop(endT + 0.02);
+
+    // cleanup
+    osc.onended = () => {
+      try { osc.disconnect(); } catch {}
+      try { gain.disconnect(); } catch {}
+    };
+
+    return true;
+  } catch (e) {
+    console.warn("Tone play failed:", e);
+    return false;
+  }
+}
+
+/**
+ * Public API:
+ * playTone("offer")
+ * playTone("accepted")
+ * playTone("expiring", { volumeMul: 1.2 })
+ */
+function playTone(name, opts = {}) {
+  const profile = TONE_PROFILES[name];
+  if (!profile) return false;
+
+  // If this tone is a sequence, play notes with small gaps
+  if (Array.isArray(profile.seq)) {
+    let delay = opts.delay ?? 0;
+    const gap = profile.gap ?? 0;
+
+    for (const note of profile.seq) {
+      _playOneBeep(note, { ...opts, delay });
+      delay += (note.dur ?? 0.08) + gap;
+    }
+    return true;
+  }
+
+  // Single beep
+  return _playOneBeep(profile, opts);
+}
+
+// =============================
+// Backward-compatible wrappers
+// (so you don’t have to refactor yet)
+// =============================
+function playOfferTone() {
+  // Your existing code calls this — keep it stable
+  playTone("offer");
+}
+
+function playAcceptedTone() {
+  playTone("accepted");
+}
+
+function playExpiringTone() {
+  playTone("expiring");
+}
 function updateSoundHint() {
   const el = document.getElementById("soundHint");
   if (!el) return;
