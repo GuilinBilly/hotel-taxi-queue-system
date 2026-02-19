@@ -600,12 +600,16 @@ function stopOfferBeepLoop() {
 
 function startOfferBeepLoop(maxMs = OFFER_MS) {
   stopOfferBeepLoop();
-  playOfferTone();
 
-  offerBeepIntervalId = setInterval(playOfferTone, 1200);
+  playTone("offer", { allowNoFocus: true });  // ✅ NEW
+
+  offerBeepIntervalId = setInterval(
+    () => playTone("offer", { allowNoFocus: true }),
+    1200
+  );
+
   offerBeepStopTimeoutId = setTimeout(stopOfferBeepLoop, maxMs);
 }
-
 function loadSoundPref() {
   const saved = localStorage.getItem("htqs.soundEnabled");
   soundEnabled = saved === null ? true : saved === "true";
