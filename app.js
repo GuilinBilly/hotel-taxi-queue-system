@@ -258,6 +258,11 @@ function playAcceptedTone() {
 function playExpiringTone() {
   playTone("expiring");
 }
+
+window.playOfferTone = playOfferTone;
+window.playAcceptedTone = playAcceptedTone;
+window.playExpiringTone = playExpiringTone;
+
 function updateSoundHint() {
   const el = document.getElementById("soundHint");
   if (!el) return;
