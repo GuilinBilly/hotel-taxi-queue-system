@@ -172,7 +172,7 @@ function _playOneBeep(p, opts = {}) {
   // Don’t even try if alerts shouldn’t play
   if (typeof canPlayAlerts === "function" && !canPlayAlerts()) return false;
   if (!audioCtx) return false;
-
+  if (audioCtx.state !== "running") return false;
   const t0 = audioCtx.currentTime + (opts.delay ?? 0);
   const freq = (opts.freq ?? p.freq) * (opts.pitchMul ?? 1);
   const wave = opts.wave ?? p.wave ?? "sine";
