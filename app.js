@@ -591,27 +591,6 @@ function unlockAudio() {
     });
 }
 
-function playOfferTone() {
-  if (!audioCtx || !audioUnlocked) return;
-
-  try {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-
-    osc.type = "sine";
-    osc.frequency.value = 880;
-    gain.gain.value = 0.08;
-
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    const t = audioCtx.currentTime;
-    osc.start(t);
-    osc.stop(t + 0.12);
-  } catch (e) {
-    console.warn("playOfferTone failed:", e);
-  }
-}
 function stopOfferBeepLoop() {
   clearInterval(offerBeepIntervalId);
   clearTimeout(offerBeepStopTimeoutId);
