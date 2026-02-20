@@ -131,10 +131,10 @@ function lockDriverInputs(locked) {
   if (leaveBtn) leaveBtn.disabled = !locked;
 }
 
-function canPlayAlerts() {
-  return soundEnabled && audioUnlocked && document.hasFocus();
+function canPlayAlerts(opts = {}) {
+  const allowWhenNotFocused = !!opts.allowWhenNotFocused;
+  return soundEnabled && audioUnlocked && (allowWhenNotFocused || document.hasFocus());
 }
-
 // =============================
 // TONE ENGINE (Phase 1)
 // =============================
