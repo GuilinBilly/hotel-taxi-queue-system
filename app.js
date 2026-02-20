@@ -170,7 +170,7 @@ const TONE_PROFILES = {
 // Low-level: play one oscillator “beep”
 function _playOneBeep(p, opts = {}) {
   // Don’t even try if alerts shouldn’t play
-  if (typeof canPlayAlerts === "function" && !canPlayAlerts()) return false;
+  if (typeof canPlayAlerts === "function" && !canPlayAlerts({ allowWhenNotFocused: !!opts.force })) return false;
   if (!audioCtx) return false;
   if (audioCtx.state !== "running") return false;
   const t0 = audioCtx.currentTime + (opts.delay ?? 0);
