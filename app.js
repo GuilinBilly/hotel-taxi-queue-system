@@ -1248,7 +1248,7 @@ try {
   await forceResumeAudio("test-beep");
   unlockAudio();
   try { await audioCtx?.resume?.(); } catch {}
-  playTone("offer");
+  playTone("offer", { force: true });
   suppressOfferBeep = false;
   startOfferBeepLoop(800);
   setTimeout(() => stopOfferBeepLoop(), 900);
