@@ -1230,7 +1230,21 @@ const testBeepBtn = document.getElementById("testBeepBtn");
 
 testBeepBtn?.addEventListener("click", async () => {
   console.log("🔔 Test beep clicked");
+  
+  // Safari can suspend audio after tab/background.
+// Make "Test Beep" a guaranteed re-unlock + one-shot tone.
+try {
+  ensureAudioCtx?.();                 // recreate if needed
+  await audioCtx?.resume?.();         // resume if suspended
+} catch {}
 
+unlockAudio();                        // your existing unlock logic
+
+// Force a one-shot tone immediately inside the user gesture
+try {
+  playTone?.("offer", { volumeMul: 1.2 });
+} catch {}
+  
   await forceResumeAudio("test-beep");
   unlockAudio();
   try { await audioCtx?.resume?.(); } catch {}
