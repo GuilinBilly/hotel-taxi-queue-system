@@ -142,10 +142,10 @@ function isFocusOverrideActive() {
   return Date.now() < allowAudioWhenNotFocusedUntil;
 }
 
-function canPlayAlerts(force = false) {
+function canPlayAlerts(opts = {}) {
   const focused = document.hasFocus?.() ?? true;
-  const allow = focused || isFocusOverrideActive();
-  return !!soundEnabled && !!audioUnlocked && (force || allow);
+  const allow = focused || (opts.allowWhenNotFocused && isFocusOverrideActive());
+  return soundEnabled && audioUnlocked && allow;
 }
 // =============================
 // TONE ENGINE (Phase 1)
