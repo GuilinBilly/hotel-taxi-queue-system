@@ -1253,19 +1253,20 @@ try {
 
 unlockAudio();                        // your existing unlock logic
 
-// Force a one-shot tone immediately inside the user gesture
-try {
-  playTone?.("offer", { volumeMul: 1.2 });
-} catch {}
-  
-  await forceResumeAudio("test-beep");
-  unlockAudio();
-  try { await audioCtx?.resume?.(); } catch {}
-  playTone("offer", { force: true });
-  suppressOfferBeep = false;
-  startOfferBeepLoop(800);
-  setTimeout(() => stopOfferBeepLoop(), 900);
+// Give Safari a short window to allow audio even if focus is flaky
+allowAudioFor(2000);
 
+await forceResumeAudio("test-beep");
+unlockAudio();
+try { await audioCtx?.resume?.(); } catch {}
+
+// One-shot tone MUST be forced (bypasses document.hasFocus() briefly)
+playTone("offer", { force: true, volumeMul: 1.2 });
+
+// Optional: keep your existing loop test too
+suppressOfferBeep = false;
+startOfferBeepLoop(800);
+setTimeout(() => stopOfferBeepLoop(), 900);
   console.log("Beep state:", {
     soundEnabled,
     audioUnlocked,
