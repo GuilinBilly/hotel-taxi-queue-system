@@ -131,6 +131,16 @@ function lockDriverInputs(locked) {
   if (leaveBtn) leaveBtn.disabled = !locked;
 }
 
+// Allow audio briefly even if Safari says the page isn't focused yet
+let allowAudioWhenNotFocusedUntil = 0;
+
+function allowAudioFor(ms = 1500) {
+  allowAudioWhenNotFocusedUntil = Date.now() + ms;
+}
+
+function isFocusOverrideActive() {
+  return Date.now() < allowAudioWhenNotFocusedUntil;
+}
 function canPlayAlerts(opts = {}) {
   const allowWhenNotFocused = !!opts.allowWhenNotFocused;
   return soundEnabled && audioUnlocked && (allowWhenNotFocused || document.hasFocus());
