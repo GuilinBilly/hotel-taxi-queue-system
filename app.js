@@ -1210,7 +1210,9 @@ if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
       if (offerInfo) offerInfo.textContent = "";
       return;
     }
-
+    if (remaining <= 5000 && !urgentBeepIntervalId) {
+  startUrgentBeepLoop();
+   }    
     const v = offeredCache.val ?? offeredCache;
     const msLeft = Math.max(0, (v.offerExpiresAt ?? 0) - Date.now());
     const secLeft = Math.ceil(msLeft / 1000);
