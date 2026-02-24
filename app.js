@@ -645,6 +645,31 @@ function wireSoundToggle() {
   });
 }
 
+function ensureMuteIndicator() {
+  // Put 🔇 next to the Sound alerts checkbox (soundToggle)
+  const soundToggle = document.getElementById("soundToggle");
+  if (!soundToggle) return;
+
+  let badge = document.getElementById("muteIndicator");
+  if (!badge) {
+    badge = document.createElement("span");
+    badge.id = "muteIndicator";
+    badge.textContent = " 🔇";
+    badge.style.marginLeft = "6px";
+    badge.style.opacity = "0.75";
+    badge.style.display = "none";
+    badge.title = "Tab inactive — Safari may block audio until you interact";
+    soundToggle.parentElement?.appendChild(badge);
+  }
+}
+
+function updateMuteIndicator() {
+  const badge = document.getElementById("muteIndicator");
+  if (!badge) return;
+
+  const tabInactive = document.visibilityState === "hidden" || !document.hasFocus();
+  badge.style.display = tabInactive ? "inline" : "none";
+}
 // -----------------------------
 // AUTH (Anonymous)
 // -----------------------------
