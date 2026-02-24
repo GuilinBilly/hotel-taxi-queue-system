@@ -637,7 +637,8 @@ function stopOfferBeepLoop() {
 
 function startOfferBeepLoop(maxMs = OFFER_MS) {
   stopOfferBeepLoop();
-
+  offerBeepCount = 0;           // reset when loop starts
+  playOfferArrivedBeep();       // first beep right away
   playTone("offer", { allowNoFocus: true });  // ✅ NEW
 
   offerBeepIntervalId = setInterval(
