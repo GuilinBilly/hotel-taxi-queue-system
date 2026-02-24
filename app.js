@@ -77,6 +77,8 @@ const soundToggle = document.getElementById("soundToggle"); // optional
 
 let offerBeepIntervalId = null;
 let offerBeepStopTimeoutId = null;
+let offerBeepCount = 0;
+let urgentBeepIntervalId = null;
 let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 let offeredCache = null;
 
@@ -665,8 +667,7 @@ function startOfferBeepLoop(maxMs = OFFER_MS) {
     () => playTone("offer", { allowNoFocus: true }),
     1200
   );
-  let offerBeepCount = 0;
-  let urgentBeepIntervalId = null;
+  
   offerBeepStopTimeoutId = setTimeout(stopOfferBeepLoop, maxMs);
 }
 function loadSoundPref() {
