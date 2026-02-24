@@ -938,7 +938,7 @@ async function callNext() {
       offerExpiresAt: now + OFFER_MS,
       lastOfferedAt: now,        // C3: helpful for UI/debug
       lastOfferedBy: "doorman",  // optional
-      offerBeepCount 0,
+      offerBeepCount: 0,
     });
 
     if (typeof showToast === "function") showToast("Offer sent ✅", "ok", 1500);
