@@ -609,6 +609,25 @@ function unlockAudio() {
     });
 }
 
+function canVibrate() {
+  return typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
+}
+
+function vibratePattern(kind) {
+  if (!canVibrate()) return;
+
+  // Respect user intent: only vibrate if Sound alerts is enabled
+  if (!soundEnabled) return;
+
+  // Patterns are in milliseconds
+  const patterns = {
+    offer: [20],
+    urgent: [20, 40, 20, 40, 20],
+    accepted: [30, 30, 60],
+  };
+
+  navigator.vibrate(patterns[kind] || [20]);
+}
 function stopOfferBeepLoop() {
   clearInterval(offerBeepIntervalId);
   clearTimeout(offerBeepStopTimeoutId);
