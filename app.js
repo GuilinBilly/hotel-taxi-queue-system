@@ -637,6 +637,10 @@ function vibratePattern(kind) {
   navigator.vibrate(patterns[kind] || [20]);
 }
 function stopOfferBeepLoop() {
+  if (urgentBeepIntervalId) {
+  clearInterval(urgentBeepIntervalId);
+  urgentBeepIntervalId = null;
+}  
   clearInterval(offerBeepIntervalId);
   clearTimeout(offerBeepStopTimeoutId);
   offerBeepIntervalId = null;
