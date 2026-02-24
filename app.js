@@ -644,7 +644,8 @@ function startOfferBeepLoop(maxMs = OFFER_MS) {
     () => playTone("offer", { allowNoFocus: true }),
     1200
   );
-
+  let offerBeepCount = 0;
+  let urgentBeepIntervalId = null;
   offerBeepStopTimeoutId = setTimeout(stopOfferBeepLoop, maxMs);
 }
 function loadSoundPref() {
@@ -916,6 +917,7 @@ async function callNext() {
       offerExpiresAt: now + OFFER_MS,
       lastOfferedAt: now,        // C3: helpful for UI/debug
       lastOfferedBy: "doorman",  // optional
+      offerBeepCount = 0;
     });
 
     if (typeof showToast === "function") showToast("Offer sent ✅", "ok", 1500);
