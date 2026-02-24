@@ -642,7 +642,15 @@ function stopOfferBeepLoop() {
   offerBeepIntervalId = null;
   offerBeepStopTimeoutId = null;
 }
+function startUrgentBeepLoop() {
+  if (urgentBeepIntervalId) return;
 
+  vibratePattern("urgent");
+
+  urgentBeepIntervalId = setInterval(() => {
+    playTone("urgent", { force: true });
+  }, 600);
+}
 function startOfferBeepLoop(maxMs = OFFER_MS) {
   stopOfferBeepLoop();
   offerBeepCount = 0;           // reset when loop starts
