@@ -75,7 +75,8 @@ const soundToggle = document.getElementById("soundToggle"); // optional
 // STATE
 // -----------------------------
 
-
+let offerBeepIntervalId = null;
+let offerBeepStopTimeoutId = null;
 let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 let offeredCache = null;
 
@@ -91,8 +92,7 @@ let suppressOfferBeep = false;
 // Audio
 let audioCtx = null;
 let audioUnlocked = false;
-let offerBeepIntervalId = null;
-let offerBeepStopTimeoutId = null;
+
 
 // Single listener handle
 let unsubscribeQueue = null;
