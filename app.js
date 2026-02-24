@@ -1285,6 +1285,12 @@ onAuthStateChanged(auth, (user) => {
 wireConnectionBadge();
 loadSoundPref();
 wireSoundToggle();
+// 🔇 indicator wiring (tab inactive / hidden)
+ensureMuteIndicator();
+updateMuteIndicator();
+document.addEventListener("visibilitychange", updateMuteIndicator);
+window.addEventListener("focus", updateMuteIndicator);
+window.addEventListener("blur", updateMuteIndicator);
 wireSmartInputs();
 refreshJoinUI(); // optional but good
 subscribeQueue();
