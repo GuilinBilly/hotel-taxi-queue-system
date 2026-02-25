@@ -189,6 +189,22 @@ const TONE_PROFILES = {
   },
 };
 
+function playOfferArrivedBeep() {
+  const isFirst = offerBeepCount === 0;
+
+  // Subtle fade-in only on the first offer beep
+  playTone(
+    "offer",
+    isFirst
+      ? { force: true, allowNoFocus: true, volumeMul: 0.75, attack: 0.03, decay: 0.12 }
+      : { force: true, allowNoFocus: true }
+  );
+
+  // Optional: vibrate only on the first beep (or every beep if you prefer)
+  if (isFirst) vibratePattern("offer");
+
+  offerBeepCount++;
+}
 // Low-level: play one oscillator “beep”
 function _playOneBeep(p, opts = {}) {
   // Don’t even try if alerts shouldn’t play
