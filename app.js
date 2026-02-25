@@ -196,7 +196,7 @@ function playOfferArrivedBeep() {
   playTone(
     "offer",
     isFirst
-      ? { force: true, allowNoFocus: true, volumeMul: 0.75, attack: 0.03, decay: 0.12 }
+      ? { force: true, allowNoFocus: true, volumeMul: 1.0, attack: 0.03, decay: 0.12 }
       : { force: true, allowNoFocus: true }
   );
 
