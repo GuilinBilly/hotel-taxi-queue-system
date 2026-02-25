@@ -157,20 +157,20 @@ function canPlayAlerts(opts = {}) {
 const TONE_PROFILES = {
   offer: {
     wave: "sine",
-    freq: 880,        // A5
-    dur: 0.12,        // seconds
+    freq: 880,
+    dur: 0.12,
     attack: 0.01,
     decay: 0.10,
-    volume: 0.12,     // base loudness (0..1-ish)
+    volume: 0.22,   // ← was ~0.12
   },
   urgent: {
-  wave: "sine",
-  freq: 1200,
-  dur: 0.08,
-  attack: 0.003,
-  decay: 0.05,
-  volume: 0.20,
-  },
+    wave: "sine",
+    freq: 1200,
+    dur: 0.08,
+    attack: 0.003,
+    decay: 0.05,
+    volume: 0.30,   // ← was ~0.20
+    },
   expiring: {
     wave: "triangle",
     freq: 988,        // B5
