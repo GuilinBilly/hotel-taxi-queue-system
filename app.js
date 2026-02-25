@@ -1233,8 +1233,10 @@ if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
     return;
   }
 
-  const v = offeredCache.val ? offeredCache.val() : offeredCache;
-
+  const v = (offeredCache && typeof offeredCache.val === "function")
+  ? offeredCache.val()
+  : offeredCache;
+    
   // ✅ compute time-left FIRST
   const msLeft = Math.max(0, (v.offerExpiresAt ?? 0) - Date.now());
 
