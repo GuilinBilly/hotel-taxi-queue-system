@@ -673,17 +673,17 @@ function startUrgentBeepLoop() {
     playTone("urgent", { force: true });
   }, 600);
 }
+
 function startOfferBeepLoop(maxMs = OFFER_MS) {
   stopOfferBeepLoop();
-  offerBeepCount = 0;           // reset when loop starts
-  playOfferArrivedBeep();       // first beep right away
-  playTone("offer", { allowNoFocus: true });  // ✅ NEW
 
-  offerBeepIntervalId = setInterval(
-    () => playTone("offer", { allowNoFocus: true }),
-    1200
-  );
-  
+  offerBeepCount = 0;          // reset when loop starts
+  playOfferArrivedBeep();      // first beep right away (soft fade-in)
+
+  offerBeepIntervalId = setInterval(() => {
+    playTone("offer", { force: true, allowNoFocus: true });
+  }, 1200);
+
   offerBeepStopTimeoutId = setTimeout(stopOfferBeepLoop, maxMs);
 }
 function loadSoundPref() {
