@@ -1225,28 +1225,35 @@ if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
 
   const offerInfo = document.getElementById("offerInfo");
   offerCountdownTimer = setInterval(() => {
-    if (!offeredCache) {
-      clearInterval(offerCountdownTimer);
-      offerCountdownTimer = null;
-      if (offerInfo) offerInfo.textContent = "";
-      return;
-    }
-    if (remaining <= 5000 && !urgentBeepIntervalId) {
-  startUrgentBeepLoop();
-   }    
-    const v = offeredCache.val ?? offeredCache;
-    const msLeft = Math.max(0, (v.offerExpiresAt ?? 0) - Date.now());
-    const secLeft = Math.ceil(msLeft / 1000);
+  if (!offeredCache) {
+    clearInterval(offerCountdownTimer);
+    offerCountdownTimer = null;
+    if (offerInfo) offerInfo.textContent = "";
+    stopOfferBeepLoop();
+    return;
+  }
 
-    if (offerInfo) {
-      offerInfo.textContent = secLeft > 0 ? `Offer expires in ${secLeft}s` : `Offer expired`;
-    }
+  const v = offeredCache.val ? offeredCache.val() : offeredCache;
 
-    if (secLeft <= 0) {
-      clearInterval(offerCountdownTimer);
-      offerCountdownTimer = null;
-    }
-  }, 250);
+  // ✅ compute time-left FIRST
+  const msLeft = Math.max(0, (v.offerExpiresAt ?? 0) - Date.now());
+
+  // ✅ urgent trigger uses msLeft (not "remaining")
+  if (msLeft <= 5000 && !urgentBeepIntervalId) {
+    startUrgentBeepLoop();
+  }
+
+  const secLeft = Math.ceil(msLeft / 1000);
+
+  if (offerInfo) {
+    offerInfo.textContent = secLeft > 0 ? `Offer expires in ${secLeft}s` : `Offer expired`;
+  }
+
+  if (msLeft <= 0) {
+    // offer ended → stop loops
+    stopOfferBeepLoop();
+  }
+}, 250);
 }
 
 // Track for next onValue tick
