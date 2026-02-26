@@ -1353,37 +1353,25 @@ const testBeepBtn = document.getElementById("testBeepBtn");
 
 testBeepBtn?.addEventListener("click", async () => {
   console.log("🔔 Test beep clicked");
-  
-  // Safari can suspend audio after tab/background.
-// Make "Test Beep" a guaranteed re-unlock + one-shot tone.
-try {
-  ensureAudioCtx?.();                 // recreate if needed
-  await audioCtx?.resume?.();         // resume if suspended
-} catch {}
 
-unlockAudio();                        // your existing unlock logic
+  // Recreate / resume audio context if needed (Safari)
+  try {
+    ensureAudioCtx?.();
+    await audioCtx?.resume?.();
+  } catch {}
 
-// Give Safari a short window to allow audio even if focus is flaky
-allowAudioFor(2000);
+  // Your normal unlock path
+  unlockAudio();
 
-await forceResumeAudio("test-beep");
-unlockAudio();
-try { await audioCtx?.resume?.(); } catch {}
+  // Force a single audible tone (no loops, no global state changes)
+  playTone("test", { force: true, allowNoFocus: true, volumeMul: 1.2 });
 
-// One-shot tone MUST be forced (bypasses document.hasFocus() briefly)
-playTone("offer", { force: true, volumeMul: 1.2 });
-
-// Optional: keep your existing loop test too
-suppressOfferBeep = false;
-startOfferBeepLoop(800);
-setTimeout(() => stopOfferBeepLoop(), 900);
   console.log("Beep state:", {
     soundEnabled,
     audioUnlocked,
     ctxState: audioCtx?.state,
   });
 });
-
 callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
