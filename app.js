@@ -1177,14 +1177,21 @@ const offerKeyNow = hasOfferNow ? offeredCache.key : null;
 // ---- A) Beep/Pulse trigger using signature (key + offerStartedAt) ----
 if (!hasOfferNow) {
   lastOfferSig = null;
-suppressOfferBeep = false;        // 🔥 allow next offer to beep
-stopOfferBeepLoop?.();            // safe-call
-if (typeof setOfferPulse === "function") setOfferPulse(false);
- 
+  suppressOfferBeep = false;        // allow next offer to beep
+  stopOfferBeepLoop?.();            // safe-call
+  if (typeof setOfferPulse === "function") setOfferPulse(false);
+
 } else {
-  const offerObj = offeredCache.val ?? offeredCache;
-  const startedAt = offerObj?.offerStartedAt ?? 0; // MUST use offerStartedAt
-  const sigNow = `${offeredCache.key}:${startedAt}`;
+  const offerObj =
+    (offeredCache && typeof offeredCache.val === "function")
+      ? offeredCache.val()
+      : (offeredCache?.val && typeof offeredCache.val === "object")
+        ? offeredCache.val
+        : offeredCache;
+
+  const startedAt = offerObj?.offerStartedAt ?? 0;
+  const key = offeredCache?.key ?? offerObj?.key ?? null;
+  const sigNow = `${key}:${startedAt}`;
 
   if (sigNow && sigNow !== lastOfferSig) {
     lastOfferSig = sigNow;
@@ -1193,8 +1200,7 @@ if (typeof setOfferPulse === "function") setOfferPulse(false);
     startOfferBeepLoop?.();
     if (typeof setOfferPulse === "function") setOfferPulse(true);
   }
-}
-
+}    
 // ---- B) "Offer missed" toast when an offer for YOU ends ----
 const mineNow = myDriverKey ? data[myDriverKey] : null;
 
