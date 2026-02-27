@@ -1194,13 +1194,7 @@ if (!hasOfferNow) {
   if (typeof setOfferPulse === "function") setOfferPulse(false);
 
 } else {
-  const offerObj =
-    (offeredCache && typeof offeredCache.val === "function")
-      ? offeredCache.val()
-      : (offeredCache?.val && typeof offeredCache.val === "object")
-        ? offeredCache.val
-        : offeredCache;
-
+  const offerObj = unwrapOfferCache(offeredCache);
   const startedAt = offerObj?.offerStartedAt ?? 0;
   const key = offeredCache?.key ?? offerObj?.key ?? null;
   const sigNow = `${key}:${startedAt}`;
