@@ -1301,14 +1301,16 @@ if (typeof setOfferPulse === "function") setOfferPulse(true);
 const offerObj = unwrapOfferCache(offeredCache);
 calledBox.textContent =
   "Now Offering: " + (offerObj?.name ?? offerObj?.driverName ?? "");
-// 🔥 Safari fix: force re-resume right when an offer arrives
+    
+ // 🔥 Safari fix: force re-resume right when an offer arrives
 forceResumeAudio("offer-arrived")
   .catch(() => {}) // ignore errors, continue
   .then(() => {
-    unlockAudio(); // safe no-op if already unlocked
+    unlockAudio();           // safe no-op if already unlocked
+    allowAudioFor?.(2000);   // optional but helps Safari
 
     if (canPlayAlerts() && !suppressOfferBeep) {
-      startOfferBeepLoop(OFFER_MS);
+      startOfferBeepLoop(800);   // ✅ interval, NOT OFFER_MS
     } else {
       stopOfferBeepLoop();
     }
