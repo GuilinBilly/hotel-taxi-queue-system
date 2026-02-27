@@ -1354,23 +1354,29 @@ const testBeepBtn = document.getElementById("testBeepBtn");
 testBeepBtn?.addEventListener("click", async () => {
   console.log("🔔 Test beep clicked");
 
-  // Recreate / resume audio context if needed (Safari)
   try {
-    ensureAudioCtx?.();
-    await audioCtx?.resume?.();
-  } catch {}
+    // Make sure "Sound alerts" gating doesn't block the test
+    soundEnabled = true;
+    localStorage.setItem("htqs.soundEnabled", "true");
 
-  // Your normal unlock path
-  unlockAudio();
+    // Re-unlock audio in a user-gesture click
+    unlockAudio?.();
+    allowAudioFor?.(2000);
 
-  // Force a single audible tone (no loops, no global state changes)
-  playTone("test", { force: true, allowNoFocus: true, volumeMul: 1.2 });
+    // Resume audio context if Safari suspended it
+    try { await audioCtx?.resume?.(); } catch {}
 
-  console.log("Beep state:", {
-    soundEnabled,
-    audioUnlocked,
-    ctxState: audioCtx?.state,
-  });
+    // One-shot beep (force + allowNoFocus)
+    playTone?.("offer", { force: true, allowNoFocus: true, volumeMul: 1.2 });
+
+    console.log("Beep state:", {
+      soundEnabled,
+      audioUnlocked,
+      ctxState: audioCtx?.state,
+    });
+  } catch (e) {
+    console.warn("Test beep error:", e);
+  }
 });
 callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
