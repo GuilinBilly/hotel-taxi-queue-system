@@ -689,8 +689,10 @@ function startUrgentBeepLoop() {
 function startOfferBeepLoop(maxMs = OFFER_MS) {
   stopOfferBeepLoop();
 
-  offerBeepCount = 0;          // reset when loop starts
-  playOfferArrivedBeep();      // first beep right away (soft fade-in)
+  offerBeepCount = 0;
+
+  // ✅ guaranteed first beep
+  playTone("offer", { force: true, allowNoFocus: true });
 
   offerBeepIntervalId = setInterval(() => {
     playTone("offer", { force: true, allowNoFocus: true });
