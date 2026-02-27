@@ -968,6 +968,18 @@ async function callNext() {
   }
 }
 
+function unwrapOfferCache(offeredCache) {
+  if (!offeredCache) return null;
+
+  // Firebase DataSnapshot shape
+  if (typeof offeredCache.val === "function") return offeredCache.val();
+
+  // Your own wrapper shape: { key, val: <offerObject> }
+  if (offeredCache.val && typeof offeredCache.val === "object") return offeredCache.val;
+
+  // Already a plain offer object
+  return offeredCache;
+}
 async function acceptRide() {
   if (!offeredCache || !myDriverKey) return;
 
