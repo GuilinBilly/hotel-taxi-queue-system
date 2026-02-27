@@ -686,20 +686,21 @@ function startUrgentBeepLoop() {
   }, 600);
 }
 
+const OFFER_BEEP_INTERVAL_MS = 800;
+
 function startOfferBeepLoop(maxMs = OFFER_MS) {
   stopOfferBeepLoop();
 
   offerBeepCount = 0;
-
-  // ✅ guaranteed first beep
-  playTone("offer", { force: true, allowNoFocus: true });
+  playOfferArrivedBeep();
 
   offerBeepIntervalId = setInterval(() => {
     playTone("offer", { force: true, allowNoFocus: true });
-  }, 1200);
+  }, OFFER_BEEP_INTERVAL_MS);
 
   offerBeepStopTimeoutId = setTimeout(stopOfferBeepLoop, maxMs);
 }
+
 function loadSoundPref() {
   const saved = localStorage.getItem("htqs.soundEnabled");
   soundEnabled = saved === null ? true : saved === "true";
