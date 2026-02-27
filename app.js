@@ -1286,9 +1286,9 @@ if (!offeredCache) {
 
 // offeredCache exists (for THIS driver)
 if (typeof setOfferPulse === "function") setOfferPulse(true);
+const offerObj = unwrapOfferCache(offeredCache);
 calledBox.textContent =
-  "Now Offering: " + (offeredCache.val?.name ?? offeredCache.val?.driverName ?? "");
-
+  "Now Offering: " + (offerObj?.name ?? offerObj?.driverName ?? "");
 // 🔥 Safari fix: force re-resume right when an offer arrives
 forceResumeAudio("offer-arrived")
   .catch(() => {}) // ignore errors, continue
