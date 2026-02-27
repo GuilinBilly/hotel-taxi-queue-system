@@ -133,6 +133,18 @@ function lockDriverInputs(locked) {
   if (leaveBtn) leaveBtn.disabled = !locked;
 }
 
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    // when user comes back to the tab
+    unlockAudio?.();
+    try { audioCtx?.resume?.(); } catch {}
+  }
+});
+
+window.addEventListener("focus", () => {
+  unlockAudio?.();
+  try { audioCtx?.resume?.(); } catch {}
+});
 // Allow audio briefly even if Safari says the page isn't focused yet
 let allowAudioWhenNotFocusedUntil = 0;
 
