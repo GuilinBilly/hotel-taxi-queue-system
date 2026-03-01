@@ -1377,21 +1377,28 @@ testBeepBtn?.addEventListener("click", async () => {
     soundEnabled = true;
     localStorage.setItem("htqs.soundEnabled", "true");
 
-    // Re-unlock audio in a user-gesture click
+    // 🔥 IMPORTANT: use the same Safari recovery path as offer beeps
+    await forceResumeAudio?.("test-beep").catch(() => {});
+
     unlockAudio?.();
     allowAudioFor?.(2000);
 
-    // Resume audio context if Safari suspended it
+    // Ensure context is really running
     try { await audioCtx?.resume?.(); } catch {}
 
-    // One-shot beep (force + allowNoFocus)
-    playTone?.("offer", { force: true, allowNoFocus: true, volumeMul: 1.2 });
+    // Guaranteed one-shot beep (same as offer)
+    playTone?.("offer", {
+      force: true,
+      allowNoFocus: true,
+      volumeMul: 1.3
+    });
 
     console.log("Beep state:", {
       soundEnabled,
       audioUnlocked,
       ctxState: audioCtx?.state,
     });
+
   } catch (e) {
     console.warn("Test beep error:", e);
   }
