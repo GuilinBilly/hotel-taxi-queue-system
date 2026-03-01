@@ -1300,12 +1300,12 @@ if (!offeredCache) {
 
 // offeredCache exists (for THIS driver)
 if (typeof setOfferPulse === "function") setOfferPulse(true);
+
 const offerObj = unwrapOfferCache(offeredCache);
 calledBox.textContent =
-  const offerObj = unwrapOfferCache(offeredCache);
-  calledBox.textContent = "Now Offering: " + (offerObj?.name ?? offerObj?.driverName ?? "");
-    
- // 🔥 Safari fix: force re-resume right when an offer arrives
+  "Now Offering: " + (offerObj?.name ?? offerObj?.driverName ?? "");
+
+// 🔥 Safari fix: force re-resume right when an offer arrives
 forceResumeAudio("offer-arrived")
   .catch(() => {}) // ignore errors, continue
   .then(() => {
@@ -1313,12 +1313,12 @@ forceResumeAudio("offer-arrived")
     allowAudioFor?.(2000);   // optional but helps Safari
 
     if (canPlayAlerts() && !suppressOfferBeep) {
-       playTone("offer", { force: true, allowNoFocus: true }); // ✅ guaranteed one-shot
-       startOfferBeepLoop(); // ✅ DO NOT pass 800 here
+      playTone("offer", { force: true, allowNoFocus: true }); // ✅ guaranteed one-shot
+      startOfferBeepLoop(); // ✅ DO NOT pass 800 here
     } else {
       stopOfferBeepLoop();
     }
-  });  //  ✅ closes the .then(...)
+  });
   });  //  ✅ closes onValue(queueRef, (snap) => { ... })
   }    // ✅ closes function subscribeQueue() { ... }
 
