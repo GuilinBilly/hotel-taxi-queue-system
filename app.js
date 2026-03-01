@@ -1314,7 +1314,7 @@ forceResumeAudio("offer-arrived")
 
     if (canPlayAlerts() && !suppressOfferBeep) {
        playTone("offer", { force: true, allowNoFocus: true }); // ✅ guaranteed one-shot
-       startOfferBeepLoop(800);   // ✅ interval, NOT OFFER_MS
+       startOfferBeepLoop(); // ✅ DO NOT pass 800 here
     } else {
       stopOfferBeepLoop();
     }
