@@ -1303,7 +1303,8 @@ if (!offeredCache) {
 if (typeof setOfferPulse === "function") setOfferPulse(true);
 const offerObj = unwrapOfferCache(offeredCache);
 calledBox.textContent =
-  "Now Offering: " + (offerObj?.name ?? offerObj?.driverName ?? "");
+  const offerObj = unwrapOfferCache(offeredCache);
+  calledBox.textContent = "Now Offering: " + (offerObj?.name ?? offerObj?.driverName ?? "");
     
  // 🔥 Safari fix: force re-resume right when an offer arrives
 forceResumeAudio("offer-arrived")
