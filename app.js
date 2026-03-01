@@ -355,8 +355,7 @@ function findOfferForMe(data) {
 function refreshAcceptUI() {
   if (!acceptBtn) return;
 
-  // offeredCache might be {key, val} OR a direct object
-  const offer = offeredCache?.val ?? offeredCache;
+  const offer = unwrapOfferCache(offeredCache);
 
   const hasOffer = !!offer;
   const status = (offer?.status ?? "").toUpperCase();
