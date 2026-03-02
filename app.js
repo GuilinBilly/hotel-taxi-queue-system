@@ -682,7 +682,7 @@ function startUrgentBeepLoop() {
 
   urgentBeepIntervalId = setInterval(() => {
     playTone("urgent", { force: true });
-  }, 600);
+  }, 500);
 }
 
 const OFFER_BEEP_INTERVAL_MS = 800;
