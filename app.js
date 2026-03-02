@@ -176,13 +176,13 @@ const TONE_PROFILES = {
     volume: 0.22,   // ← was ~0.12
   },
   urgent: {
-    wave: "sine",
-    freq: 1200,
-    dur: 0.08,
-    attack: 0.003,
-    decay: 0.05,
-    volume: 0.30,   // ← was ~0.20
-    },
+  wave: "triangle",   // sharper than sine, but not harsh like square
+  freq: 1320,         // slightly higher pitch (more urgent)
+  dur: 0.07,          // slightly shorter = more punchy
+  attack: 0.002,      // faster attack
+  decay: 0.045,       // slightly tighter decay
+  volume: 0.34,       // small bump (not huge)
+},
   expiring: {
     wave: "triangle",
     freq: 988,        // B5
