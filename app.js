@@ -668,15 +668,24 @@ function vibratePattern(kind) {
   navigator.vibrate(patterns[kind] || [20]);
 }
 function stopOfferBeepLoop() {
+  // ✅ stop urgent loop (if running)
   if (urgentBeepIntervalId) {
-  clearInterval(urgentBeepIntervalId);
-  urgentBeepIntervalId = null;
-}  
+    clearInterval(urgentBeepIntervalId);
+    urgentBeepIntervalId = null;
+  }
+
+  // ✅ stop the "double pulse" second-beep timeout (important)
+  clearTimeout(urgentSecondPulseTimeoutId);
+  urgentSecondPulseTimeoutId = null;
+  urgentDoublePulseActive = false;
+
+  // ✅ stop offer loop (if running)
   clearInterval(offerBeepIntervalId);
   clearTimeout(offerBeepStopTimeoutId);
   offerBeepIntervalId = null;
   offerBeepStopTimeoutId = null;
 }
+
 function startUrgentBeepLoop() {
   if (urgentBeepIntervalId) return;
 
