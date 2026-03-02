@@ -655,6 +655,15 @@ function unlockAudio() {
     });
 }
 
+// ✅ Master audio wake-up (use everywhere)
+async function ensureAudioReady(reason = "ensure", ms = 1500) {
+  try { await forceResumeAudio?.(reason); } catch {}
+  try { unlockAudio?.(); } catch {}
+  try { allowAudioFor?.(ms); } catch {}
+
+  // Extra safety: try resuming AudioContext directly
+  try { await audioCtx?.resume?.(); } catch {}
+}
 function canVibrate() {
   return typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
 }
