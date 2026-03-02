@@ -135,17 +135,11 @@ function lockDriverInputs(locked) {
   if (leaveBtn) leaveBtn.disabled = !locked;
 }
 
-document.addEventListener("visibilitychange", () => {
+document.addEventListener("visibilitychange", async () => {
   if (!document.hidden) {
-    // When user returns to the tab (Safari reliability)
-    forceResumeAudio?.("visibility");
-    unlockAudio?.();
-    allowAudioFor?.(1500);
-
-    try { audioCtx?.resume?.(); } catch {}
+    await ensureAudioReady("visibility", 1500);
   }
 });
-
 window.addEventListener("focus", () => {
   // When window regains focus
   forceResumeAudio?.("focus");
