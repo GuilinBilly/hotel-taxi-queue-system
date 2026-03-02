@@ -603,19 +603,27 @@ function ensureAudioCtx(reason = "") {
   return true;
 }
 
-async function forceResumeAudio(reason = "") {
+async function forceResumeAudio(reason = "", allowRecreate = true) {
   ensureAudioCtx(reason);
   if (!audioCtx) return false;
 
-  // try resume
+  // Try normal resume first
   try { await audioCtx.resume?.(); } catch {}
 
-  // if still not running, recreate + try again
+  // If still not running...
   if (audioCtx.state !== "running") {
+
+    // ✅ IMPORTANT:
+    // Do NOT recreate context unless explicitly allowed
+    if (!allowRecreate) {
+      return false;
+    }
+
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return false;
 
     try { await audioCtx.close?.(); } catch {}
+
     audioCtx = new Ctx();
     audioUnlocked = false;
     updateSoundHint?.();
@@ -625,7 +633,6 @@ async function forceResumeAudio(reason = "") {
 
   return audioCtx?.state === "running";
 }
-
 function unlockAudio() {
   if (audioUnlocked) return;
 
