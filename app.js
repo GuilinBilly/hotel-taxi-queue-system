@@ -79,6 +79,8 @@ let offerBeepIntervalId = null;
 let offerBeepStopTimeoutId = null;
 let offerBeepCount = 0;
 let urgentBeepIntervalId = null;
+let urgentDoublePulseActive = false;
+let urgentSecondPulseTimeoutId = null;
 let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 let offeredCache = null;
 
