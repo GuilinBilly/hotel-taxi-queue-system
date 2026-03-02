@@ -137,14 +137,21 @@ function lockDriverInputs(locked) {
 
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
-    // when user comes back to the tab
+    // When user returns to the tab (Safari reliability)
+    forceResumeAudio?.("visibility");
     unlockAudio?.();
+    allowAudioFor?.(1500);
+
     try { audioCtx?.resume?.(); } catch {}
   }
 });
 
 window.addEventListener("focus", () => {
+  // When window regains focus
+  forceResumeAudio?.("focus");
   unlockAudio?.();
+  allowAudioFor?.(1500);
+
   try { audioCtx?.resume?.(); } catch {}
 });
 // Allow audio briefly even if Safari says the page isn't focused yet
