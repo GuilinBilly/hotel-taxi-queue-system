@@ -140,8 +140,8 @@ document.addEventListener("visibilitychange", async () => {
     await ensureAudioReady("visibility", 1500);
   }
 });
-window.addEventListener("focus", async () => {
-  await ensureAudioReady("focus", 1500);
+window.addEventListener("focus", () => {
+  ensureAudioReady("focus", 1500);
 });
 // Allow audio briefly even if Safari says the page isn't focused yet
 let allowAudioWhenNotFocusedUntil = 0;
@@ -1407,14 +1407,8 @@ testBeepBtn?.addEventListener("click", async () => {
     soundEnabled = true;
     localStorage.setItem("htqs.soundEnabled", "true");
 
-    // 🔥 IMPORTANT: use the same Safari recovery path as offer beeps
-    await forceResumeAudio?.("test-beep").catch(() => {});
-
-    unlockAudio?.();
-    allowAudioFor?.(2000);
-
-    // Ensure context is really running
-    try { await audioCtx?.resume?.(); } catch {}
+    // ✅ One master Safari-safe wake-up (replaces forceResumeAudio + unlock + allow + resume)
+    await ensureAudioReady("test-beep", 2000);
 
     // Guaranteed one-shot beep (same as offer)
     playTone?.("offer", {
@@ -1428,11 +1422,11 @@ testBeepBtn?.addEventListener("click", async () => {
       audioUnlocked,
       ctxState: audioCtx?.state,
     });
-
   } catch (e) {
     console.warn("Test beep error:", e);
   }
 });
+
 callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
