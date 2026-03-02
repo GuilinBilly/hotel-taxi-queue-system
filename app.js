@@ -682,11 +682,24 @@ function startUrgentBeepLoop() {
 
   vibratePattern("urgent");
 
+  const startedAt = Date.now();
+
   urgentBeepIntervalId = setInterval(() => {
+    // 1) Main urgent pulse
     playTone("urgent", { force: true });
+
+    // 2) Final ~2 seconds: add a softer second pulse shortly after
+    const elapsed = Date.now() - startedAt; // urgent loop typically lasts ~5s
+    urgentDoublePulseActive = elapsed >= 3000; // last 2s of a 5s urgent window
+
+    if (urgentDoublePulseActive) {
+      clearTimeout(urgentSecondPulseTimeoutId);
+      urgentSecondPulseTimeoutId = setTimeout(() => {
+        playTone("urgent", { force: true, volumeMul: 0.75 });
+      }, 150);
+    }
   }, 500);
 }
-
 const OFFER_BEEP_INTERVAL_MS = 800;
 
 function startOfferBeepLoop(maxMs = OFFER_MS) {
