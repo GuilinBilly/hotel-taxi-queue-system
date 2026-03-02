@@ -140,13 +140,8 @@ document.addEventListener("visibilitychange", async () => {
     await ensureAudioReady("visibility", 1500);
   }
 });
-window.addEventListener("focus", () => {
-  // When window regains focus
-  forceResumeAudio?.("focus");
-  unlockAudio?.();
-  allowAudioFor?.(1500);
-
-  try { audioCtx?.resume?.(); } catch {}
+window.addEventListener("focus", async () => {
+  await ensureAudioReady("focus", 1500);
 });
 // Allow audio briefly even if Safari says the page isn't focused yet
 let allowAudioWhenNotFocusedUntil = 0;
