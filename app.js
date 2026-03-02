@@ -209,7 +209,7 @@ function playOfferArrivedBeep() {
     "offer",
     isFirst
       ? { force: true, allowNoFocus: true, volumeMul: 1.3, attack: 0.03, decay: 0.12 }
-      : { force: true, allowNoFocus: true }
+      : { force: true, allowNoFocus: true, volumeMul: 1.3 }
   );
 
   // Optional: vibrate only on the first beep (or every beep if you prefer)
