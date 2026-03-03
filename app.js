@@ -603,35 +603,15 @@ function ensureAudioCtx(reason = "") {
   return true;
 }
 
-async function forceResumeAudio(reason = "", allowRecreate = true) {
-  ensureAudioCtx(reason);
-  if (!audioCtx) return false;
+// ✅ Master audio wake-up (use everywhere)
+async function ensureAudioReady(reason = "ensure", ms = 1500, allowRecreate = false) {
+  // Only recreate AudioContext when explicitly allowed (real user gesture paths)
+  try { await forceResumeAudio?.(reason, allowRecreate); } catch {}
+  try { unlockAudio?.(); } catch {}
+  try { allowAudioFor?.(ms); } catch {}
 
-  // Try normal resume first
-  try { await audioCtx.resume?.(); } catch {}
-
-  // If still not running...
-  if (audioCtx.state !== "running") {
-
-    // ✅ IMPORTANT:
-    // Do NOT recreate context unless explicitly allowed
-    if (!allowRecreate) {
-      return false;
-    }
-
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return false;
-
-    try { await audioCtx.close?.(); } catch {}
-
-    audioCtx = new Ctx();
-    audioUnlocked = false;
-    updateSoundHint?.();
-
-    try { await audioCtx.resume?.(); } catch {}
-  }
-
-  return audioCtx?.state === "running";
+  // Extra safety: try resuming AudioContext directly
+  try { await audioCtx?.resume?.(); } catch {}
 }
 function unlockAudio() {
   if (audioUnlocked) return;
