@@ -603,6 +603,36 @@ function ensureAudioCtx(reason = "") {
   return true;
 }
 
+// ✅ Safari-safe: resume AudioContext (optionally recreate only when allowed)
+async function forceResumeAudio(reason = "", allowRecreate = true) {
+  ensureAudioCtx?.(reason);
+  if (!audioCtx) return false;
+
+  // Try normal resume first
+  try { await audioCtx.resume?.(); } catch {}
+
+  // If still not running...
+  if (audioCtx.state !== "running") {
+
+    // ✅ IMPORTANT: do NOT recreate unless explicitly allowed
+    if (!allowRecreate) return false;
+
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return false;
+
+    // Close old context and recreate
+    try { await audioCtx.close?.(); } catch {}
+
+    audioCtx = new Ctx();
+    audioUnlocked = false;
+    updateSoundHint?.();
+
+    // Try resume again
+    try { await audioCtx.resume?.(); } catch {}
+  }
+
+  return audioCtx?.state === "running";
+}
 // ✅ Master audio wake-up (use everywhere)
 async function ensureAudioReady(reason = "ensure", ms = 1500, allowRecreate = false) {
   // Only recreate AudioContext when explicitly allowed (real user gesture paths)
