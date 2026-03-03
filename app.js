@@ -1364,8 +1364,7 @@ forceResumeAudio("offer-arrived")
 // BOOT
 // -----------------------------
 console.log("✅ app.js loaded");
-console.log("BUILD:", "2026-02-28-1");
-
+console.log("BUILD:", "2026-03-02-1");
 // Auth first (fixes PERMISSION_DENIED if you set rules to auth != null)
 ensureSignedIn();
 updateSoundHint();
