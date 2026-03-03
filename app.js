@@ -143,6 +143,11 @@ document.addEventListener("visibilitychange", async () => {
     await ensureAudioReady("visibility-wake", 2000, true);
   }
 });
+// Extra protection: when window regains focus (after sleep)
+window.addEventListener("focus", async () => {
+  dlog("Window focus — forcing audio resume");
+  await ensureAudioReady("focus-wake", 2000, true);
+});
 window.addEventListener("focus", () => {
   ensureAudioReady("focus", 1500);
 });
