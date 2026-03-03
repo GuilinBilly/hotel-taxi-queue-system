@@ -662,7 +662,7 @@ function unlockAudio() {
   audioCtx.resume()
     .then(() => {
       audioUnlocked = true;
-      console.log("Audio unlocked");
+      dlog("Audio unlocked");
       updateSoundHint();
     })
     .catch((e) => {
