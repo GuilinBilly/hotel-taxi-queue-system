@@ -1428,7 +1428,7 @@ addUniversalAudioUnlock(); // (or paste the IIFE here if you didn’t wrap it)
     const handler = async () => {
       // Any real user gesture should be allowed to unlock/resume audio
       try {
-        await ensureAudioReady("global-gesture", 2000, true);
+    ensureAudioReady("global-gesture", 2000, true);
       } catch {}
     };
 
