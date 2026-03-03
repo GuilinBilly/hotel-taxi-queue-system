@@ -135,6 +135,11 @@ function lockDriverInputs(locked) {
   if (leaveBtn) leaveBtn.disabled = !locked;
 }
 
+// Network wake: when Wi-Fi reconnects after sleep
+window.addEventListener("online", () => {
+  dlog("Network online — trying audio resume");
+  ensureAudioReady("network-wake", 1500, false);
+});
 document.addEventListener("visibilitychange", async () => {
   if (!document.hidden) {
     dlog("Page visible again — forcing audio resume");
