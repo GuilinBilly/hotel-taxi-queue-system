@@ -1457,7 +1457,7 @@ testBeepBtn?.addEventListener("click", async () => {
       ctxState: audioCtx?.state,
     });
   } catch (e) {
-    console.warn("Test beep error:", e);
+    dwarn("Test beep error:", e);
   }
 });
 
