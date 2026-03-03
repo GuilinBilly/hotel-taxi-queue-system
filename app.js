@@ -1409,6 +1409,8 @@ onAuthStateChanged(auth, (user) => {
 wireConnectionBadge();
 loadSoundPref();
 wireSoundToggle();
+// ✅ Put Universal Audio Unlock Listener RIGHT HERE
+addUniversalAudioUnlock(); // (or paste the IIFE here if you didn’t wrap it)
 
 // -----------------------------
 // Universal Audio Unlock Listener (Safari / iOS safe)
