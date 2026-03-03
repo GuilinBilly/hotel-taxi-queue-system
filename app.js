@@ -1416,7 +1416,7 @@ addUniversalAudioUnlock(); // (or paste the IIFE here if you didn’t wrap it)
 // Universal Audio Unlock Listener (Safari / iOS safe)
 // Add ONCE during boot
 // -----------------------------
-(function addUniversalAudioUnlock() {
+function addUniversalAudioUnlock() {
   let installed = false;
 
   function install() {
