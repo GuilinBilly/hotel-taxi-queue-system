@@ -153,9 +153,7 @@ window.addEventListener("focus", async () => {
   dlog("Window focus — forcing audio resume");
   await ensureAudioReady("focus-wake", 2000, true);
 });
-window.addEventListener("focus", () => {
-  ensureAudioReady("focus", 1500);
-});
+
 // Allow audio briefly even if Safari says the page isn't focused yet
 let allowAudioWhenNotFocusedUntil = 0;
 
