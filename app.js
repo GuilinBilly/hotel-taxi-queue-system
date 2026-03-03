@@ -137,7 +137,10 @@ function lockDriverInputs(locked) {
 
 document.addEventListener("visibilitychange", async () => {
   if (!document.hidden) {
-    await ensureAudioReady("visibility", 1500);
+    dlog("Page visible again — forcing audio resume");
+
+    // Force recreate allowed after sleep
+    await ensureAudioReady("visibility-wake", 2000, true);
   }
 });
 window.addEventListener("focus", () => {
