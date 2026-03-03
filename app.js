@@ -1431,8 +1431,7 @@ const testBeepBtn = document.getElementById("testBeepBtn");
 
 testBeepBtn?.addEventListener("click", async () => {
   // console.log("🔔 Test beep clicked");
-  // console.log("Beep state:", { soundEnabled, audioUnlocked, ctxState: audioCtx?.state });
-  console.log("Beep state:", {
+  dlog("Beep state:", {
   soundEnabled,
   audioUnlocked,
   ctxState: audioCtx?.state,
