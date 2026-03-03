@@ -1427,12 +1427,12 @@ function addUniversalAudioUnlock() {
     const opts = { capture: true, passive: true };
 
     const handler = async () => {
-      // Any real user gesture should be allowed to unlock/resume audio
-      try {
-    ensureAudioReady("global-gesture", 2000, true);
-      } catch {}
-    };
-
+     const handler = async () => {
+     // Any real user gesture should be allowed to unlock/resume audio
+     try {
+          await ensureAudioReady("global-gesture", 2000, true);
+    } catch {}
+  };
     // Use multiple gesture types for Safari reliability
     window.addEventListener("pointerdown", handler, opts);
     window.addEventListener("touchstart", handler, opts);
