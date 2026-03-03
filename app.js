@@ -643,6 +643,16 @@ async function ensureAudioReady(reason = "ensure", ms = 1500, allowRecreate = fa
   // Extra safety: try resuming AudioContext directly
   try { await audioCtx?.resume?.(); } catch {}
 }
+
+// Safari/iOS: unlock audio on the first real user gesture anywhere
+window.addEventListener("pointerdown", () => {
+  ensureAudioReady("pointerdown", 2000, true); // allowRecreate = true ONLY for real gestures
+}, { once: true, passive: true });
+
+window.addEventListener("touchstart", () => {
+  ensureAudioReady("touchstart", 2000, true);
+}, { once: true, passive: true });
+
 function unlockAudio() {
   if (audioUnlocked) return;
 
