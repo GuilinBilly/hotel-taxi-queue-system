@@ -1426,8 +1426,7 @@ testBeepBtn?.addEventListener("click", async () => {
     localStorage.setItem("htqs.soundEnabled", "true");
 
     // ✅ One master Safari-safe wake-up (replaces forceResumeAudio + unlock + allow + resume)
-    await ensureAudioReady("test-beep", 2000);
-
+    await ensureAudioReady("test-beep", 2000, true);
     // Guaranteed one-shot beep (same as offer)
     playTone?.("offer", {
       force: true,
