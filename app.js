@@ -1376,6 +1376,17 @@ forceResumeAudio("offer-arrived")
 console.log("✅ app.js loaded");
 const BUILD = "2026-03-02-1";
 console.log("BUILD:", BUILD);
+// -----------------------------
+// DEBUG SWITCH
+// -----------------------------
+const DEBUG = false; // ✅ change to true when troubleshooting
+
+function dlog(...args) {
+  if (DEBUG) console.log(...args);
+}
+function dwarn(...args) {
+  if (DEBUG) console.warn(...args);
+}
 // Auth first (fixes PERMISSION_DENIED if you set rules to auth != null)
 ensureSignedIn();
 updateSoundHint();
