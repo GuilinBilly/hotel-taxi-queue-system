@@ -1398,6 +1398,7 @@ function dlog(...args) {
 function dwarn(...args) {
   if (DEBUG) console.warn(...args);
 }
+addUniversalAudioUnlock(); 
 // Auth first (fixes PERMISSION_DENIED if you set rules to auth != null)
 ensureSignedIn();
 updateSoundHint();
