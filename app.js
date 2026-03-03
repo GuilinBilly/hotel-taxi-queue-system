@@ -1419,8 +1419,13 @@ acceptBtn.onclick = acceptRide;
 const testBeepBtn = document.getElementById("testBeepBtn");
 
 testBeepBtn?.addEventListener("click", async () => {
-  console.log("🔔 Test beep clicked");
-
+  // console.log("🔔 Test beep clicked");
+  // console.log("Beep state:", { soundEnabled, audioUnlocked, ctxState: audioCtx?.state });
+  console.log("Beep state:", {
+  soundEnabled,
+  audioUnlocked,
+  ctxState: audioCtx?.state,
+});
   try {
     // Make sure "Sound alerts" gating doesn't block the test
     soundEnabled = true;
