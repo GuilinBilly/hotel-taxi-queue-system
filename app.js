@@ -1491,8 +1491,12 @@ leaveBtn.onclick = leaveQueue;
 acceptBtn.onclick = acceptRide;
 
 const testBeepBtn = document.getElementById("testBeepBtn");
+console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 
 testBeepBtn?.addEventListener("click", () => {
+  console.log("🔔 Test Beep clicked");
+
+  // keep your debug log if you want (only prints when DEBUG=true)
   dlog("🔔 Test beep clicked (sync)");
 
   // 1) Make sure your app gating can't block the test
@@ -1502,29 +1506,15 @@ testBeepBtn?.addEventListener("click", () => {
   // 2) Safari-safe unlock/resume NOW (no await)
   ensureAudioNow("test-beep-click");
 
-  dlog("Beep pre-play:", {
+  console.log("Beep pre-play:", {
     soundEnabled,
     audioUnlocked,
     ctxState: audioCtx?.state,
   });
 
-  // 3) Play immediately in the same click
-  try {
-    playTone?.("offer", {
-      force: true,
-      allowNoFocus: true,
-      volumeMul: 1.3,
-    });
-  } catch (e) {
-    dwarn("Test beep playTone failed:", e);
-  }
-
-  dlog("Beep post-play:", {
-    soundEnabled,
-    audioUnlocked,
-    ctxState: audioCtx?.state,
-  });
+  // (your existing playTone/playOneBeep code continues below...)
 });
+
 callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
