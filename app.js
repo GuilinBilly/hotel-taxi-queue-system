@@ -622,6 +622,18 @@ function addUniversalAudioUnlock() {
 
   install();
 }
+// Safari-safe: do everything "now" inside a user gesture (no await)
+function ensureAudioNow(reason = "") {
+  try {
+    ensureAudioCtx(reason); // creates audioCtx if needed
+    if (audioCtx && audioCtx.state === "suspended") {
+      audioCtx.resume(); // DO NOT await (keeps gesture chain)
+    }
+    audioUnlocked = true; // mark unlocked (your app uses this flag)
+  } catch (e) {
+    dwarn("ensureAudioNow failed:", e);
+  }
+}
 function ensureAudioCtx(reason = "") {
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) return false;
