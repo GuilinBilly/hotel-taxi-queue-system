@@ -228,16 +228,29 @@ function playOfferArrivedBeep() {
 }
 // Low-level: play one oscillator “beep”
 function _playOneBeep(p, opts = {}) {
-  // Don’t even try if alerts shouldn’t play
-const force = !!opts.force;    // "force" = allow even if not focused (for a short window)
-  if (typeof canPlayAlerts === "function" && !canPlayAlerts({ allowWhenNotFocused: force })) return false;
+  const force = !!opts.force;
+
+  // Gate by your policy first (keep)
+  if (typeof canPlayAlerts === "function" && !canPlayAlerts({ allowWhenNotFocused: force })) {
+    return false;
+  }
+
+  // Ensure audio context exists
+  if (!audioCtx) {
+    if (typeof ensureAudioCtx === "function") ensureAudioCtx("beep");
+  }
   if (!audioCtx) return false;
-  if (audioCtx.state !== "running") return false;
+
+  // ✅ Do NOT hard-stop if not running yet (Safari sleep/focus case)
+  if (audioCtx.state !== "running") {
+    try { audioCtx.resume(); } catch {}
+    // continue anyway; the scheduled beep will play once the ctx resumes
+  }
+
   const t0 = audioCtx.currentTime + (opts.delay ?? 0);
   const freq = (opts.freq ?? p.freq) * (opts.pitchMul ?? 1);
   const wave = opts.wave ?? p.wave ?? "sine";
 
-  // Volume scale (lets us do “soft first beep” later)
   const vol = Math.max(0, (p.volume ?? 0.1) * (opts.volumeMul ?? 1));
 
   try {
@@ -247,12 +260,10 @@ const force = !!opts.force;    // "force" = allow even if not focused (for a sho
     osc.type = wave;
     osc.frequency.setValueAtTime(freq, t0);
 
-    // Envelope (attack -> decay)
     const attack = Math.max(0.001, opts.attack ?? p.attack ?? 0.005);
     const decay  = Math.max(0.01,  opts.decay  ?? p.decay  ?? 0.08);
     const endT   = t0 + Math.max(0.02, opts.dur ?? p.dur ?? 0.1);
 
-    // Start near 0 to avoid click
     gain.gain.setValueAtTime(0.0001, t0);
     gain.gain.linearRampToValueAtTime(vol, t0 + attack);
     gain.gain.exponentialRampToValueAtTime(0.0001, Math.min(endT, t0 + attack + decay));
@@ -263,7 +274,6 @@ const force = !!opts.force;    // "force" = allow even if not focused (for a sho
     osc.start(t0);
     osc.stop(endT + 0.02);
 
-    // cleanup
     osc.onended = () => {
       try { osc.disconnect(); } catch {}
       try { gain.disconnect(); } catch {}
@@ -275,7 +285,6 @@ const force = !!opts.force;    // "force" = allow even if not focused (for a sho
     return false;
   }
 }
-
 /**
  * Public API:
  * playTone("offer")
