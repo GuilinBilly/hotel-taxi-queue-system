@@ -1483,37 +1483,39 @@ acceptBtn.onclick = acceptRide;
 
 const testBeepBtn = document.getElementById("testBeepBtn");
 
-testBeepBtn?.addEventListener("click", async () => {
-  // console.log("🔔 Test beep clicked");
-  dlog("Beep state:", {
-  soundEnabled,
-  audioUnlocked,
-  ctxState: audioCtx?.state,
-});
-  try {
-    // Make sure "Sound alerts" gating doesn't block the test
-    soundEnabled = true;
-    localStorage.setItem("htqs.soundEnabled", "true");
+testBeepBtn?.addEventListener("click", () => {
+  dlog("🔔 Test beep clicked (sync)");
 
-    // ✅ One master Safari-safe wake-up (replaces forceResumeAudio + unlock + allow + resume)
-    ensureAudioReady("test-beep", 2000, true); // no await
-    // Guaranteed one-shot beep (same as offer)
+  // 1) Make sure your app gating can't block the test
+  soundEnabled = true;
+  localStorage.setItem("htqs.soundEnabled", "true");
+
+  // 2) Safari-safe unlock/resume NOW (no await)
+  ensureAudioNow("test-beep-click");
+
+  dlog("Beep pre-play:", {
+    soundEnabled,
+    audioUnlocked,
+    ctxState: audioCtx?.state,
+  });
+
+  // 3) Play immediately in the same click
+  try {
     playTone?.("offer", {
       force: true,
       allowNoFocus: true,
-      volumeMul: 1.3
-    });
-
-    console.log("Beep state:", {
-      soundEnabled,
-      audioUnlocked,
-      ctxState: audioCtx?.state,
+      volumeMul: 1.3,
     });
   } catch (e) {
-    dwarn("Test beep error:", e);
+    dwarn("Test beep playTone failed:", e);
   }
-});
 
+  dlog("Beep post-play:", {
+    soundEnabled,
+    audioUnlocked,
+    ctxState: audioCtx?.state,
+  });
+});
 callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
