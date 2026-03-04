@@ -593,6 +593,35 @@ function wireSmartInputs() {
 // SOUND
 // -----------------------------
 
+// -----------------------------
+// Universal Audio Unlock Listener (Safari / iOS safe)
+// Call ONCE during boot
+// -----------------------------
+function addUniversalAudioUnlock() {
+  let installed = false;
+
+  function install() {
+    if (installed) return;
+    installed = true;
+
+    const opts = { capture: true, passive: true };
+
+    const handler = async () => {
+      // Any real user gesture should be allowed to unlock/resume audio
+      try {
+        await ensureAudioReady("global-gesture", 2000, true);
+      } catch {}
+    };
+
+    // Use multiple gesture types for Safari reliability
+    window.addEventListener("pointerdown", handler, opts);
+    window.addEventListener("touchstart", handler, opts);
+    window.addEventListener("mousedown", handler, opts);
+    window.addEventListener("keydown", handler, opts);
+  }
+
+  install();
+}
 function ensureAudioCtx(reason = "") {
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) return false;
@@ -1410,37 +1439,6 @@ onAuthStateChanged(auth, (user) => {
 wireConnectionBadge();
 loadSoundPref();
 wireSoundToggle();
-// ✅ Put Universal Audio Unlock Listener RIGHT HERE
-
-// -----------------------------
-// Universal Audio Unlock Listener (Safari / iOS safe)
-// Call ONCE during boot
-// -----------------------------
-function addUniversalAudioUnlock() {
-  let installed = false;
-
-  function install() {
-    if (installed) return;
-    installed = true;
-
-    const opts = { capture: true, passive: true };
-
-    const handler = async () => {
-      // Any real user gesture should be allowed to unlock/resume audio
-      try {
-        await ensureAudioReady("global-gesture", 2000, true);
-      } catch {}
-    };
-
-    // Use multiple gesture types for Safari reliability
-    window.addEventListener("pointerdown", handler, opts);
-    window.addEventListener("touchstart", handler, opts);
-    window.addEventListener("mousedown", handler, opts);
-    window.addEventListener("keydown", handler, opts);
-  }
-
-  install();
-}
    
 // 🔇 indicator wiring (tab inactive / hidden)
 ensureMuteIndicator();
