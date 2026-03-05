@@ -1499,46 +1499,49 @@ testBeepBtn?.addEventListener("click", () => {
   soundEnabled = true;
   localStorage.setItem("htqs.soundEnabled", "true");
 
-  // Safari-safe unlock/resume NOW (no await)
-  ensureAudioNow("test-beep-click");
-
-  // ✅ HARD TEST BEEP (bypasses profiles) — should be clearly audible
+  // ✅ Create/refresh AudioContext INSIDE the click (Mac Safari safe)
   try {
-    if (!audioCtx) {
-      console.warn("No audioCtx");
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) {
+      console.warn("No AudioContext support");
       return;
     }
 
-    // If somehow not running, try resume synchronously
-    if (audioCtx.state !== "running") {
-      audioCtx.resume();
+    // If ctx missing or not running, recreate it right now (inside user gesture)
+    if (!audioCtx || audioCtx.state !== "running") {
+      try { audioCtx?.close?.(); } catch {}
+      audioCtx = new Ctx();
+      console.log("✅ Recreated audioCtx inside click:", audioCtx.state);
     }
 
-    const t0 = audioCtx.currentTime + 0.01;
+    // Attempt resume (do not await)
+    if (audioCtx.state !== "running") audioCtx.resume();
+
+    const t0 = audioCtx.currentTime + 0.02;
 
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
 
-    osc.type = "square";          // loud / obvious
-    osc.frequency.value = 880;    // very audible
+    osc.type = "square";
+    osc.frequency.setValueAtTime(880, t0);
 
-    // Stronger volume than your normal tones (temporary test)
+    // Louder / longer so it’s obvious
     gain.gain.setValueAtTime(0.0001, t0);
-    gain.gain.linearRampToValueAtTime(0.25, t0 + 0.01);
-    gain.gain.linearRampToValueAtTime(0.0001, t0 + 0.18);
+    gain.gain.linearRampToValueAtTime(0.35, t0 + 0.01);
+    gain.gain.linearRampToValueAtTime(0.0001, t0 + 0.25);
 
     osc.connect(gain);
     gain.connect(audioCtx.destination);
 
     osc.start(t0);
-    osc.stop(t0 + 0.20);
+    osc.stop(t0 + 0.26);
 
     osc.onended = () => {
       try { osc.disconnect(); } catch {}
       try { gain.disconnect(); } catch {}
     };
 
-    console.log("✅ HARD TEST BEEP scheduled");
+    console.log("✅ HARD TEST BEEP scheduled (new ctx if needed)");
   } catch (e) {
     console.warn("Hard test beep failed:", e);
   }
