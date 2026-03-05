@@ -1496,33 +1496,52 @@ console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 testBeepBtn?.addEventListener("click", () => {
   console.log("🔔 Test Beep clicked");
 
-  // Ensure app-side gating can't block the test
   soundEnabled = true;
   localStorage.setItem("htqs.soundEnabled", "true");
 
-  // Safari-safe immediate resume (must be synchronous)
-  const woke = ensureAudioNow?.("test-beep-click");
-  console.log("ensureAudioNow woke:", woke, "ctxState:", audioCtx?.state);
+  // Safari-safe unlock/resume NOW (no await)
+  ensureAudioNow("test-beep-click");
 
-  console.log("Beep pre-play:", {
-    soundEnabled,
-    audioUnlocked,
-    ctxState: audioCtx?.state,
-  });
+  // ✅ HARD TEST BEEP (bypasses profiles) — should be clearly audible
+  try {
+    if (!audioCtx) {
+      console.warn("No audioCtx");
+      return;
+    }
 
-  // Try your normal tone path
-  const playedNormal = playTone?.("offer", {
-    force: true,
-    volumeMul: 2.0
-  });
-  console.log("playTone('offer') returned:", playedNormal);
+    // If somehow not running, try resume synchronously
+    if (audioCtx.state !== "running") {
+      audioCtx.resume();
+    }
 
-  // Fallback: forced raw beep
-  const playedRaw = _playOneBeep?.(
-    { freq: 880, dur: 0.12, wave: "sine", volume: 0.25 },
-    { force: true, volumeMul: 2.0 }
-  );
-  console.log("raw _playOneBeep returned:", playedRaw);
+    const t0 = audioCtx.currentTime + 0.01;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "square";          // loud / obvious
+    osc.frequency.value = 880;    // very audible
+
+    // Stronger volume than your normal tones (temporary test)
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(0.25, t0 + 0.01);
+    gain.gain.linearRampToValueAtTime(0.0001, t0 + 0.18);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(t0);
+    osc.stop(t0 + 0.20);
+
+    osc.onended = () => {
+      try { osc.disconnect(); } catch {}
+      try { gain.disconnect(); } catch {}
+    };
+
+    console.log("✅ HARD TEST BEEP scheduled");
+  } catch (e) {
+    console.warn("Hard test beep failed:", e);
+  }
 });
 
 callNextBtn.onclick = callNext;
