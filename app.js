@@ -1496,15 +1496,13 @@ console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 testBeepBtn?.addEventListener("click", () => {
   console.log("🔔 Test Beep clicked");
 
-  // keep your debug log if you want (only prints when DEBUG=true)
-  dlog("🔔 Test beep clicked (sync)");
-
-  // 1) Make sure your app gating can't block the test
+  // Ensure app-side gating can't block the test
   soundEnabled = true;
   localStorage.setItem("htqs.soundEnabled", "true");
 
-  // 2) Safari-safe unlock/resume NOW (no await)
-  ensureAudioNow("test-beep-click");
+  // Safari-safe immediate resume (must be synchronous)
+  const woke = ensureAudioNow?.("test-beep-click");
+  console.log("ensureAudioNow woke:", woke, "ctxState:", audioCtx?.state);
 
   console.log("Beep pre-play:", {
     soundEnabled,
@@ -1512,7 +1510,19 @@ testBeepBtn?.addEventListener("click", () => {
     ctxState: audioCtx?.state,
   });
 
-  // (your existing playTone/playOneBeep code continues below...)
+  // Try your normal tone path
+  const playedNormal = playTone?.("offer", {
+    force: true,
+    volumeMul: 2.0
+  });
+  console.log("playTone('offer') returned:", playedNormal);
+
+  // Fallback: forced raw beep
+  const playedRaw = _playOneBeep?.(
+    { freq: 880, dur: 0.12, wave: "sine", volume: 0.25 },
+    { force: true, volumeMul: 2.0 }
+  );
+  console.log("raw _playOneBeep returned:", playedRaw);
 });
 
 callNextBtn.onclick = callNext;
