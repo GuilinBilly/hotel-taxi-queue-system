@@ -1496,54 +1496,44 @@ console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 testBeepBtn?.addEventListener("click", () => {
   console.log("🔔 Test Beep clicked");
 
-  soundEnabled = true;
-  localStorage.setItem("htqs.soundEnabled", "true");
-
-  // ✅ Create/refresh AudioContext INSIDE the click (Mac Safari safe)
   try {
+    // Create a NEW context inside the click (Safari-safe)
     const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) {
-      console.warn("No AudioContext support");
-      return;
-    }
+    const ctx = new Ctx();
 
-    // If ctx missing or not running, recreate it right now (inside user gesture)
-    if (!audioCtx || audioCtx.state !== "running") {
-      try { audioCtx?.close?.(); } catch {}
-      audioCtx = new Ctx();
-      console.log("✅ Recreated audioCtx inside click:", audioCtx.state);
-    }
+    console.log("🎧 ctx.state before resume:", ctx.state);
 
-    // Attempt resume (do not await)
-    if (audioCtx.state !== "running") audioCtx.resume();
+    // Resume immediately (still within the click)
+    ctx.resume();
 
-    const t0 = audioCtx.currentTime + 0.02;
+    console.log("🎧 ctx.state after resume:", ctx.state);
 
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    // Build oscillator + gain
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
 
-    osc.type = "square";
-    osc.frequency.setValueAtTime(880, t0);
+    gain.gain.value = 0.15; // audible but not too loud
+    osc.type = "sine";
+    osc.frequency.value = 880;
 
-    // Louder / longer so it’s obvious
-    gain.gain.setValueAtTime(0.0001, t0);
-    gain.gain.linearRampToValueAtTime(0.35, t0 + 0.01);
-    gain.gain.linearRampToValueAtTime(0.0001, t0 + 0.25);
-
+    // Connect and play immediately
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
+    gain.connect(ctx.destination);
 
-    osc.start(t0);
-    osc.stop(t0 + 0.26);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.15);
 
     osc.onended = () => {
       try { osc.disconnect(); } catch {}
       try { gain.disconnect(); } catch {}
+      // Close so it doesn't accumulate contexts
+      try { ctx.close(); } catch {}
+      console.log("✅ HARD BEEP ended/closed");
     };
 
-    console.log("✅ HARD TEST BEEP scheduled (new ctx if needed)");
+    console.log("✅ HARD BEEP started");
   } catch (e) {
-    console.warn("Hard test beep failed:", e);
+    console.warn("❌ HARD BEEP failed:", e);
   }
 });
 
