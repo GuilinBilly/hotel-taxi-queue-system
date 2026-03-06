@@ -176,14 +176,14 @@ function canPlayAlerts(opts = {}) {
 
 // Simple “profiles” you can tune later
 const TONE_PROFILES = {
-  offer: {
-    wave: "sine",
-    freq: 880,
-    dur: 0.12,
-    attack: 0.01,
-    decay: 0.10,
-    volume: 0.22,   // ← was ~0.12
-  },
+ offer: {
+  wave: "square",
+  freq: 880,
+  dur: 0.22,
+  attack: 0.005,
+  decay: 0.16,
+  volume: 0.32,
+},
   urgent: {
   wave: "triangle",   // sharper than sine, but not harsh like square
   freq: 1320,         // slightly higher pitch (more urgent)
@@ -205,7 +205,7 @@ const TONE_PROFILES = {
     seq: [
       { wave: "sine", freq: 659.25, dur: 0.08, attack: 0.005, decay: 0.06, volume: 0.10 }, // E5
       { wave: "sine", freq: 880,    dur: 0.10, attack: 0.005, decay: 0.08, volume: 0.12 }, // A5
-    ],
+    ], 
     gap: 0.03, // seconds between notes
   },
 };
