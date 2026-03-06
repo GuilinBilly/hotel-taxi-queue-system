@@ -177,12 +177,12 @@ function canPlayAlerts(opts = {}) {
 // Simple “profiles” you can tune later
 const TONE_PROFILES = {
  offer: {
-  wave: "square",
-  freq: 880,
-  dur: 0.22,
-  attack: 0.005,
-  decay: 0.16,
-  volume: 0.32,
+  seq: [
+    { wave: "square", freq: 880, dur: 0.12, attack: 0.005, decay: 0.10, volume: 0.28 },
+    { wave: "square", freq: 880, dur: 0.12, attack: 0.005, decay: 0.10, volume: 0.28 },
+    { wave: "square", freq: 880, dur: 0.16, attack: 0.005, decay: 0.12, volume: 0.32 },
+  ],
+  gap: 0.10,
 },
   urgent: {
   wave: "triangle",   // sharper than sine, but not harsh like square
