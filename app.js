@@ -714,6 +714,42 @@ window.addEventListener("touchstart", () => {
   ensureAudioReady("touchstart", 2000, true);
 }, { once: true, passive: true });
 
+// ---------------------------------------------------
+// HARD AUDIO FALLBACK (Safari safety)
+// Used if playTone() fails or audioCtx is blocked
+// ---------------------------------------------------
+function hardBeepFallback() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new Ctx();
+    ctx.resume?.();
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.value = 440;
+
+    const now = ctx.currentTime;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.6, now + 0.02);
+    gain.gain.linearRampToValueAtTime(0.0001, now + 0.25);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.26);
+
+    osc.onended = () => {
+      try { osc.disconnect(); } catch {}
+      try { gain.disconnect(); } catch {}
+      try { ctx.close(); } catch {}
+    };
+  } catch (e) {
+    console.warn("hardBeepFallback failed:", e);
+  }
+}
+
 function unlockAudio() {
   if (audioUnlocked) return;
 
