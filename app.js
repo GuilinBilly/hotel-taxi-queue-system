@@ -1493,48 +1493,38 @@ acceptBtn.onclick = acceptRide;
 const testBeepBtn = document.getElementById("testBeepBtn");
 console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 
-testBeepBtn?.addEventListener("click", () => {
+testBeepBtn?.addEventListener("click", async () => {
   console.log("🔔 Test Beep clicked");
 
-  try {
-    // Create a NEW context inside the click (Safari-safe)
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    const ctx = new Ctx();
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  const ctx = new Ctx();
 
-    console.log("🎧 ctx.state before resume:", ctx.state);
+  console.log("ctx.state before:", ctx.state);
 
-    // Resume immediately (still within the click)
-    ctx.resume();
+  // Safari requires await here
+  await ctx.resume();
 
-    console.log("🎧 ctx.state after resume:", ctx.state);
+  console.log("ctx.state after:", ctx.state);
 
-    // Build oscillator + gain
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
 
-    gain.gain.value = 0.15; // audible but not too loud
-    osc.type = "sine";
-    osc.frequency.value = 880;
+  osc.type = "sine";
+  osc.frequency.value = 880;
 
-    // Connect and play immediately
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+  gain.gain.value = 0.2;
 
-    osc.start();
-    osc.stop(ctx.currentTime + 0.15);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
 
-    osc.onended = () => {
-      try { osc.disconnect(); } catch {}
-      try { gain.disconnect(); } catch {}
-      // Close so it doesn't accumulate contexts
-      try { ctx.close(); } catch {}
-      console.log("✅ HARD BEEP ended/closed");
-    };
+  osc.start();
+  osc.stop(ctx.currentTime + 0.2);
 
-    console.log("✅ HARD BEEP started");
-  } catch (e) {
-    console.warn("❌ HARD BEEP failed:", e);
-  }
+  osc.onended = () => {
+    osc.disconnect();
+    gain.disconnect();
+    ctx.close();
+  };
 });
 
 callNextBtn.onclick = callNext;
