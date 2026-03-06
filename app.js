@@ -1462,7 +1462,13 @@ forceResumeAudio("offer-arrived")
     allowAudioFor?.(2000);   // optional but helps Safari
 
     if (canPlayAlerts() && !suppressOfferBeep) {
-      playTone("offer", { force: true, allowNoFocus: true }); // ✅ guaranteed one-shot
+     const bgBoost = document.hidden ? 1.45 : 1.0;
+
+playTone("offer", {
+  force: true,
+  allowNoFocus: true,
+  volumeMul: bgBoost
+});
       startOfferBeepLoop(); // ✅ DO NOT pass 800 here
     } else {
       stopOfferBeepLoop();
