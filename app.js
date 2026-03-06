@@ -1494,36 +1494,39 @@ const testBeepBtn = document.getElementById("testBeepBtn");
 console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 
 testBeepBtn?.addEventListener("click", async () => {
-  console.log("🔔 Test Beep clicked");
+  console.log("🔔 HARD TEST BEEP clicked");
 
   const Ctx = window.AudioContext || window.webkitAudioContext;
   const ctx = new Ctx();
 
   console.log("ctx.state before:", ctx.state);
-
-  // Safari requires await here
   await ctx.resume();
-
   console.log("ctx.state after:", ctx.state);
 
+  // Build a very obvious beep
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
-  osc.type = "sine";
-  osc.frequency.value = 880;
+  osc.type = "square";          // louder / more obvious than sine
+  osc.frequency.value = 440;    // A4
 
-  gain.gain.value = 0.2;
+  // Envelope (fade in/out)
+  const now = ctx.currentTime;
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(0.6, now + 0.02);      // LOUD
+  gain.gain.linearRampToValueAtTime(0.0001, now + 1.2);    // 1.2s beep
 
   osc.connect(gain);
   gain.connect(ctx.destination);
 
-  osc.start();
-  osc.stop(ctx.currentTime + 0.2);
+  osc.start(now);
+  osc.stop(now + 1.25);
 
-  osc.onended = () => {
-    osc.disconnect();
-    gain.disconnect();
-    ctx.close();
+  osc.onended = async () => {
+    try { osc.disconnect(); } catch {}
+    try { gain.disconnect(); } catch {}
+    try { await ctx.close(); } catch {}
+    console.log("✅ HARD BEEP ended");
   };
 });
 
