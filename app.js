@@ -1529,41 +1529,30 @@ acceptBtn.onclick = acceptRide;
 const testBeepBtn = document.getElementById("testBeepBtn");
 console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 
-testBeepBtn?.addEventListener("click", async () => {
-  console.log("🔔 HARD TEST BEEP clicked");
+testBeepBtn?.addEventListener("click", () => {
+  console.log("🔔 Test Beep clicked");
 
-  const Ctx = window.AudioContext || window.webkitAudioContext;
-  const ctx = new Ctx();
+  // Ensure sound isn't blocked
+  soundEnabled = true;
+  localStorage.setItem("htqs.soundEnabled", "true");
 
-  console.log("ctx.state before:", ctx.state);
-  await ctx.resume();
-  console.log("ctx.state after:", ctx.state);
+  // Safari-safe unlock
+  ensureAudioNow("test-beep-click");
 
-  // Build a very obvious beep
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
+  // Use the real HTQS tone system
+  const ok = playTone("offer", {
+    force: true,
+    allowNoFocus: true,
+    volumeMul: 1.3
+  });
 
-  osc.type = "square";          // louder / more obvious than sine
-  osc.frequency.value = 440;    // A4
+  console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
 
-  // Envelope (fade in/out)
-  const now = ctx.currentTime;
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.linearRampToValueAtTime(0.6, now + 0.02);      // LOUD
-  gain.gain.linearRampToValueAtTime(0.0001, now + 1.2);    // 1.2s beep
-
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-
-  osc.start(now);
-  osc.stop(now + 1.25);
-
-  osc.onended = async () => {
-    try { osc.disconnect(); } catch {}
-    try { gain.disconnect(); } catch {}
-    try { await ctx.close(); } catch {}
-    console.log("✅ HARD BEEP ended");
-  };
+  // Fallback safety (only if something fails)
+  if (!ok) {
+    console.warn("playTone failed — using hard fallback beep");
+    hardBeepFallback();
+  }
 });
 
 callNextBtn.onclick = callNext;
