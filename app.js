@@ -266,8 +266,7 @@ function _playOneBeep(p, opts = {}) {
 
     gain.gain.setValueAtTime(0.0001, t0);
     gain.gain.linearRampToValueAtTime(vol, t0 + attack);
-    gain.gain.exponentialRampToValueAtTime(0.0001, Math.min(endT, t0 + attack + decay));
-
+    gain.gain.exponentialRampToValueAtTime(0.0001, endT);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
 
