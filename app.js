@@ -838,7 +838,12 @@ function startOfferBeepLoop(maxMs = OFFER_MS) {
   playOfferArrivedBeep();
 
   offerBeepIntervalId = setInterval(() => {
-    playTone("offer", { force: true, allowNoFocus: true });
+    const bgBoost = document.hidden ? 1.45 : 1.0;
+playTone("offer", {
+  force: true,
+  allowNoFocus: true,
+  volumeMul: bgBoost
+});
   }, OFFER_BEEP_INTERVAL_MS);
 
   offerBeepStopTimeoutId = setTimeout(stopOfferBeepLoop, maxMs);
