@@ -974,6 +974,20 @@ async function joinQueue() {
     refreshAcceptUI();
 
     console.log("joinQueue success", driverKey);
+    console.log("joinQueue success", driverKey);
+
+   // 🔊 Auto test sound so driver knows alerts work
+   setTimeout(() => {
+   const bgBoost = document.hidden ? 1.45 : 1.0;
+
+   playTone("offer", {
+    force: true,
+    allowNoFocus: true,
+    volumeMul: bgBoost
+  });
+}, 300);
+
+    showToast("Joined queue ✅", "ok");
     showToast("Joined queue ✅", "ok");
   } catch (err) {
     console.error("joinQueue error:", err);
