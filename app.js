@@ -1531,23 +1531,24 @@ console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 testBeepBtn?.addEventListener("click", () => {
   console.log("🔔 Test Beep clicked");
 
-  // Ensure sound isn't blocked
+  // Make sure sound gating can't block the test
   soundEnabled = true;
   localStorage.setItem("htqs.soundEnabled", "true");
 
-  // Safari-safe unlock
+  // Wake/resume the real shared context
   ensureAudioNow("test-beep-click");
 
-  // Use the real HTQS tone system
+  // Give Safari a tiny moment after resume
   const ok = playTone("offer", {
     force: true,
     allowNoFocus: true,
-    volumeMul: 1.3
+    volumeMul: 1.5,
+    delay: 0.03
   });
 
   console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
 
-  // Fallback safety (only if something fails)
+  // Safety fallback if normal tone truly fails
   if (!ok) {
     console.warn("playTone failed — using hard fallback beep");
     hardBeepFallback();
