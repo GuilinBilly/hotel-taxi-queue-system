@@ -1470,7 +1470,7 @@ forceResumeAudio("offer-arrived")
 // BOOT
 // -----------------------------
 console.log("✅ app.js loaded");
-const BUILD = "2026-03-02-1";
+const BUILD = "2026-03-05-AUDIO-STABLE";
 console.log("BUILD:", BUILD);
 // -----------------------------
 // DEBUG SWITCH
