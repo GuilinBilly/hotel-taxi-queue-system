@@ -1,11 +1,4 @@
-//-------------------------------------------
-// HTQS milestone: audio system stable
-//- triple taxi alert tone
-//- Safari audio unlock fixes
-//- auto test sound on driver join
-//- background volume boost for inactive tab
-// ------------------------------------------
-
+// app.js (final cleaned version)
 // Firebase (App + RTDB)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
