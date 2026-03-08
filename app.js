@@ -42,6 +42,22 @@ const OFFER_MS = 25000;
 // -----------------------------
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+// Detect Firebase connection state
+const connectedRef = ref(db, ".info/connected");
+
+onValue(connectedRef, (snap) => {
+  const connected = snap.val();
+
+  if (connected === true) {
+    console.log("RTDB connected");
+
+    // Refresh queue view after reconnect
+    refreshJoinUI?.();
+    refreshAcceptUI?.();
+  } else {
+    console.warn("RTDB disconnected — waiting for reconnect");
+  }
+});
 const auth = getAuth(app);
 
 const queueRef = ref(db, "queue");
