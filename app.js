@@ -987,7 +987,13 @@ async function joinQueue() {
     lockDriverInputs(true);
     refreshJoinUI();
     refreshAcceptUI();
-
+    // Auto-remove this driver if device/tab disconnects unexpectedly
+    try {
+    await onDisconnect(ref(db, `queue/${driverKey}`)).remove();
+    console.log("onDisconnect armed for", driverKey);
+  } catch (e) {
+    console.warn("Failed to arm onDisconnect for", driverKey, e);
+  }
     console.log("joinQueue success", driverKey);
     
 
