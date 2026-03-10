@@ -1033,8 +1033,15 @@ async function leaveQueue() {
       showToast?.(`Can't leave while ${status}.`, "warn", 2000);
       return;
     }    
-    await update(ref(db, "queue/" + myDriverKey), { status: "LEFT" });
+    try {
+    await onDisconnect(ref(db, "queue/" + myDriverKey)).cancel();
+    console.log("onDisconnect canceled for", myDriverKey);
+    } catch (e) {
+    console.warn("Failed to cancel onDisconnect for", myDriverKey, e);
+    }
 
+    await update(ref(db, "queue/" + myDriverKey), { status: "LEFT" });
+    
     refreshJoinUI();
     
     sessionStorage.removeItem("htqs.driverKey");
