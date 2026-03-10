@@ -989,7 +989,7 @@ async function joinQueue() {
     refreshAcceptUI();
 
     console.log("joinQueue success", driverKey);
-    console.log("joinQueue success", driverKey);
+    
 
    // 🔊 Auto test sound so driver knows alerts work
    setTimeout(() => {
