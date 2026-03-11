@@ -980,11 +980,12 @@ async function joinQueue() {
       joinedAt,
       offerStartedAt: null,
       offerExpiresAt: null,
+      lastSeenAt: Date.now(),
     });
 
     myDriverKey = driverKey;
     sessionStorage.setItem("htqs.driverKey", driverKey);
-
+    startDriverHeartbeat();
     lockDriverInputs(true);
     refreshJoinUI();
     refreshAcceptUI();
@@ -1080,6 +1081,7 @@ async function leaveQueue() {
     refreshJoinUI();
     
     sessionStorage.removeItem("htqs.driverKey");
+    stopDriverHeartbeat();
     myDriverKey = null;
 
     lockDriverInputs(false);
