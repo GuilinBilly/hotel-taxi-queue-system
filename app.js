@@ -1037,15 +1037,19 @@ function startDriverHeartbeat() {
   });
 
   // Then keep updating every 15 seconds
-  driverHeartbeatId = setInterval(() => {
-    if (!myDriverKey) return;
+ driverHeartbeatId = setInterval(() => {
+  if (!myDriverKey) return;
 
-    update(ref(db, "queue/" + myDriverKey), {
-      lastSeenAt: Date.now()
-    }).catch((e) => {
-      console.warn("Heartbeat update failed:", e);
-    });
-  }, 15000);
+  update(ref(db, "queue/" + myDriverKey), {
+    lastSeenAt: Date.now()
+  }).then(() => {
+    console.log("Heartbeat update for", myDriverKey);
+  })
+    .catch((e) => {
+    console.warn("Heartbeat update failed:", e);
+  });
+
+}, 15000);
 }
 
 function stopDriverHeartbeat() {
