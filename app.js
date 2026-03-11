@@ -97,6 +97,7 @@ let urgentBeepIntervalId = null;
 let urgentDoublePulseActive = false;
 let urgentSecondPulseTimeoutId = null;
 let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
+let driverHeartbeatId = null;
 let offeredCache = null;
 
 // C3: offer lifecycle UX (driver-side)
@@ -1016,6 +1017,40 @@ async function joinQueue() {
     alert("Join failed");
   } finally {
     setBusy(false);
+  }
+}
+// ============================
+// Driver heartbeat helpers
+// ============================
+function startDriverHeartbeat() {
+  if (!myDriverKey) return;
+
+  // Prevent duplicate intervals
+  stopDriverHeartbeat();
+
+  // Write immediately once
+  update(ref(db, "queue/" + myDriverKey), {
+    lastSeenAt: Date.now()
+  }).catch((e) => {
+    console.warn("Heartbeat initial write failed:", e);
+  });
+
+  // Then keep updating every 15 seconds
+  driverHeartbeatId = setInterval(() => {
+    if (!myDriverKey) return;
+
+    update(ref(db, "queue/" + myDriverKey), {
+      lastSeenAt: Date.now()
+    }).catch((e) => {
+      console.warn("Heartbeat update failed:", e);
+    });
+  }, 15000);
+}
+
+function stopDriverHeartbeat() {
+  if (driverHeartbeatId) {
+    clearInterval(driverHeartbeatId);
+    driverHeartbeatId = null;
   }
 }
 async function leaveQueue() {
