@@ -1042,12 +1042,12 @@ async function joinQueue() {
     lockDriverInputs(true);
     refreshJoinUI();
     refreshAcceptUI();
-    // Auto-remove this driver if device/tab disconnects unexpectedly
-    try {
-  await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).cancel();
-  console.log("onDisconnect stale-marker canceled for", myDriverKey);
+   // Mark this driver stale if device/tab disconnects unexpectedly
+try {
+  await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).set(0);
+  console.log("onDisconnect stale-marker armed for", myDriverKey);
 } catch (e) {
-  console.warn("Failed to cancel onDisconnect stale-marker for", myDriverKey, e);
+  console.warn("Failed to arm onDisconnect stale-marker for", myDriverKey, e);
 }
     console.log("joinQueue success", driverKey);
     
