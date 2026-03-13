@@ -1024,8 +1024,7 @@ async function joinQueue() {
 // Driver heartbeat helpers
 // ============================
 function startDriverHeartbeat() {
-  if (!myDriverKey) return;
-
+  stopDriverHeartbeat();
   // Prevent duplicate intervals
   stopDriverHeartbeat();
 
@@ -1035,17 +1034,14 @@ function startDriverHeartbeat() {
   }).catch((e) => {
     console.warn("Heartbeat initial write failed:", e);
   });
-
   // Then keep updating every 15 seconds
  driverHeartbeatId = setInterval(() => {
+
   if (!myDriverKey) return;
 
   update(ref(db, "queue/" + myDriverKey), {
     lastSeenAt: Date.now()
-  }).then(() => {
-    console.log("Heartbeat update for", myDriverKey);
-  })
-    .catch((e) => {
+  }).catch((e) => {
     console.warn("Heartbeat update failed:", e);
   });
 
