@@ -1064,7 +1064,6 @@ try {
 }, 300);
 
     showToast("Joined queue ✅", "ok");
-    showToast("Joined queue ✅", "ok");
   } catch (err) {
     console.error("joinQueue error:", err);
     showToast("Join failed — try again", "err", 2400);
