@@ -186,6 +186,58 @@ function canPlayAlerts(opts = {}) {
   const allow = focused || (opts.allowWhenNotFocused && isFocusOverrideActive());
   return soundEnabled && audioUnlocked && allow;
 }
+function formatWaitMs(ms) {
+  if (!ms || ms < 0) return "0s";
+
+  const totalSec = Math.floor(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+
+  if (min > 0) return `${min}m ${sec}s`;
+  return `${sec}s`;
+}
+
+function updateQueueHealth(queueObj = {}) {
+  if (!queueHealthBox) return;
+
+  const now = Date.now();
+  const drivers = Object.entries(queueObj)
+    .map(([key, value]) => ({ key, ...value }))
+    .filter(driver => driver && driver.status === "WAITING");
+
+  const waitingCount = drivers.length;
+
+  let longestWaitMs = 0;
+  let inactiveCount = 0;
+
+  for (const driver of drivers) {
+    const joinedAt = driver.joinedAt ?? now;
+    const waitMs = now - joinedAt;
+    if (waitMs > longestWaitMs) longestWaitMs = waitMs;
+
+    const lastSeenAt = driver.lastSeenAt ?? 0;
+    const staleMs = now - lastSeenAt;
+
+    // treat 45s+ as inactive/stale
+    if (lastSeenAt && staleMs > 45000) {
+      inactiveCount++;
+    }
+  }
+
+  let systemStatus = "OK";
+  if (inactiveCount > 0) {
+    systemStatus = "Check inactive drivers";
+  } else if (waitingCount >= 8) {
+    systemStatus = "Busy";
+  }
+
+  queueHealthBox.innerHTML = `
+    <div>Drivers waiting: ${waitingCount}</div>
+    <div>Longest wait: ${formatWaitMs(longestWaitMs)}</div>
+    <div>Inactive drivers: ${inactiveCount}</div>
+    <div>System status: ${systemStatus}</div>
+  `;
+}
 // =============================
 // TONE ENGINE (Phase 1)
 // =============================
