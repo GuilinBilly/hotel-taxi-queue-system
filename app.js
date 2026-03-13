@@ -1123,12 +1123,11 @@ async function leaveQueue() {
       return;
     }    
     try {
-    await onDisconnect(ref(db, "queue/" + myDriverKey)).cancel();
-    console.log("onDisconnect canceled for", myDriverKey);
-    } catch (e) {
-    console.warn("Failed to cancel onDisconnect for", myDriverKey, e);
-    }
-
+  await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).cancel();
+  console.log("onDisconnect stale-marker canceled for", myDriverKey);
+} catch (e) {
+  console.warn("Failed to cancel onDisconnect stale-marker for", myDriverKey, e);
+}
     await update(ref(db, "queue/" + myDriverKey), { status: "LEFT" });
     
     refreshJoinUI();
