@@ -1436,7 +1436,8 @@ function subscribeQueue() {
 
    const data = snap.val() || {};
    updateQueueHealth(data);
-   const entries = Object.entries(data);
+    lastQueueSnapshot = data;
+    const entries = Object.entries(data);
     
     // Safety: if my driver got removed/LEFT
     if (myDriverKey) {
