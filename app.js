@@ -1651,7 +1651,11 @@ window.addEventListener("blur", updateMuteIndicator);
 wireSmartInputs();
 refreshJoinUI(); // optional but good
 subscribeQueue();
-
+if (!queueHealthTimer) {
+  queueHealthTimer = setInterval(() => {
+    updateQueueHealth(lastQueueSnapshot || {});
+  }, 1000);
+}
 // Mobile audio unlock
 window.addEventListener("pointerdown", () => {
   unlockAudio();
