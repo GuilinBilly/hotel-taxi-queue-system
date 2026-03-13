@@ -220,9 +220,9 @@ function updateQueueHealth(queueObj = {}) {
     const staleMs = now - lastSeenAt;
 
     // treat 45s+ as inactive/stale
-    if (lastSeenAt && staleMs > 45000) {
-      inactiveCount++;
-    }
+    if (!lastSeenAt || staleMs > 90000) {
+  inactiveCount++;
+}
   }
 
   let systemStatus = "OK";
