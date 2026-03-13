@@ -1443,12 +1443,19 @@ function subscribeQueue() {
     if (myDriverKey) {
       const mine = data[myDriverKey];
       if (!mine || mine.status === "LEFT") {
-        sessionStorage.removeItem("htqs.driverKey");
-        myDriverKey = null;
-        lockDriverInputs(false);
-        refreshJoinUI();
-      }
-    }
+  sessionStorage.removeItem("htqs.driverKey");
+  myDriverKey = null;
+
+  stopDriverHeartbeat();
+  offeredCache = null;
+  calledBox.textContent = "";
+
+  lockDriverInputs(false);
+  refreshJoinUI();
+  refreshAcceptUI();
+  updateEmptyState();
+   }
+  }
 
     // Render list
     queueList.innerHTML = "";
