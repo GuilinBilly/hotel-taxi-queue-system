@@ -1432,9 +1432,10 @@ function subscribeQueue() {
       return;
     }
 
-    const data = snap.val() || {};
-    const entries = Object.entries(data);
-
+   const data = snap.val() || {};
+   updateQueueHealth(data);
+   const entries = Object.entries(data);
+    
     // Safety: if my driver got removed/LEFT
     if (myDriverKey) {
       const mine = data[myDriverKey];
