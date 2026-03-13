@@ -104,7 +104,8 @@ let offeredCache = null;
 let lastOfferWasForMe = false;
 let lastOfferKeyForMe = null;
 let offerCountdownTimer = null;
-
+let lastQueueSnapshot = {};
+let queueHealthTimer = null;
 let lastOfferSig = null; // key + startedAt
 let soundEnabled = true;
 let suppressOfferBeep = false;
