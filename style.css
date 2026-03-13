@@ -125,7 +125,14 @@ body{
   border-left: 7px solid var(--queue);
   background: linear-gradient(90deg, rgba(111,66,193,0.07), rgba(255,255,255,0) 55%);
 }
+.queue-health-card {
+  margin-top: 14px;
+}
 
+#queueHealthBox {
+  line-height: 1.7;
+  font-size: 15px;
+}
 .section.doorman{
   border-left: 7px solid var(--doorman);
   background: linear-gradient(90deg, rgba(201,42,42,0.07), rgba(255,255,255,0) 55%);
