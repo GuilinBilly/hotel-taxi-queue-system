@@ -1129,16 +1129,16 @@ async function leaveQueue() {
 }
     await update(ref(db, "queue/" + myDriverKey), { status: "LEFT" });
     
-    refreshJoinUI();
-    
     sessionStorage.removeItem("htqs.driverKey");
     stopDriverHeartbeat();
     myDriverKey = null;
 
     lockDriverInputs(false);
+    refreshJoinUI();
+    refreshAcceptUI();
     stopOfferBeepLoop();
     setOfferPulse(false);
-    refreshAcceptUI();
+    
   } catch (err) {
     console.error("leaveQueue error:", err);
     alert("Leave failed");
