@@ -80,7 +80,7 @@ const doormanPinInput = document.getElementById("doormanPin");
 
 const queueList = document.getElementById("queueList");
 const calledBox = document.getElementById("calledBox");
-
+const queueHealthBox = document.getElementById("queueHealthBox");
 const offerInfo = document.getElementById("offerInfo"); // optional
 const netStatus = document.getElementById("netStatus"); // optional
 const queueEmpty = document.getElementById("queueEmpty"); // optional
