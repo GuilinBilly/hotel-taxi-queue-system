@@ -1439,24 +1439,30 @@ function subscribeQueue() {
     lastQueueSnapshot = data;
     const entries = Object.entries(data);
     
-    // Safety: if my driver got removed/LEFT
-    if (myDriverKey) {
-      const mine = data[myDriverKey];
-      if (!mine || mine.status === "LEFT") {
-  sessionStorage.removeItem("htqs.driverKey");
-  myDriverKey = null;
+   if (myDriverKey) {
+  const mine = data[myDriverKey];
+  if (!mine || mine.status === "LEFT") {
+    sessionStorage.removeItem("htqs.driverKey");
+    myDriverKey = null;
 
-  stopDriverHeartbeat();
-  offeredCache = null;
-  calledBox.textContent = "";
+    stopDriverHeartbeat();
+    offeredCache = null;
+    calledBox.textContent = "";
 
-  lockDriverInputs(false);
-  refreshJoinUI();
-  refreshAcceptUI();
-  updateEmptyState();
-   }
+    lastOfferWasForMe = false;
+    lastOfferKeyForMe = null;
+    lastOfferSig = null;
+    suppressOfferBeep = false;
+
+    stopOfferBeepLoop?.();
+    if (typeof setOfferPulse === "function") setOfferPulse(false);
+
+    lockDriverInputs(false);
+    refreshJoinUI();
+    refreshAcceptUI();
+    updateEmptyState();
   }
-
+}
     // Render list
     queueList.innerHTML = "";
     calledBox.textContent = "";
