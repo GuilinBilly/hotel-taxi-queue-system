@@ -1455,27 +1455,37 @@ function subscribeQueue() {
     calledBox.textContent = "";
 
     const active = entries
-      .filter(([_, v]) => v && (v.status ?? "WAITING") !== "LEFT")
-      .slice()
-      .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+  .filter(([_, v]) =>
+    v &&
+    (v.status ?? "WAITING") !== "LEFT" &&
+    (v.name || v.plate || v.carColor)
+  )
+  .slice()
+  .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
-    active.forEach(([k, v], i) => {
-      const li = document.createElement("li");
-      const status = (v.status ?? "WAITING").toUpperCase();
-      li.classList.add("queue-item", `status-${status.toLowerCase()}`);
-      li.innerHTML = `
-        <span class="pos">${i + 1}.</span>
-        <span class="driver">${v.name} ${v.carColor ?? ""} ${v.plate}</span>
-        <span class="badge">${status}</span>
-      `;
-      queueList.appendChild(li);
-    });
+  active.forEach(([k, v], i) => {
+  const li = document.createElement("li");
+  const status = (v.status ?? "WAITING").toUpperCase();
 
-    updateEmptyState();
+  const safeName = v?.name || "Unknown Driver";
+  const safeColor = v?.carColor || "";
+  const safePlate = v?.plate || "";
+  const driverLabel = `${safeName} ${safeColor} ${safePlate}`.replace(/\s+/g, " ").trim();
 
-   // ✅ Only cache an offer if it’s for THIS driver
+  li.classList.add("queue-item", `status-${status.toLowerCase()}`);
+  li.innerHTML = `
+    <span class="pos">${i + 1}.</span>
+    <span class="driver">${driverLabel}</span>
+    <span class="badge">${status}</span>
+  `;
+  queueList.appendChild(li);
+});
+
+updateEmptyState();
+
+// ✅ Only cache an offer if it’s for THIS driver
 offeredCache = findOfferForMe(data);
-
+    
 // =============================
 // C3: Beep/pulse + "Offer missed" + countdown
 // Put this RIGHT AFTER: offeredCache = findOfferForMe(data);
