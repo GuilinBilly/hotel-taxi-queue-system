@@ -1429,6 +1429,7 @@ function subscribeQueue() {
   }
       updateEmptyState();
       refreshAcceptUI();
+      updateQueueHealth({});
       return;
     }
 
