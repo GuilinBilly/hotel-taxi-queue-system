@@ -1024,7 +1024,7 @@ async function joinQueue() {
 // Driver heartbeat helpers
 // ============================
 function startDriverHeartbeat() {
-  stopDriverHeartbeat();
+  
   // Prevent duplicate intervals
   stopDriverHeartbeat();
 
