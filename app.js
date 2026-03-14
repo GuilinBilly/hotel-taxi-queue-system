@@ -159,8 +159,7 @@ window.addEventListener("online", () => {
 });
 document.addEventListener("visibilitychange", async () => {
   if (!document.hidden) {
-    dlog("Page visible again — forcing audio resume");
-
+   console.log("Page visible again — forcing audio resume");
     // Force recreate allowed after sleep
     await ensureAudioReady("visibility-wake", 2000, true);
 
@@ -190,8 +189,8 @@ document.addEventListener("visibilitychange", async () => {
   }
 });
 // Extra protection: when window regains focus (after sleep)
-window.addEventListener("focus", async () => {
-  dlog("Window focus — forcing audio resume");
+  window.addEventListener("focus", async () => {
+  console.log("Window focus — forcing audio resume");
   await ensureAudioReady("focus-wake", 2000, true);
 
   try {
