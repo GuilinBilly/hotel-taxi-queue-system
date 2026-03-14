@@ -199,6 +199,18 @@ window.addEventListener("focus", async () => {
     refreshAcceptUI();
     updateQueueHealth(lastQueueSnapshot || {});
     updateEmptyState?.();
+
+    if (myDriverKey) {
+      startDriverHeartbeat();
+    }
+
+    if (offeredCache) {
+      const offerObj = unwrapOfferCache(offeredCache);
+      calledBox.textContent =
+        "Now Offering: " + (offerObj?.name ?? offerObj?.driverName ?? "");
+    } else {
+      calledBox.textContent = "";
+    }
   } catch (e) {
     console.warn("Focus resync failed:", e);
   }
