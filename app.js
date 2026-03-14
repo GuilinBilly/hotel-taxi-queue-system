@@ -193,6 +193,15 @@ document.addEventListener("visibilitychange", async () => {
 window.addEventListener("focus", async () => {
   dlog("Window focus — forcing audio resume");
   await ensureAudioReady("focus-wake", 2000, true);
+
+  try {
+    refreshJoinUI();
+    refreshAcceptUI();
+    updateQueueHealth(lastQueueSnapshot || {});
+    updateEmptyState?.();
+  } catch (e) {
+    console.warn("Focus resync failed:", e);
+  }
 });
 
 // Allow audio briefly even if Safari says the page isn't focused yet
