@@ -191,6 +191,7 @@ document.addEventListener("visibilitychange", async () => {
   window.addEventListener("focus", async () => {
   console.log("Window focus — forcing audio resume");
   await ensureAudioReady("focus-wake", 2000, true);
+  console.log("focus-wake complete");
 
   try {
     refreshJoinUI();
@@ -209,6 +210,8 @@ document.addEventListener("visibilitychange", async () => {
     } else {
       calledBox.textContent = "";
     }
+
+    console.log("Focus resync complete");
   } catch (e) {
     console.warn("Focus resync failed:", e);
   }
