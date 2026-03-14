@@ -163,6 +163,30 @@ document.addEventListener("visibilitychange", async () => {
 
     // Force recreate allowed after sleep
     await ensureAudioReady("visibility-wake", 2000, true);
+
+    // Foreground resync
+    try {
+      refreshJoinUI();
+      refreshAcceptUI();
+      updateQueueHealth(lastQueueSnapshot || {});
+      updateEmptyState?.();
+
+      // If my driver record still exists, restart heartbeat safely
+      if (myDriverKey) {
+        startDriverHeartbeat();
+      }
+
+      // If there is still an offer for me, restore the offer UI
+      if (offeredCache) {
+        const offerObj = unwrapOfferCache(offeredCache);
+        calledBox.textContent =
+          "Now Offering: " + (offerObj?.name ?? offerObj?.driverName ?? "");
+      } else {
+        calledBox.textContent = "";
+      }
+    } catch (e) {
+      console.warn("Foreground resync failed:", e);
+    }
   }
 });
 // Extra protection: when window regains focus (after sleep)
