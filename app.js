@@ -202,9 +202,10 @@ document.addEventListener("visibilitychange", async () => {
   await forceResumeAudio("focus-return");
 } catch (e) {
   console.warn("forceResumeAudio focus-return failed:", e);
-} unlockAudio();
- allowAudioFor(2500);
- console.log("focus-wake complete");
+} 
+    unlockAudio();
+    allowAudioFor(2500);
+    console.log("focus-wake complete");
   try {
     refreshJoinUI();
     refreshAcceptUI();
