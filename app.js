@@ -161,6 +161,8 @@ document.addEventListener("visibilitychange", async () => {
   if (!document.hidden) {
     console.log("Page visible again — forcing audio resume");
     await ensureAudioReady("visibility-wake", 2000, true);
+    unlockAudio();
+    allowAudioFor(2500);
     console.log("visibility-wake complete");
 
     try {
@@ -190,9 +192,10 @@ document.addEventListener("visibilitychange", async () => {
 // Extra protection: when window regains focus (after sleep)
   window.addEventListener("focus", async () => {
   console.log("Window focus — forcing audio resume");
-  await ensureAudioReady("focus-wake", 2000, true);
-  console.log("focus-wake complete");
-
+ await ensureAudioReady("focus-wake", 2000, true);
+ unlockAudio();
+ allowAudioFor(2500);
+ console.log("focus-wake complete");
   try {
     refreshJoinUI();
     refreshAcceptUI();
