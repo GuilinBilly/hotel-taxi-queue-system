@@ -161,6 +161,11 @@ document.addEventListener("visibilitychange", async () => {
   if (!document.hidden) {
     console.log("Page visible again — forcing audio resume");
     await ensureAudioReady("visibility-wake", 2000, true);
+    try {
+  await forceResumeAudio("visibility-return");
+} catch (e) {
+  console.warn("forceResumeAudio visibility-return failed:", e);
+}
     unlockAudio();
     allowAudioFor(2500);
     console.log("visibility-wake complete");
@@ -193,7 +198,11 @@ document.addEventListener("visibilitychange", async () => {
   window.addEventListener("focus", async () => {
   console.log("Window focus — forcing audio resume");
  await ensureAudioReady("focus-wake", 2000, true);
- unlockAudio();
+    try {
+  await forceResumeAudio("focus-return");
+} catch (e) {
+  console.warn("forceResumeAudio focus-return failed:", e);
+} unlockAudio();
  allowAudioFor(2500);
  console.log("focus-wake complete");
   try {
