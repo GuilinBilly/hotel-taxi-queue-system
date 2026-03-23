@@ -1681,9 +1681,9 @@ refreshAcceptUI();
 // ✅ If no offer for me, clear "Now Offering" and stop
 if (!offeredCache) {
   calledBox.textContent = "";
+  hideOfferAlert();
   return;
 }
-
 // offeredCache exists (for THIS driver)
 if (typeof setOfferPulse === "function") setOfferPulse(true);
 
