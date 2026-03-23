@@ -73,6 +73,60 @@ body{
   text-align: center;
   padding: 28px 16px 10px;
 }
+/* Offer Alert */
+.offer-alert {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 2px solid #d97706;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(255, 255, 255, 0.95));
+  box-shadow: 0 10px 26px rgba(217, 119, 6, 0.18);
+}
+
+.offer-alert.hidden {
+  display: none;
+}
+
+.offer-alert-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #92400e;
+  margin-bottom: 6px;
+}
+
+.offer-alert-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #7c2d12;
+  margin-bottom: 6px;
+}
+
+.offer-alert-countdown {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #b45309;
+}
+
+.offer-alert.active {
+  animation: offerPulse 1.15s ease-in-out infinite;
+}
+
+@keyframes offerPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 10px 26px rgba(217, 119, 6, 0.16);
+  }
+  50% {
+    transform: scale(1.01);
+    box-shadow: 0 14px 30px rgba(217, 119, 6, 0.28);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 10px 26px rgba(217, 119, 6, 0.16);
+  }
+}
 
 .header h1{
   margin: 0;
