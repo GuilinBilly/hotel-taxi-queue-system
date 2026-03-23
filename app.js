@@ -82,6 +82,11 @@ const queueList = document.getElementById("queueList");
 const calledBox = document.getElementById("calledBox");
 const queueHealthBox = document.getElementById("queueHealthBox");
 const offerInfo = document.getElementById("offerInfo"); // optional
+
+const offerAlertBox = document.getElementById("offerAlertBox");
+const offerAlertText = document.getElementById("offerAlertText");
+const offerAlertCountdown = document.getElementById("offerAlertCountdown");
+
 const netStatus = document.getElementById("netStatus"); // optional
 const queueEmpty = document.getElementById("queueEmpty"); // optional
 const soundToggle = document.getElementById("soundToggle"); // optional
