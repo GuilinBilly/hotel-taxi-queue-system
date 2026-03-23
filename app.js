@@ -303,6 +303,23 @@ function updateQueueHealth(queueObj = {}) {
     <div>System status: ${systemStatus}</div>
   `;
 }
+ function showOfferAlert(message, countdownText = "") {
+  if (!offerAlertBox) return;
+
+  offerAlertText.textContent = message || "Taxi offer";
+  offerAlertCountdown.textContent = countdownText || "";
+  offerAlertBox.classList.remove("hidden");
+  offerAlertBox.classList.add("active");
+}
+
+function hideOfferAlert() {
+  if (!offerAlertBox) return;
+
+  offerAlertText.textContent = "No active offer";
+  offerAlertCountdown.textContent = "";
+  offerAlertBox.classList.add("hidden");
+  offerAlertBox.classList.remove("active");
+}
 // =============================
 // TONE ENGINE (Phase 1)
 // =============================
