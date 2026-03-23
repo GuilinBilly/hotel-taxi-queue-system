@@ -33,6 +33,12 @@
          <!-- DEBUG button -->
          <button id="testBeepBtn" class="btn outline" type="button">Test Sound</button>
       </div>
+
+ <div id="offerAlertBox" class="offer-alert hidden" aria-live="assertive">
+  <div class="offer-alert-title">Taxi Offer</div>
+  <div id="offerAlertText" class="offer-alert-text">No active offer</div>
+  <div id="offerAlertCountdown" class="offer-alert-countdown"></div>
+ </div>        
         <!-- status text updated by JS -->
         <span id="offerInfo" class="status" aria-live="polite"></span>
       </div>
