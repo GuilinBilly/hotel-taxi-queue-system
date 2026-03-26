@@ -81,6 +81,20 @@ body{
   border-radius: 14px;
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(255, 255, 255, 0.95));
   box-shadow: 0 10px 26px rgba(217, 119, 6, 0.18);
+
+  /* ✨ ADD THESE */
+  position: relative;
+  overflow: hidden;
+
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
 }
 
 .offer-alert.hidden {
