@@ -303,13 +303,20 @@ function updateQueueHealth(queueObj = {}) {
     <div>System status: ${systemStatus}</div>
   `;
 }
- function showOfferAlert(message, countdownText = "") {
+ function showOfferAlert(message, countdownText = "", mode = "normal") {
   if (!offerAlertBox) return;
 
   offerAlertText.textContent = message || "Taxi offer";
   offerAlertCountdown.textContent = countdownText || "";
-  offerAlertBox.classList.remove("hidden");
+
+  offerAlertBox.classList.remove("hidden", "urgent", "final-seconds");
   offerAlertBox.classList.add("active");
+
+  if (mode === "urgent") {
+    offerAlertBox.classList.add("urgent");
+  } else if (mode === "final") {
+    offerAlertBox.classList.add("final-seconds");
+  }
 }
 
 function hideOfferAlert() {
