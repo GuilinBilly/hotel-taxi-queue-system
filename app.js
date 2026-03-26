@@ -1656,10 +1656,19 @@ if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
 
   const secLeft = Math.ceil(msLeft / 1000);
 
-  if (offerInfo) {
-    offerInfo.textContent = secLeft > 0 ? `Offer expires in ${secLeft}s` : `Offer expired`;
-  }
+  const offerName = v?.name ?? v?.driverName ?? "Taxi offer";
 
+if (msLeft > 0) {
+  showOfferAlert(
+    `Now offering: ${offerName}`,
+    `Expires in ${secLeft}s`
+  );
+} else {
+  showOfferAlert(
+    `Now offering: ${offerName}`,
+    `Offer expired`
+  );
+}
   if (msLeft <= 0) {
     // offer ended → stop loops
     stopOfferBeepLoop();
