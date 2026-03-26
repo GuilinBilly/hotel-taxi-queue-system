@@ -98,7 +98,8 @@ body{
 }
 
 .offer-alert.hidden {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .offer-alert-title {
