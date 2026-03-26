@@ -1670,10 +1670,10 @@ if (msLeft > 0) {
   );
 }
   if (msLeft <= 0) {
-    // offer ended → stop loops
-    stopOfferBeepLoop();
-  }
-}, 250);
+  stopOfferBeepLoop();
+  hideOfferAlert();
+}
+  }, 250);
 }
 
 // Track for next onValue tick
