@@ -112,7 +112,69 @@ body{
 .offer-alert.active {
   animation: offerPulse 1.15s ease-in-out infinite;
 }
+.offer-alert {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
 
+.offer-alert.active {
+  animation: offerPulse 1.2s ease-in-out infinite;
+}
+
+.offer-alert.urgent {
+  border-color: #f59e0b;
+  background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.16), 0 10px 30px rgba(245, 158, 11, 0.18);
+}
+
+.offer-alert.final-seconds {
+  border-color: #ef4444;
+  background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14), 0 12px 34px rgba(239, 68, 68, 0.2);
+  animation: offerShake 0.42s ease-in-out infinite;
+}
+
+.offer-alert-title {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.offer-alert-text {
+  font-weight: 600;
+}
+
+.offer-alert-countdown {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.offer-alert.urgent .offer-alert-countdown {
+  color: #b45309;
+}
+
+.offer-alert.final-seconds .offer-alert-countdown {
+  color: #b91c1c;
+}
+
+@keyframes offerPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+  50% {
+    transform: scale(1.01);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  }
+}
+
+@keyframes offerShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-1px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(1px); }
+}
 @keyframes offerPulse {
   0% {
     transform: scale(1);
