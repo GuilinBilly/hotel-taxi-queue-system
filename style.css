@@ -133,10 +133,6 @@ body{
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
-.offer-alert.active {
-  animation: offerPulse 1.2s ease-in-out infinite;
-}
-
 .offer-alert.urgent {
   border-color: #f59e0b;
   background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
