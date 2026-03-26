@@ -324,8 +324,9 @@ function hideOfferAlert() {
 
   offerAlertText.textContent = "No active offer";
   offerAlertCountdown.textContent = "";
+
   offerAlertBox.classList.add("hidden");
-  offerAlertBox.classList.remove("active");
+  offerAlertBox.classList.remove("active", "urgent", "final-seconds");
 }
 // =============================
 // TONE ENGINE (Phase 1)
