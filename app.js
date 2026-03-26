@@ -1209,7 +1209,7 @@ async function leaveQueue() {
   console.warn("Failed to cancel onDisconnect stale-marker for", myDriverKey, e);
 }
     await update(ref(db, "queue/" + myDriverKey), { status: "LEFT" });
-    
+    hideOfferAlert();
     sessionStorage.removeItem("htqs.driverKey");
     stopDriverHeartbeat();
     myDriverKey = null;
