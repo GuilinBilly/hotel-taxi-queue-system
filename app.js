@@ -1664,21 +1664,34 @@ if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
   }
 
   const secLeft = Math.ceil(msLeft / 1000);
+const offerName = v?.name ?? v?.driverName ?? "Taxi offer";
 
-  const offerName = v?.name ?? v?.driverName ?? "Taxi offer";
-
-if (msLeft > 0) {
+if (msLeft > 5000) {
   showOfferAlert(
     `Now offering: ${offerName}`,
-    `Expires in ${secLeft}s`
+    `Expires in ${secLeft}s`,
+    "normal"
+  );
+} else if (msLeft > 2000) {
+  showOfferAlert(
+    `Now offering: ${offerName}`,
+    `Expires in ${secLeft}s`,
+    "urgent"
+  );
+} else if (msLeft > 0) {
+  showOfferAlert(
+    `Now offering: ${offerName}`,
+    `Expires in ${secLeft}s`,
+    "final"
   );
 } else {
   showOfferAlert(
     `Now offering: ${offerName}`,
-    `Offer expired`
+    `Offer expired`,
+    "final"
   );
 }
-  if (msLeft <= 0) {
+    if (msLeft <= 0) {
   stopOfferBeepLoop();
   hideOfferAlert();
 }
