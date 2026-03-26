@@ -1642,6 +1642,7 @@ if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
     offerCountdownTimer = null;
     if (offerInfo) offerInfo.textContent = "";
     stopOfferBeepLoop();
+    hideOfferAlert();
     return;
   }
 
