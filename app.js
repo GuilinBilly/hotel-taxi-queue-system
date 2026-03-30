@@ -1709,7 +1709,8 @@ if (msLeft > 5000) {
     if (msLeft <= 0) {
   stopOfferBeepLoop();
   hideOfferAlert();
-}
+  updateAcceptButtonVisual(null);
+    }
   }, 250);
 }
 
