@@ -1727,9 +1727,10 @@ refreshAcceptUI();
 if (!offeredCache) {
   calledBox.textContent = "";
   hideOfferAlert();
+  updateAcceptButtonVisual(null);
   return;
 }
-// offeredCache exists (for THIS driver)
+    // offeredCache exists (for THIS driver)
 if (typeof setOfferPulse === "function") setOfferPulse(true);
 
 const offerObj = unwrapOfferCache(offeredCache);
