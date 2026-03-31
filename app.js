@@ -1693,6 +1693,7 @@ if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
   const v = unwrapOfferCache(offeredCache);    
   // ✅ compute time-left FIRST
   const msLeft = Math.max(0, (v.offerExpiresAt ?? 0) - Date.now());
+    setAcceptButtonLabel(msLeft);
     updateAcceptButtonVisual(msLeft);
     urgentDoublePulseActive = (msLeft > 0 && msLeft <= 2000);
   // ✅ urgent trigger uses msLeft (not "remaining")
