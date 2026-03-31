@@ -404,18 +404,6 @@ body{
 }
 
 
-#acceptBtn.offer-ready:hover {
-  transform: translateY(-1px);
-}
-
-#acceptBtn.final-seconds {
-  border-color: #ef4444;
-  color: #991b1b;
-  background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12), 0 10px 24px rgba(239, 68, 68, 0.18);
-  animation: acceptShake 0.42s ease-in-out infinite;
-}
-
 @keyframes acceptPulse {
   0%, 100% {
     transform: scale(1);
