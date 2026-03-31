@@ -1733,6 +1733,7 @@ if (msLeft > 5000) {
   stopOfferBeepLoop();
   hideOfferAlert();
   updateAcceptButtonVisual(null);
+  setAcceptButtonLabel(null);
     }
   }, 250);
 }
