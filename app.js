@@ -1253,6 +1253,7 @@ async function leaveQueue() {
     await update(ref(db, "queue/" + myDriverKey), { status: "LEFT" });
     hideOfferAlert();
     updateAcceptButtonVisual(null);
+    setAcceptButtonLabel(null);
     sessionStorage.removeItem("htqs.driverKey");
     stopDriverHeartbeat();
     myDriverKey = null;
