@@ -356,11 +356,12 @@ body{
 }
 
 /* when a real offer is available */
-#acceptBtn.is-offered {
-  background: linear-gradient(180deg, #1fbf63 0%, #16a34a 100%);
-  border-color: #148a3d;
-  color: #fff;
-  box-shadow: 0 10px 24px rgba(22, 163, 74, 0.28);
+#acceptBtn.offer-ready {
+  border-color: #d97706;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
+  color: #92400e;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12), 0 10px 24px rgba(245, 158, 11, 0.18);
+  animation: acceptPulse 1.05s ease-in-out infinite;
 }
 #acceptBtn {
   transition:
@@ -404,12 +405,11 @@ body{
   box-shadow: 0 12px 28px rgba(245, 158, 11, 0.34);
 }
 
-/* final seconds */
-#acceptBtn.is-offered.is-final {
-  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
-  border-color: #b91c1c;
-  color: #fff;
-  box-shadow: 0 14px 30px rgba(239, 68, 68, 0.38);
+#acceptBtn.final-seconds {
+  border-color: #ef4444;
+  color: #991b1b;
+  background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16), 0 12px 28px rgba(239, 68, 68, 0.24);
   animation: acceptUrgentPulse 0.55s ease-in-out infinite;
 }
 
