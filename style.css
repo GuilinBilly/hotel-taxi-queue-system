@@ -362,7 +362,28 @@ body{
   color: #fff;
   box-shadow: 0 10px 24px rgba(22, 163, 74, 0.28);
 }
+#acceptBtn {
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+  will-change: transform, box-shadow;
+}
 
+#acceptBtn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+#acceptBtn:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+#acceptBtn:not(:disabled):focus-visible {
+  outline: 3px solid rgba(245, 158, 11, 0.22);
+  outline-offset: 2px;
+}
 /* hover / touch-ready feeling */
 #acceptBtn.is-offered:hover {
   transform: translateY(-1px);
