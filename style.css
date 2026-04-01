@@ -356,7 +356,7 @@ body{
 }
 
 /* when a real offer is available */
-#acceptBtn.offer-ready {
+#acceptBtn.is-offered {
   border-color: #d97706;
   background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
   color: #92400e;
@@ -405,7 +405,7 @@ body{
   box-shadow: 0 12px 28px rgba(245, 158, 11, 0.34);
 }
 
-#acceptBtn.final-seconds {
+#acceptBtn.is-offered.is-final {
   border-color: #ef4444;
   color: #991b1b;
   background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
