@@ -409,8 +409,9 @@ body{
   border-color: #ef4444;
   color: #991b1b;
   background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16), 0 12px 28px rgba(239, 68, 68, 0.24);
-  animation: acceptUrgentPulse 0.55s ease-in-out infinite;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.20),
+            0 14px 30px rgba(239, 68, 68, 0.30);
+   animation: acceptUrgentPulse 0.55s ease-in-out infinite;
 }
 
 @keyframes acceptUrgentPulse {
