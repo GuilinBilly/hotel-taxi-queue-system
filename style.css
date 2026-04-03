@@ -354,6 +354,41 @@ body{
 #acceptBtn:disabled {
   opacity: 0.45;
 }
+#acceptBtn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -140%;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.28) 45%,
+    rgba(255,255,255,0.55) 50%,
+    rgba(255,255,255,0.18) 55%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: skewX(-18deg);
+  pointer-events: none;
+  opacity: 0;
+}
+
+#acceptBtn.is-offered::after,
+#acceptBtn.is-offered.is-urgent::after,
+#acceptBtn.is-offered.is-final::after {
+  animation: acceptShine 2.6s linear infinite;
+  opacity: 1;
+}
+
+@keyframes acceptShine {
+  0% {
+    left: -140%;
+  }
+  100% {
+    left: 160%;
+  }
+}
 
 /* when a real offer is available */
 #acceptBtn.is-offered {
