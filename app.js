@@ -163,25 +163,26 @@ function updateAcceptButtonVisual(msLeft = null) {
 }
 
 function setAcceptButtonLabel(msLeft = null) {
-  if (!acceptBtn) return;
+  if (!acceptBtn || !acceptBtnLabel) return;
 
   if (msLeft == null) {
-    acceptBtn.textContent = "Accept Ride";
+    acceptBtnLabel.textContent = "Accept Ride";
     return;
   }
 
   const secLeft = Math.max(0, Math.ceil(msLeft / 1000));
 
   if (secLeft <= 0) {
-    acceptBtn.textContent = "Offer Expired";
+    acceptBtnLabel.textContent = "Offer Expired";
   } else if (secLeft <= 2) {
-    acceptBtn.textContent = `Accept Now (${secLeft}s)`;
+    acceptBtnLabel.textContent = `Accept Now (${secLeft}s)`;
   } else if (secLeft <= 5) {
-    acceptBtn.textContent = `Accept Ride (${secLeft}s)`;
+    acceptBtnLabel.textContent = `Accept Ride (${secLeft}s)`;
   } else {
-    acceptBtn.textContent = `Accept Ride (${secLeft}s)`;
+    acceptBtnLabel.textContent = `Accept Ride (${secLeft}s)`;
   }
 }
+
 function lockDriverInputs(locked) {
   if (driverNameInput) driverNameInput.disabled = locked;
   if (driverColorInput) driverColorInput.disabled = locked;
