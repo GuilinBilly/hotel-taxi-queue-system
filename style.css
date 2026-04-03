@@ -449,6 +449,25 @@ body{
    animation: acceptUrgentPulse 0.55s ease-in-out infinite;
 }
 
+#acceptBtn.is-offered.is-final {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+#acceptBtn.is-offered.is-final .btn-label {
+  display: inline-block;
+  animation: acceptTextUrgent 0.55s ease-in-out infinite;
+}
+
+@keyframes acceptTextUrgent {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
 @keyframes acceptUrgentPulse {
   0%, 100% {
     transform: scale(1);
