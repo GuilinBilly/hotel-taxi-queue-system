@@ -72,6 +72,7 @@ const driverPlateInput = document.getElementById("driverPlate");
 const joinBtn = document.getElementById("joinBtn");
 const leaveBtn = document.getElementById("leaveBtn");
 const acceptBtn = document.getElementById("acceptBtn");
+const acceptBtnLabel = acceptBtn?.querySelector(".btn-label");
 const callNextBtn = document.getElementById("callNextBtn");
 const completeBtn = document.getElementById("completeBtn");
 const resetBtn = document.getElementById("resetBtn");
