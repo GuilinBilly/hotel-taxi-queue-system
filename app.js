@@ -183,7 +183,20 @@ function setAcceptButtonLabel(msLeft = null) {
     acceptBtnLabel.textContent = `Accept Ride (${secLeft}s)`;
   }
 }
+function triggerAcceptClickFeedback() {
+  if (!acceptBtn) return;
 
+  acceptBtn.classList.remove("is-clicked");
+
+  // restart animation reliably
+  void acceptBtn.offsetWidth;
+
+  acceptBtn.classList.add("is-clicked");
+
+  setTimeout(() => {
+    acceptBtn.classList.remove("is-clicked");
+  }, 180);
+}
 function lockDriverInputs(locked) {
   if (driverNameInput) driverNameInput.disabled = locked;
   if (driverColorInput) driverColorInput.disabled = locked;
