@@ -1631,6 +1631,10 @@ function subscribeQueue() {
   active.forEach(([k, v], i) => {
   const li = document.createElement("li");
   li.classList.add("queue-enter");
+    
+  li.addEventListener("animationend", () => {
+  li.classList.remove("queue-enter");
+  }, { once: true });
   const status = (v.status ?? "WAITING").toUpperCase();
 
   const safeName = v?.name || "Unknown Driver";
