@@ -542,6 +542,8 @@ body{
   border: 1px solid #eee;
   border-radius: 12px;
   padding: 10px 12px;
+  /* 🚀 Performance boost */
+  will-change: transform, opacity;
 }
 /* Queue row enter animation */
 .queue-enter {
