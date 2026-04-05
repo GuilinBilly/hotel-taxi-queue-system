@@ -543,7 +543,21 @@ body{
   border-radius: 12px;
   padding: 10px 12px;
 }
+/* Queue row enter animation */
+.queue-enter {
+  animation: queueEnter 0.28s ease-out;
+}
 
+@keyframes queueEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 /* Optional: if your JS renders a richer “queue-item” layout */
 .queue-item{
   display: flex;
