@@ -1413,7 +1413,7 @@ function unwrapOfferCache(offeredCache) {
 }
 async function acceptRide() {
   if (!offeredCache || !myDriverKey) return;
-
+  triggerAcceptClickFeedback();
   const offer = offeredCache?.val ?? offeredCache;
   const key = offeredCache?.key ?? myDriverKey;
 
