@@ -184,13 +184,11 @@ function setAcceptButtonLabel(msLeft = null) {
   }
 }
 function triggerAcceptClickFeedback() {
-  if (!acceptBtn) return;
+  if (!acceptBtn || acceptBtn.disabled) return;
+  if (!acceptBtn.classList.contains("is-offered")) return;
 
   acceptBtn.classList.remove("is-clicked");
-
-  // restart animation reliably
   void acceptBtn.offsetWidth;
-
   acceptBtn.classList.add("is-clicked");
 
   setTimeout(() => {
