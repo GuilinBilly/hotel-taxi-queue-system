@@ -1630,6 +1630,7 @@ function subscribeQueue() {
 
   active.forEach(([k, v], i) => {
   const li = document.createElement("li");
+  li.classList.add("queue-enter");
   const status = (v.status ?? "WAITING").toUpperCase();
 
   const safeName = v?.name || "Unknown Driver";
