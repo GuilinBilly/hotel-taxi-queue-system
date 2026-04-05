@@ -195,6 +195,20 @@ function triggerAcceptClickFeedback() {
     acceptBtn.classList.remove("is-clicked");
   }, 180);
 }
+function triggerAcceptSuccessFeedback() {
+  if (!acceptBtn || !acceptBtnLabel) return;
+
+  acceptBtn.classList.remove("is-clicked");
+  acceptBtn.classList.add("is-success");
+
+  const oldText = acceptBtnLabel.textContent;
+  acceptBtnLabel.textContent = "Accepted ✓";
+
+  setTimeout(() => {
+    acceptBtn.classList.remove("is-success");
+    acceptBtnLabel.textContent = oldText;
+  }, 900);
+}
 function lockDriverInputs(locked) {
   if (driverNameInput) driverNameInput.disabled = locked;
   if (driverColorInput) driverColorInput.disabled = locked;
