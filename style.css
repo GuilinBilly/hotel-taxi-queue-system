@@ -448,7 +448,13 @@ body{
             0 14px 30px rgba(239, 68, 68, 0.30);
    animation: acceptUrgentPulse 0.55s ease-in-out infinite;
 }
-
+#acceptBtn.is-clicked {
+  transform: scale(0.97);
+  box-shadow:
+    0 0 0 4px rgba(34, 197, 94, 0.18),
+    0 8px 18px rgba(22, 163, 74, 0.22);
+  transition: transform 0.08s ease, box-shadow 0.12s ease;
+}
 #acceptBtn.is-offered.is-final {
   font-weight: 800;
   letter-spacing: 0.2px;
