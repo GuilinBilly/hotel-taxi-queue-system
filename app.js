@@ -1476,7 +1476,7 @@ async function acceptRide() {
     });
     triggerAcceptSuccessFeedback();
     hideOfferAlert();
-    updateAcceptButtonVisual(null);
+    setAcceptButtonLabel(null);
     accepted = true; // ✅ success
     suppressOfferBeep = true; // keep silent after accept
     showToast?.("Accepted ✅", "ok", 1500);
