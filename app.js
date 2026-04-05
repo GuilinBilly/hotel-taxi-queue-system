@@ -1474,6 +1474,7 @@ async function acceptRide() {
       status: "ACCEPTED",
       acceptedAt: Date.now(),
     });
+    triggerAcceptSuccessFeedback();
     hideOfferAlert();
     updateAcceptButtonVisual(null);
     accepted = true; // ✅ success
