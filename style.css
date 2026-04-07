@@ -556,6 +556,9 @@ body{
   background: #fcfcfc;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
+.queue li.queue-moving {
+  transition: transform 0.28s ease;
+}
 /* Queue row enter animation */
 .queue-enter {
   animation: queueEnter 0.28s ease-out;
