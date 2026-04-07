@@ -551,7 +551,7 @@ body{
 }
 
 .queue li:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.01);
   border-color: #d8d8d8;
   background: #fcfcfc;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
