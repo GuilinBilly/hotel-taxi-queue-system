@@ -538,12 +538,23 @@ body{
   min-height: 40px;
 }
 
-.queue li{
+.queue li {
   border: 1px solid #eee;
   border-radius: 12px;
   padding: 10px 12px;
-  /* 🚀 Performance boost */
   will-change: transform, opacity;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.queue li:hover {
+  transform: translateY(-2px);
+  border-color: #d8d8d8;
+  background: #fcfcfc;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 /* Queue row enter animation */
 .queue-enter {
