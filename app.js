@@ -209,7 +209,6 @@ function triggerAcceptSuccessFeedback() {
     acceptBtnLabel.textContent = oldText;
   }, 900);
 }
-
 function animateQueueReorder(parentEl, buildRowsFn) {
   if (!parentEl) return buildRowsFn();
 
@@ -250,7 +249,6 @@ function animateQueueReorder(parentEl, buildRowsFn) {
     }
   });
 }
-
 function lockDriverInputs(locked) {
   if (driverNameInput) driverNameInput.disabled = locked;
   if (driverColorInput) driverColorInput.disabled = locked;
@@ -259,7 +257,6 @@ function lockDriverInputs(locked) {
   if (joinBtn) joinBtn.disabled = locked;
   if (leaveBtn) leaveBtn.disabled = !locked;
 }
-
 // Network wake: when Wi-Fi reconnects after sleep
 window.addEventListener("online", () => {
   dlog("Network online — trying audio resume");
