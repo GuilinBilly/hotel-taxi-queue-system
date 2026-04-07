@@ -1630,6 +1630,7 @@ function subscribeQueue() {
 
   active.forEach(([k, v], i) => {
   const li = document.createElement("li");
+  li.dataset.key = k;
   li.classList.add("queue-enter");
     
   li.addEventListener("animationend", () => {
