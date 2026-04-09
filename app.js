@@ -1602,7 +1602,6 @@ function subscribeQueue() {
     if (!snap.exists()) {
       if (!isConnected) return;
 
-      queueList.innerHTML = "";
       calledBox.textContent = "";
       offeredCache = null;
 
