@@ -1666,30 +1666,34 @@ function subscribeQueue() {
   )
   .slice()
   .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+animateQueueReorder(queueList, () => {
+  queueList.innerHTML = "";
 
   active.forEach(([k, v], i) => {
-  const li = document.createElement("li");
-  li.dataset.key = k;
-  li.classList.add("queue-enter");
-    
-  li.addEventListener("animationend", () => {
-  li.classList.remove("queue-enter");
-  }, { once: true });
-  const status = (v.status ?? "WAITING").toUpperCase();
+    const li = document.createElement("li");
+    li.dataset.key = k;
+    li.classList.add("queue-enter");
 
-  const safeName = v?.name || "Unknown Driver";
-  const safeColor = v?.carColor || "";
-  const safePlate = v?.plate || "";
-  const driverLabel = `${safeName} ${safeColor} ${safePlate}`.replace(/\s+/g, " ").trim();
+    li.addEventListener("animationend", () => {
+      li.classList.remove("queue-enter");
+    }, { once: true });
 
-  li.classList.add("queue-item", `status-${status.toLowerCase()}`);
-  li.innerHTML = `
-    <span class="pos">${i + 1}.</span>
-    <span class="driver">${driverLabel}</span>
-    <span class="badge">${status}</span>
-  `;
-  queueList.appendChild(li);
-});
+    const status = (v.status ?? "WAITING").toUpperCase();
+
+    const safeName = v?.name || "Unknown Driver";
+    const safeColor = v?.carColor || "";
+    const safePlate = v?.plate || "";
+    const driverLabel = `${safeName} ${safeColor} ${safePlate}`.replace(/\s+/g, " ").trim();
+
+    li.classList.add("queue-item", `status-${status.toLowerCase()}`);
+    li.innerHTML = `
+      <span>${i + 1}. ${driverLabel}</span>
+      <span>${status}</span>
+    `;
+
+    queueList.appendChild(li);
+  });
+});  
 
 updateEmptyState();
 
