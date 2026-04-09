@@ -1655,7 +1655,6 @@ function subscribeQueue() {
   }
 }
     // Render list
-    queueList.innerHTML = "";
     calledBox.textContent = "";
 
     const active = entries
