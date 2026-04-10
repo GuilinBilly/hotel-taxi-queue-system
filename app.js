@@ -1532,6 +1532,7 @@ async function acceptRide() {
   }
 }
 async function completePickup() {
+  console.log("=== Complete Pickup Clicked ===");
   if (isBusy) return;
   setBusy(true, "Completing…");
 
