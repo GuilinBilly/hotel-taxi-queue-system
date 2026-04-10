@@ -1545,6 +1545,7 @@ async function completePickup() {
     if (!snap.exists()) return;
 
     const accepted = Object.entries(snap.val()).find(([_, v]) => v.status === "ACCEPTED");
+    console.log("Found accepted:", accepted);
     if (!accepted) return alert("No ACCEPTED ride to complete.");
 
     await remove(ref(db, "queue/" + accepted[0]));
