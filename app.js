@@ -1651,8 +1651,9 @@ function subscribeQueue() {
     }
 
    const data = snap.val() || {};
+   lastQueueSnapshot = data;
    updateQueueHealth(data);
-    lastQueueSnapshot = data;
+    
     const entries = Object.entries(data);
     
    if (myDriverKey) {
