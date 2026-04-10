@@ -1341,7 +1341,7 @@ async function leaveQueue() {
 async function expireOffersNow() {
   const snap = await get(queueRef);
   if (!snap.exists()) return;
-
+  console.log("Queue data:", snap.val());
   const now = Date.now();
   const entries = Object.entries(snap.val() || {});
   let bump = 0;
