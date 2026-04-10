@@ -1655,6 +1655,9 @@ function subscribeQueue() {
    updateQueueHealth(data);
     
     const entries = Object.entries(data);
+    console.log("SNAPSHOT keys:", Object.keys(data));
+    console.log("RENDER entries:", entries);
+    console.log("myDriverKey:", myDriverKey);
     
    if (myDriverKey) {
   const mine = data[myDriverKey];
