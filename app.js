@@ -1546,9 +1546,32 @@ async function completePickup() {
 
     const accepted = Object.entries(snap.val()).find(([_, v]) => v.status === "ACCEPTED");
     console.log("Found accepted:", accepted);
+    
     if (!accepted) return alert("No ACCEPTED ride to complete.");
+    
     console.log("Removing key:", accepted[0]);
     await remove(ref(db, "queue/" + accepted[0]));
+    console.log("Removed successfully:", accepted[0]);
+    
+    const removedKey = accepted[0];
+
+// clear local UI immediately
+const row = queueList?.querySelector(`[data-key="${removedKey}"]`);
+if (row) row.remove();
+
+calledBox.textContent = "";
+offeredCache = null;
+lastOfferSig = null;
+suppressOfferBeep = false;
+
+hideOfferAlert();
+if (typeof setOfferPulse === "function") setOfferPulse(false);
+updateAcceptButtonVisual(null);
+setAcceptButtonLabel(null);
+
+updateEmptyState();
+refreshAcceptUI();
+updateQueueHealth(lastQueueSnapshot || {});
     console.log("Removed successfully:", accepted[0]);
   } finally {
     setBusy(false);
