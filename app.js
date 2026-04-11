@@ -1474,6 +1474,13 @@ function unwrapOfferCache(offeredCache) {
   return offeredCache;
 }
 async function acceptRide() {
+  console.log("ACCEPT clicked", {
+  offeredCache,
+  myDriverKey,
+  disabled: acceptBtn?.disabled,
+  className: acceptBtn?.className,
+  text: acceptBtnLabel?.textContent
+});
   if (!offeredCache || !myDriverKey) return;
   triggerAcceptClickFeedback();
   const offer = offeredCache?.val ?? offeredCache;
