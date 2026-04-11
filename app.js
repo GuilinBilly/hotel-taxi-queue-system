@@ -637,6 +637,12 @@ function findOfferForMe(data) {
   return { key, val: v };
 }
 function refreshAcceptUI() {
+  console.log("refreshAcceptUI()", {
+  myDriverKey,
+  offeredCache,
+  acceptDisabled: acceptBtn?.disabled,
+  acceptClass: acceptBtn?.className
+});
   if (!acceptBtn) return;
 
   const offer = unwrapOfferCache(offeredCache);
