@@ -1344,7 +1344,7 @@ async function leaveQueue() {
     }    
     try {
   await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).cancel();
-  console.log("onDisconnect stale-marker canceled for", myDriverKey);
+  //console.log("onDisconnect stale-marker canceled for", myDriverKey);
 } catch (e) {
   console.warn("Failed to cancel onDisconnect stale-marker for", myDriverKey, e);
 }
