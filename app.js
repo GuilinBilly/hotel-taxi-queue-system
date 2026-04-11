@@ -1201,9 +1201,8 @@ async function joinQueue() {
     const driverRef = ref(db, "queue/" + driverKey);
 
     const existingSnap = await get(driverRef);
-    const existing = existingSnap.exists() ? existingSnap.val() : null;
-    const status = (existing?.status ?? "").toUpperCase();
-
+    let existing = existingSnap.exists() ? existingSnap.val() : null;
+    let status = (existing?.status ?? "").toUpperCase();
    // ✅ If record is already active, recover state and do NOT overwrite
   if (existing && status !== "LEFT") {
   myDriverKey = driverKey;
