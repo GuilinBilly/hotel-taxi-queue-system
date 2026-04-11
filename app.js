@@ -1499,6 +1499,7 @@ async function acceptRide() {
   className: acceptBtn?.className,
   text: acceptBtnLabel?.textContent
 });
+  
  if (!myDriverKey) return;
 
 triggerAcceptClickFeedback();
