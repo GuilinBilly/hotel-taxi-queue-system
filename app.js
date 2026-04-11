@@ -379,26 +379,24 @@ function updateQueueHealth(queueObj = {}) {
   const waitingRows = rows.filter(
     ([_, v]) => (v.status ?? "WAITING") === "WAITING"
   );
-
   const waitingCount = waitingRows.length;
 
-  let longestWaitMs = 0;
-  let inactiveCount = 0;
+let longestWaitMs = 0;
+let inactiveCount = 0;
 
-  for (const [_, v] of rows) {
-    const joinedAt = v.joinedAt ?? now;
-    const waitMs = now - joinedAt;
-    if (waitMs > longestWaitMs) longestWaitMs = waitMs;
+for (const [_, v] of waitingRows) {
+  const joinedAt = v.joinedAt ?? now;
+  const waitMs = now - joinedAt;
+  if (waitMs > longestWaitMs) longestWaitMs = waitMs;
 
-    const lastSeen = v.lastSeen ?? v.joinedAt ?? 0;
-    const staleMs = now - lastSeen;
+  const lastSeen = v.lastSeen ?? v.joinedAt ?? 0;
+  const staleMs = now - lastSeen;
 
-    // same logic as your current version
-    if (!lastSeen || staleMs > 90000) {
-      inactiveCount++;
-    }
+  if (!lastSeen || staleMs > 90000) {
+    inactiveCount++;
   }
-
+}
+  
   let systemStatus = "OK";
   if (inactiveCount > 0) {
     systemStatus = "Check inactive drivers";
