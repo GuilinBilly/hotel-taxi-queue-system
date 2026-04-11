@@ -1233,7 +1233,7 @@ if (existing && status !== "LEFT") {
   if (leaveBtn) leaveBtn.disabled = false;
 
   showToast?.(`Already in queue (${status})`, "warn", 1800);
-  console.log("joinQueue ignored (already active)", driverKey, status);
+  //console.log("joinQueue ignored (already active)", driverKey, status);
   return;
 }
 // Clean up old LEFT record
