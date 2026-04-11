@@ -1526,7 +1526,11 @@ if (!offerObj) {
 }
 
 const offer = offerObj?.val ?? offerObj;
-key = offerObj?.key ?? myDriverKey;
+if ((offer?.status ?? "").toUpperCase() !== "OFFERED") {
+  console.log("ACCEPT aborted: current status is not OFFERED", offer);
+  return;
+}
+  key = offerObj?.key ?? myDriverKey;
   
   const now = Date.now();
   const expiresAt = offer?.offerExpiresAt ?? 0;
