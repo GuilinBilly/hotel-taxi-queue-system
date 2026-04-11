@@ -1777,13 +1777,13 @@ function subscribeQueue() {
   .slice()
   .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
     
-  console.log("VISIBLE active rows:", active.map(([k, v]) => ({
-  key: k,
-  status: v?.status,
-  name: v?.name,
-  plate: v?.plate,
-  carColor: v?.carColor
-  })));
+  //console.log("VISIBLE active rows:", active.map(([k, v]) => ({
+  //key: k,
+  //status: v?.status,
+  //name: v?.name,
+  //plate: v?.plate,
+  //carColor: v?.carColor
+  //})));
     
   animateQueueReorder(queueList, () => {
   queueList.innerHTML = "";
