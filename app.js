@@ -1655,6 +1655,17 @@ function subscribeQueue() {
    updateQueueHealth(data);
     
     const entries = Object.entries(data);
+
+    console.log("ALL queue entries:", entries.map(([k, v]) => ({
+    key: k,
+    status: v?.status,
+    name: v?.name,
+    plate: v?.plate,
+    carColor: v?.carColor,
+    joinedAt: v?.joinedAt,
+    lastSeen: v?.lastSeen
+    })));
+    
     //console.log("SNAPSHOT keys:", Object.keys(data));
     //console.log("RENDER entries:", entries);
     //console.log("myDriverKey:", myDriverKey);
