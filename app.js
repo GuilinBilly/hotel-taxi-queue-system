@@ -1499,11 +1499,34 @@ async function acceptRide() {
   className: acceptBtn?.className,
   text: acceptBtnLabel?.textContent
 });
-  if (!offeredCache || !myDriverKey) return;
-  triggerAcceptClickFeedback();
-  const offer = offeredCache?.val ?? offeredCache;
-  const key = offeredCache?.key ?? myDriverKey;
+ if (!myDriverKey) return;
 
+triggerAcceptClickFeedback();
+
+let offerObj = offeredCache;
+let key = offeredCache?.key ?? myDriverKey;
+
+// Safari / slow-sync fallback:
+// if local cache is missing, read my row directly from Firebase once
+if (!offerObj) {
+  const mineSnap = await get(ref(db, "queue/" + myDriverKey));
+  if (mineSnap.exists()) {
+    const mineVal = mineSnap.val();
+    if ((mineVal.status ?? "").toUpperCase() === "OFFERED") {
+      offerObj = { key: myDriverKey, val: mineVal };
+      offeredCache = offerObj;
+    }
+  }
+}
+
+if (!offerObj) {
+  console.log("ACCEPT aborted: no offeredCache yet for", myDriverKey);
+  return;
+}
+
+const offer = offerObj?.val ?? offerObj;
+key = offerObj?.key ?? myDriverKey;
+  
   const now = Date.now();
   const expiresAt = offer?.offerExpiresAt ?? 0;
 
