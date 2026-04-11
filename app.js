@@ -1501,13 +1501,13 @@ function unwrapOfferCache(offeredCache) {
   return offeredCache;
 }
 async function acceptRide() {
-  console.log("ACCEPT clicked", {
-  offeredCache,
-  myDriverKey,
-  disabled: acceptBtn?.disabled,
-  className: acceptBtn?.className,
-  text: acceptBtnLabel?.textContent
-});
+  //console.log("ACCEPT clicked", {
+  //offeredCache,
+  //myDriverKey,
+  //disabled: acceptBtn?.disabled,
+  //className: acceptBtn?.className,
+  //text: acceptBtnLabel?.textContent
+//});
   
  if (!myDriverKey) return;
 
