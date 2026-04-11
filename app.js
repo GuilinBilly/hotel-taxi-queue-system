@@ -1699,7 +1699,7 @@ function subscribeQueue() {
   //status: v?.status,
   //name: v?.name,
   //plate: v?.plate,
-  /carColor: v?./carColor
+  //carColor: v?./carColor
   //})));
     
   animateQueueReorder(queueList, () => {
