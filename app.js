@@ -1424,8 +1424,12 @@ async function callNext() {
     // 2) Pull fresh queue
     const snap = await get(queueRef);
     const data = snap.exists() ? snap.val() : {};
-    const entries = Object.entries(data);
 
+    const entries = Object.entries(data).filter(([_, v]) =>
+  v &&
+  (v.status ?? "WAITING") !== "LEFT" &&
+  (v.name || v.plate || v.carColor)
+);
     // 3) C3 rule: do NOT create a new offer if one is still active
     const activeOffer = entries.find(([_, v]) =>
       v &&
