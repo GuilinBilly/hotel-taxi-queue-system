@@ -1530,13 +1530,13 @@ if (!offerObj) {
 }
 
 if (!offerObj) {
-  console.log("ACCEPT aborted: no offeredCache yet for", myDriverKey);
+  //console.log("ACCEPT aborted: no offeredCache yet for", myDriverKey);
   return;
 }
 
 const offer = offerObj?.val ?? offerObj;
 if ((offer?.status ?? "").toUpperCase() !== "OFFERED") {
-  console.log("ACCEPT aborted: current status is not OFFERED", offer);
+  //console.log("ACCEPT aborted: current status is not OFFERED", offer);
   return;
 }
   key = offerObj?.key ?? myDriverKey;
