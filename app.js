@@ -366,27 +366,37 @@ function updateQueueHealth(queueObj = {}) {
   if (!queueHealthBox) return;
 
   const now = Date.now();
-  const drivers = Object.entries(queueObj)
-    .map(([key, value]) => ({ key, ...value }))
-    .filter(driver => driver && driver.status === "WAITING");
 
-  const waitingCount = drivers.length;
+  // ✅ SAME FILTER as Live Queue
+  const rows = Object.entries(queueObj)
+    .filter(([_, v]) =>
+      v &&
+      (v.status ?? "WAITING") !== "LEFT" &&
+      (v.name || v.plate || v.carColor)
+    );
+
+  // ✅ Waiting only
+  const waitingRows = rows.filter(
+    ([_, v]) => (v.status ?? "WAITING") === "WAITING"
+  );
+
+  const waitingCount = waitingRows.length;
 
   let longestWaitMs = 0;
   let inactiveCount = 0;
 
-  for (const driver of drivers) {
-    const joinedAt = driver.joinedAt ?? now;
+  for (const [_, v] of rows) {
+    const joinedAt = v.joinedAt ?? now;
     const waitMs = now - joinedAt;
     if (waitMs > longestWaitMs) longestWaitMs = waitMs;
 
-    const lastSeenAt = driver.lastSeenAt ?? 0;
-    const staleMs = now - lastSeenAt;
+    const lastSeen = v.lastSeen ?? v.joinedAt ?? 0;
+    const staleMs = now - lastSeen;
 
-    // treat 45s+ as inactive/stale
-    if (!lastSeenAt || staleMs > 90000) {
-  inactiveCount++;
-}
+    // same logic as your current version
+    if (!lastSeen || staleMs > 90000) {
+      inactiveCount++;
+    }
   }
 
   let systemStatus = "OK";
@@ -403,7 +413,8 @@ function updateQueueHealth(queueObj = {}) {
     <div>System status: ${systemStatus}</div>
   `;
 }
- function showOfferAlert(message, countdownText = "", mode = "normal") {
+    
+  function showOfferAlert(message, countdownText = "", mode = "normal") {
   if (!offerAlertBox) return;
 
   offerAlertText.textContent = message || "Taxi offer";
