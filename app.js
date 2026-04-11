@@ -1200,11 +1200,22 @@ async function joinQueue() {
     const driverKey = `${norm(name)}_${norm(plate)}`;
     const driverRef = ref(db, "queue/" + driverKey);
 
-    const existingSnap = await get(driverRef);
-    let existing = existingSnap.exists() ? existingSnap.val() : null;
-    let status = (existing?.status ?? "").toUpperCase();
-   // ✅ If record is already active, recover state and do NOT overwrite
-  if (existing && status !== "LEFT") {
+const existingSnap = await get(driverRef);
+let existing = existingSnap.exists() ? existingSnap.val() : null;
+let status = (existing?.status ?? "").toUpperCase();
+
+const existingLastSeen = existing?.lastSeenAt ?? existing?.joinedAt ?? 0;
+const isExistingStale = !existingLastSeen || (Date.now() - existingLastSeen > 45000);
+
+// If old LEFT or stale record exists, delete it first
+if (existing && (status === "LEFT" || isExistingStale)) {
+  await remove(driverRef);
+  existing = null;
+  status = "";
+}
+
+// If record is already truly active, recover state and do NOT overwrite
+if (existing && status !== "LEFT") {
   myDriverKey = driverKey;
   sessionStorage.setItem("htqs.driverKey", driverKey);
 
@@ -1225,7 +1236,6 @@ async function joinQueue() {
   console.log("joinQueue ignored (already active)", driverKey, status);
   return;
 }
-
 // Clean up old LEFT record
 if (existing && status === "LEFT") {
   await remove(driverRef);
