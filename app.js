@@ -1266,11 +1266,11 @@ if (existing && status === "LEFT") {
    // Mark this driver stale if device/tab disconnects unexpectedly
 try {
   await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).set(0);
-  console.log("onDisconnect stale-marker armed for", myDriverKey);
+  //console.log("onDisconnect stale-marker armed for", myDriverKey);
 } catch (e) {
   console.warn("Failed to arm onDisconnect stale-marker for", myDriverKey, e);
 }
-    console.log("joinQueue success", driverKey);
+    //console.log("joinQueue success", driverKey);
     
 
    // 🔊 Auto test sound so driver knows alerts work
