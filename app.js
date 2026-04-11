@@ -1206,17 +1206,27 @@ async function joinQueue() {
 
     // ✅ If record is already active, recover state and do NOT overwrite
     if (existing && status !== "LEFT") {
-      myDriverKey = driverKey;
-      sessionStorage.setItem("htqs.driverKey", driverKey);
+  myDriverKey = driverKey;
+  sessionStorage.setItem("htqs.driverKey", driverKey);
 
-      lockDriverInputs(true);
-      refreshJoinUI();
-      refreshAcceptUI();
+  // recover heartbeat after refresh / reopen
+  startDriverHeartbeat();
 
-      showToast?.(`Already in queue (${status})`, "warn", 1800);
-      console.log("joinQueue ignored (already active)", driverKey, status);
-      return;
-    }
+  // recover any current offer for this driver from the latest snapshot
+  offeredCache = findOfferForMe(lastQueueSnapshot || { [driverKey]: existing });
+
+  lockDriverInputs(true);
+  refreshJoinUI();
+  refreshAcceptUI();
+
+  // extra safety so Leave Queue is clickable
+  if (leaveBtn) leaveBtn.disabled = false;
+
+  showToast?.(`Already in queue (${status})`, "warn", 1800);
+  console.log("joinQueue ignored (already active)", driverKey, status);
+  return;
+}
+  }
 
     // Clean up old LEFT record
     if (existing && status === "LEFT") {
