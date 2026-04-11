@@ -1702,7 +1702,7 @@ function subscribeQueue() {
   /carColor: v?./carColor
   //})));
     
-animateQueueReorder(queueList, () => {
+  animateQueueReorder(queueList, () => {
   queueList.innerHTML = "";
 
   active.forEach(([k, v], i) => {
