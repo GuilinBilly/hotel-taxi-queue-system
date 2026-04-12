@@ -963,11 +963,11 @@ async function forceResumeAudio(reason = "", allowRecreate = true) {
   return audioCtx?.state === "running";
 }
 async function ensureAudioReady(reason = "ensure", ms = 1500, allowRecreate = false) {
-  
+ // Extra safety: try resuming AudioContext directly
   try { await forceResumeAudio?.(reason, allowRecreate); } catch {}
   try { unlockAudio?.(); } catch {}
   try { allowAudioFor?.(ms); } catch {}
-
+ // Safari/iOS: unlock audio on the first real user gesture anywhere
   try { await audioCtx?.resume?.(); } catch {}
 }
 
@@ -1050,15 +1050,15 @@ function vibratePattern(kind) {
     urgent: [20, 40, 20, 40, 20],
     accepted: [30, 30, 60],
   };
-
   navigator.vibrate(patterns[kind] || [20]);
 }
+// ✅ stop urgent loop (if running)
 function stopOfferBeepLoop() {
   if (urgentBeepIntervalId) {
     clearInterval(urgentBeepIntervalId);
     urgentBeepIntervalId = null;
   }
-
+  // ✅ stop the "double pulse" second-beep timeout (important)
   clearTimeout(urgentSecondPulseTimeoutId);
   urgentSecondPulseTimeoutId = null;
   urgentDoublePulseActive = false;
@@ -1066,6 +1066,7 @@ function stopOfferBeepLoop() {
   clearInterval(offerBeepIntervalId);
   clearTimeout(offerBeepStopTimeoutId);
   offerBeepIntervalId = null;
+  // ✅ stop offer loop (if running)
   offerBeepStopTimeoutId = null;
 }
 
@@ -1193,37 +1194,41 @@ async function joinQueue() {
 const existingSnap = await get(driverRef);
 let existing = existingSnap.exists() ? existingSnap.val() : null;
 let status = (existing?.status ?? "").toUpperCase();
-
+// If old LEFT or stale record exists, delete it first
 const existingLastSeen = existing?.lastSeenAt ?? existing?.joinedAt ?? 0;
 const isExistingStale = !existingLastSeen || (Date.now() - existingLastSeen > 45000);
 
-if (existing && (status === "LEFT" || isExistingStale)) {
+  // If record is already truly active, recover state and do NOT overwrite
+  if (existing && (status === "LEFT" || isExistingStale)) {
   await remove(driverRef);
   existing = null;
   status = "";
 }
-
-if (existing && status !== "LEFT") {
+  // recover heartbeat after refresh / reopen
+  if (existing && status !== "LEFT") {
   myDriverKey = driverKey;
   sessionStorage.setItem("htqs.driverKey", driverKey);
 
   startDriverHeartbeat();
 
   // recover any current offer for this driver from the latest snapshot
+  // extra safety so Leave Queue is clickable
   offeredCache = findOfferForMe(lastQueueSnapshot || { [driverKey]: existing });
 
   lockDriverInputs(true);
   refreshJoinUI();
   refreshAcceptUI();
-
+    
+  // Clean up old LEFT record
   if (leaveBtn) leaveBtn.disabled = false;
 
   showToast?.(`Already in queue (${status})`, "warn", 1800);
   //console.log("joinQueue ignored (already active)", driverKey, status);
   return;
 }
-
-if (existing && status === "LEFT") {
+ 
+  // ✅ Normal join: safe to create fresh record
+  if (existing && status === "LEFT") {
   await remove(driverRef);
 }    
     const joinedAt =
@@ -1241,7 +1246,7 @@ if (existing && status === "LEFT") {
       offerExpiresAt: null,
       lastSeenAt: Date.now(),
     });
-
+   // Mark this driver stale if device/tab disconnects unexpectedly
     myDriverKey = driverKey;
     sessionStorage.setItem("htqs.driverKey", driverKey);
     startDriverHeartbeat();
@@ -1363,8 +1368,8 @@ async function expireOffersNow() {
   await Promise.all(
     entries.map(async ([k, v]) => {
       if (!v) return;
-
-      const isExpired =
+   // C3: mark it as "missed" so the driver UI can show a toast if desired
+    const isExpired =
         (v.status ?? "WAITING") === "OFFERED" &&
         (v.offerExpiresAt ?? 0) <= now;
 
@@ -1782,8 +1787,8 @@ function subscribeQueue() {
 });  
 
 updateEmptyState();
-
-offeredCache = findOfferForMe(data);
+ // ✅ Only cache an offer if it’s for THIS driver
+ offeredCache = findOfferForMe(data);
     
 // =============================
 // C3: Beep/pulse + "Offer missed" + countdown
@@ -2013,18 +2018,18 @@ joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
 acceptBtn.onclick = acceptRide;
 
+// Make sure sound gating can't block the test
 const testBeepBtn = document.getElementById("testBeepBtn");
 console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
-
+// Wake/resume the real shared context
 testBeepBtn?.addEventListener("click", () => {
   console.log("🔔 Test Beep clicked");
-
-  
+// Give Safari a tiny moment after resume  
   soundEnabled = true;
   localStorage.setItem("htqs.soundEnabled", "true");
 
   ensureAudioNow("test-beep-click");
-
+ // Safety fallback if normal tone truly fails
   const ok = playTone("offer", {
     force: true,
     allowNoFocus: true,
@@ -2039,7 +2044,7 @@ testBeepBtn?.addEventListener("click", () => {
     hardBeepFallback();
   }
 });
-
+// Keep UI updated while typing
 callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
