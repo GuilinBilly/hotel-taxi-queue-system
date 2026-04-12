@@ -1512,7 +1512,8 @@ async function acceptRide() {
  if (!myDriverKey) return;
 
 triggerAcceptClickFeedback();
-
+// ✅ Disable immediately (PREVENT double click)
+if (acceptBtn) acceptBtn.disabled = true;
 let offerObj = offeredCache;
 let key = offeredCache?.key ?? myDriverKey;
 
