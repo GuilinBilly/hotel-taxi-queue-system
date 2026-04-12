@@ -299,7 +299,7 @@ document.addEventListener("visibilitychange", async () => {
     }
   }
 });
-// Extra protection: when window regains focus (after sleep)
+
   window.addEventListener("focus", async () => {
   console.log("Window focus — forcing audio resume");
  await ensureAudioReady("focus-wake", 2000, true);
@@ -335,7 +335,6 @@ document.addEventListener("visibilitychange", async () => {
   }
 });
 
-// Allow audio briefly even if Safari says the page isn't focused yet
 let allowAudioWhenNotFocusedUntil = 0;
 
 function allowAudioFor(ms = 1500) {
@@ -488,7 +487,6 @@ function playOfferArrivedBeep() {
       : { force: true, allowNoFocus: true, volumeMul: 1.3 }
   );
 
-  // Optional: vibrate only on the first beep (or every beep if you prefer)
   if (isFirst) vibratePattern("offer");
 
   offerBeepCount++;
@@ -497,7 +495,6 @@ function playOfferArrivedBeep() {
 function _playOneBeep(p, opts = {}) {
   const force = !!opts.force;
 
-  // Gate by your policy first (keep)
   if (typeof canPlayAlerts === "function" && !canPlayAlerts({ allowWhenNotFocused: force })) {
     return false;
   }
@@ -941,43 +938,35 @@ async function forceResumeAudio(reason = "", allowRecreate = true) {
   ensureAudioCtx?.(reason);
   if (!audioCtx) return false;
 
-  // Try normal resume first
   try { await audioCtx.resume?.(); } catch {}
 
-  // If still not running...
   if (audioCtx.state !== "running") {
 
-    // ✅ IMPORTANT: do NOT recreate unless explicitly allowed
     if (!allowRecreate) return false;
 
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return false;
 
-    // Close old context and recreate
     try { await audioCtx.close?.(); } catch {}
 
     audioCtx = new Ctx();
     audioUnlocked = false;
     updateSoundHint?.();
 
-    // Try resume again
-    try { await audioCtx.resume?.(); } catch {}
+   try { await audioCtx.resume?.(); } catch {}
   }
 
   return audioCtx?.state === "running";
 }
-// ✅ Master audio wake-up (use everywhere)
 async function ensureAudioReady(reason = "ensure", ms = 1500, allowRecreate = false) {
-  // Only recreate AudioContext when explicitly allowed (real user gesture paths)
+  
   try { await forceResumeAudio?.(reason, allowRecreate); } catch {}
   try { unlockAudio?.(); } catch {}
   try { allowAudioFor?.(ms); } catch {}
 
-  // Extra safety: try resuming AudioContext directly
   try { await audioCtx?.resume?.(); } catch {}
 }
 
-// Safari/iOS: unlock audio on the first real user gesture anywhere
 window.addEventListener("pointerdown", () => {
   ensureAudioReady("pointerdown", 2000, true); // allowRecreate = true ONLY for real gestures
 }, { once: true, passive: true });
@@ -1061,18 +1050,15 @@ function vibratePattern(kind) {
   navigator.vibrate(patterns[kind] || [20]);
 }
 function stopOfferBeepLoop() {
-  // ✅ stop urgent loop (if running)
   if (urgentBeepIntervalId) {
     clearInterval(urgentBeepIntervalId);
     urgentBeepIntervalId = null;
   }
 
-  // ✅ stop the "double pulse" second-beep timeout (important)
   clearTimeout(urgentSecondPulseTimeoutId);
   urgentSecondPulseTimeoutId = null;
   urgentDoublePulseActive = false;
 
-  // ✅ stop offer loop (if running)
   clearInterval(offerBeepIntervalId);
   clearTimeout(offerBeepStopTimeoutId);
   offerBeepIntervalId = null;
@@ -1207,19 +1193,16 @@ let status = (existing?.status ?? "").toUpperCase();
 const existingLastSeen = existing?.lastSeenAt ?? existing?.joinedAt ?? 0;
 const isExistingStale = !existingLastSeen || (Date.now() - existingLastSeen > 45000);
 
-// If old LEFT or stale record exists, delete it first
 if (existing && (status === "LEFT" || isExistingStale)) {
   await remove(driverRef);
   existing = null;
   status = "";
 }
 
-// If record is already truly active, recover state and do NOT overwrite
 if (existing && status !== "LEFT") {
   myDriverKey = driverKey;
   sessionStorage.setItem("htqs.driverKey", driverKey);
 
-  // recover heartbeat after refresh / reopen
   startDriverHeartbeat();
 
   // recover any current offer for this driver from the latest snapshot
@@ -1229,14 +1212,13 @@ if (existing && status !== "LEFT") {
   refreshJoinUI();
   refreshAcceptUI();
 
-  // extra safety so Leave Queue is clickable
   if (leaveBtn) leaveBtn.disabled = false;
 
   showToast?.(`Already in queue (${status})`, "warn", 1800);
   //console.log("joinQueue ignored (already active)", driverKey, status);
   return;
 }
-// Clean up old LEFT record
+
 if (existing && status === "LEFT") {
   await remove(driverRef);
 }    
@@ -1245,8 +1227,7 @@ if (existing && status === "LEFT") {
         ? existing.joinedAt
         : Date.now();
 
-    // ✅ Normal join: safe to create fresh record
-    await set(driverRef, {
+     await set(driverRef, {
       status: "WAITING",
       name,
       carColor,
@@ -1263,18 +1244,15 @@ if (existing && status === "LEFT") {
     lockDriverInputs(true);
     refreshJoinUI();
     refreshAcceptUI();
-   // Mark this driver stale if device/tab disconnects unexpectedly
+   
 try {
   await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).set(0);
   //console.log("onDisconnect stale-marker armed for", myDriverKey);
 } catch (e) {
   console.warn("Failed to arm onDisconnect stale-marker for", myDriverKey, e);
 }
-    //console.log("joinQueue success", driverKey);
-    
-
-   // 🔊 Auto test sound so driver knows alerts work
-   setTimeout(() => {
+   
+    setTimeout(() => {
    const bgBoost = document.hidden ? 1.45 : 1.0;
 
    playTone("offer", {
@@ -1344,7 +1322,7 @@ async function leaveQueue() {
     }    
     try {
   await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).cancel();
-  //console.log("onDisconnect stale-marker canceled for", myDriverKey);
+  
 } catch (e) {
   console.warn("Failed to cancel onDisconnect stale-marker for", myDriverKey, e);
 }
@@ -1373,7 +1351,7 @@ async function leaveQueue() {
 async function expireOffersNow() {
   const snap = await get(queueRef);
   if (!snap.exists()) return;
-  //console.log("Queue data:", snap.val());
+  
   const now = Date.now();
   const entries = Object.entries(snap.val() || {});
   let bump = 0;
@@ -1388,7 +1366,6 @@ async function expireOffersNow() {
 
       if (!isExpired) return;
 
-      // C3: mark it as "missed" so the driver UI can show a toast if desired
       await update(ref(db, "queue/" + k), {
         status: "WAITING",
         offerStartedAt: null,
@@ -1501,13 +1478,7 @@ function unwrapOfferCache(offeredCache) {
   return offeredCache;
 }
 async function acceptRide() {
-  //console.log("ACCEPT clicked", {
-  //offeredCache,
-  //myDriverKey,
-  //disabled: acceptBtn?.disabled,
-  //className: acceptBtn?.className,
-  //text: acceptBtnLabel?.textContent
-//});
+  
   
  if (!myDriverKey) return;
 
@@ -1741,10 +1712,6 @@ function subscribeQueue() {
     lastSeen: v?.lastSeen
     })));
     
-    //console.log("SNAPSHOT keys:", Object.keys(data));
-    //console.log("RENDER entries:", entries);
-    //console.log("myDriverKey:", myDriverKey);
-    
    if (myDriverKey) {
   const mine = data[myDriverKey];
   if (!mine || mine.status === "LEFT") {
@@ -1781,14 +1748,6 @@ function subscribeQueue() {
   .slice()
   .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
     
-  //console.log("VISIBLE active rows:", active.map(([k, v]) => ({
-  //key: k,
-  //status: v?.status,
-  //name: v?.name,
-  //plate: v?.plate,
-  //carColor: v?.carColor
-  //})));
-    
   animateQueueReorder(queueList, () => {
   queueList.innerHTML = "";
 
@@ -1820,7 +1779,6 @@ function subscribeQueue() {
 
 updateEmptyState();
 
-// ✅ Only cache an offer if it’s for THIS driver
 offeredCache = findOfferForMe(data);
     
 // =============================
@@ -1985,8 +1943,8 @@ playTone("offer", {
       stopOfferBeepLoop();
     }
   });
-  });  //  ✅ closes onValue(queueRef, (snap) => { ... })
-  }    // ✅ closes function subscribeQueue() { ... }
+  });  
+  }    
 
 // -----------------------------
 // BOOT
@@ -2057,14 +2015,12 @@ console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 testBeepBtn?.addEventListener("click", () => {
   console.log("🔔 Test Beep clicked");
 
-  // Make sure sound gating can't block the test
+  
   soundEnabled = true;
   localStorage.setItem("htqs.soundEnabled", "true");
 
-  // Wake/resume the real shared context
   ensureAudioNow("test-beep-click");
 
-  // Give Safari a tiny moment after resume
   const ok = playTone("offer", {
     force: true,
     allowNoFocus: true,
@@ -2074,7 +2030,6 @@ testBeepBtn?.addEventListener("click", () => {
 
   console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
 
-  // Safety fallback if normal tone truly fails
   if (!ok) {
     console.warn("playTone failed — using hard fallback beep");
     hardBeepFallback();
@@ -2084,8 +2039,6 @@ testBeepBtn?.addEventListener("click", () => {
 callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
-
-// Keep UI updated while typing
 driverNameInput.oninput = refreshAcceptUI;
 driverPlateInput.oninput = refreshAcceptUI;
 
