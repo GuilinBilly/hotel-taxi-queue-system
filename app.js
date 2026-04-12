@@ -264,7 +264,7 @@ window.addEventListener("online", () => {
 });
 document.addEventListener("visibilitychange", async () => {
   if (!document.hidden) {
-    console.log("Page visible again — forcing audio resume");
+    //console.log("Page visible again — forcing audio resume");
     await ensureAudioReady("visibility-wake", 2000, true);
     try {
   await forceResumeAudio("visibility-return");
@@ -293,15 +293,15 @@ document.addEventListener("visibilitychange", async () => {
         calledBox.textContent = "";
       }
 
-      console.log("Foreground resync complete");
+    //console.log("Foreground resync complete");
     } catch (e) {
       console.warn("Foreground resync failed:", e);
     }
   }
 });
-// Extra protection: when window regains focus (after sleep)
+  // Extra protection: when window regains focus (after sleep)
  window.addEventListener("focus", async () => {
-  console.log("Window focus — forcing audio resume");
+  //console.log("Window focus — forcing audio resume");
  await ensureAudioReady("focus-wake", 2000, true);
     try {
   await forceResumeAudio("focus-return");
@@ -310,7 +310,7 @@ document.addEventListener("visibilitychange", async () => {
 } 
     unlockAudio();
     allowAudioFor(2500);
-    console.log("focus-wake complete");
+    //console.log("focus-wake complete");
   try {
     refreshJoinUI();
     refreshAcceptUI();
@@ -329,7 +329,7 @@ document.addEventListener("visibilitychange", async () => {
       calledBox.textContent = "";
     }
 
-    console.log("Focus resync complete");
+    //console.log("Focus resync complete");
   } catch (e) {
     console.warn("Focus resync failed:", e);
   }
@@ -1587,7 +1587,7 @@ if ((offer?.status ?? "").toUpperCase() !== "OFFERED") {
   }
 }
 async function completePickup() {
-  console.log("=== Complete Pickup Clicked ===");
+  //console.log("=== Complete Pickup Clicked ===");
   if (isBusy) return;
   setBusy(true, "Completing…");
 
@@ -2023,7 +2023,7 @@ const testBeepBtn = document.getElementById("testBeepBtn");
 console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 // Wake/resume the real shared context
 testBeepBtn?.addEventListener("click", () => {
-  console.log("🔔 Test Beep clicked");
+  //console.log("🔔 Test Beep clicked");
 // Give Safari a tiny moment after resume  
   soundEnabled = true;
   localStorage.setItem("htqs.soundEnabled", "true");
@@ -2037,7 +2037,7 @@ testBeepBtn?.addEventListener("click", () => {
     delay: 0.03
   });
 
-  console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
+ //console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
 
   if (!ok) {
     console.warn("playTone failed — using hard fallback beep");
