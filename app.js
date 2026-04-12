@@ -299,8 +299,8 @@ document.addEventListener("visibilitychange", async () => {
     }
   }
 });
-
-  window.addEventListener("focus", async () => {
+// Extra protection: when window regains focus (after sleep)
+ window.addEventListener("focus", async () => {
   console.log("Window focus — forcing audio resume");
  await ensureAudioReady("focus-wake", 2000, true);
     try {
@@ -335,6 +335,7 @@ document.addEventListener("visibilitychange", async () => {
   }
 });
 
+// Allow audio briefly even if Safari says the page isn't focused yet
 let allowAudioWhenNotFocusedUntil = 0;
 
 function allowAudioFor(ms = 1500) {
@@ -937,25 +938,28 @@ function ensureAudioCtx(reason = "") {
 async function forceResumeAudio(reason = "", allowRecreate = true) {
   ensureAudioCtx?.(reason);
   if (!audioCtx) return false;
-
+  // Try normal resume first
   try { await audioCtx.resume?.(); } catch {}
-
+  // If still not running...
   if (audioCtx.state !== "running") {
-
-    if (!allowRecreate) return false;
+  // ✅ IMPORTANT: do NOT recreate unless explicitly allowed
+  if (!allowRecreate) return false;
 
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return false;
-
+   // Close old context and recreate
     try { await audioCtx.close?.(); } catch {}
 
     audioCtx = new Ctx();
     audioUnlocked = false;
     updateSoundHint?.();
-
-   try { await audioCtx.resume?.(); } catch {}
+  
+  // Try resume again
+  try { await audioCtx.resume?.(); } catch {}
   }
-
+ 
+  // ✅ Master audio wake-up (use everywhere)
+  // Only recreate AudioContext when explicitly allowed (real user gesture paths)
   return audioCtx?.state === "running";
 }
 async function ensureAudioReady(reason = "ensure", ms = 1500, allowRecreate = false) {
