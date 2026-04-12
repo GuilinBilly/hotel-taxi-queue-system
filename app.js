@@ -1711,15 +1711,15 @@ function subscribeQueue() {
     
     const entries = Object.entries(data);
 
-    console.log("ALL queue entries:", entries.map(([k, v]) => ({
-    key: k,
-    status: v?.status,
-    name: v?.name,
-    plate: v?.plate,
-    carColor: v?.carColor,
-    joinedAt: v?.joinedAt,
-    lastSeen: v?.lastSeen
-    })));
+    //console.log("ALL queue entries:", entries.map(([k, v]) => ({
+    //key: k,
+    //status: v?.status,
+    //name: v?.name,
+    //plate: v?.plate,
+    //carColor: v?.carColor,
+    //joinedAt: v?.joinedAt,
+    //lastSeen: v?.lastSeen
+    //})));
     
    if (myDriverKey) {
   const mine = data[myDriverKey];
