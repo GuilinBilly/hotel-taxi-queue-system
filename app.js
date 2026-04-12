@@ -264,7 +264,7 @@ window.addEventListener("online", () => {
 });
 document.addEventListener("visibilitychange", async () => {
   if (!document.hidden) {
-    //console.log("Page visible again — forcing audio resume");
+    
     await ensureAudioReady("visibility-wake", 2000, true);
     try {
   await forceResumeAudio("visibility-return");
@@ -293,7 +293,7 @@ document.addEventListener("visibilitychange", async () => {
         calledBox.textContent = "";
       }
 
-    //console.log("Foreground resync complete");
+    
     } catch (e) {
       console.warn("Foreground resync failed:", e);
     }
@@ -301,7 +301,7 @@ document.addEventListener("visibilitychange", async () => {
 });
   // Extra protection: when window regains focus (after sleep)
  window.addEventListener("focus", async () => {
-  //console.log("Window focus — forcing audio resume");
+ 
  await ensureAudioReady("focus-wake", 2000, true);
     try {
   await forceResumeAudio("focus-return");
@@ -310,7 +310,7 @@ document.addEventListener("visibilitychange", async () => {
 } 
     unlockAudio();
     allowAudioFor(2500);
-    //console.log("focus-wake complete");
+    
   try {
     refreshJoinUI();
     refreshAcceptUI();
@@ -329,7 +329,7 @@ document.addEventListener("visibilitychange", async () => {
       calledBox.textContent = "";
     }
 
-    //console.log("Focus resync complete");
+    
   } catch (e) {
     console.warn("Focus resync failed:", e);
   }
@@ -1223,7 +1223,7 @@ const isExistingStale = !existingLastSeen || (Date.now() - existingLastSeen > 45
   if (leaveBtn) leaveBtn.disabled = false;
 
   showToast?.(`Already in queue (${status})`, "warn", 1800);
-  //console.log("joinQueue ignored (already active)", driverKey, status);
+  
   return;
 }
  
@@ -1256,7 +1256,7 @@ const isExistingStale = !existingLastSeen || (Date.now() - existingLastSeen > 45
    
 try {
   await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).set(0);
-  //console.log("onDisconnect stale-marker armed for", myDriverKey);
+  
 } catch (e) {
   console.warn("Failed to arm onDisconnect stale-marker for", myDriverKey, e);
 }
@@ -1511,13 +1511,11 @@ if (!offerObj) {
 }
 
 if (!offerObj) {
-  //console.log("ACCEPT aborted: no offeredCache yet for", myDriverKey);
   return;
 }
 
 const offer = offerObj?.val ?? offerObj;
 if ((offer?.status ?? "").toUpperCase() !== "OFFERED") {
-  //console.log("ACCEPT aborted: current status is not OFFERED", offer);
   return;
 }
   key = offerObj?.key ?? myDriverKey;
@@ -1587,7 +1585,7 @@ if ((offer?.status ?? "").toUpperCase() !== "OFFERED") {
   }
 }
 async function completePickup() {
-  //console.log("=== Complete Pickup Clicked ===");
+  
   if (isBusy) return;
   setBusy(true, "Completing…");
 
@@ -1604,9 +1602,7 @@ async function completePickup() {
     
     if (!accepted) return alert("No ACCEPTED ride to complete.");
     
-    console.log("Removing key:", accepted[0]);
     await remove(ref(db, "queue/" + accepted[0]));
-    console.log("Removed successfully:", accepted[0]);
     
     const removedKey = accepted[0];
 
@@ -1627,7 +1623,7 @@ setAcceptButtonLabel(null);
 updateEmptyState();
 refreshAcceptUI();
 updateQueueHealth(lastQueueSnapshot || {});
-    console.log("Removed successfully:", accepted[0]);
+    
   } finally {
     setBusy(false);
   }
@@ -2020,10 +2016,10 @@ acceptBtn.onclick = acceptRide;
 
 // Make sure sound gating can't block the test
 const testBeepBtn = document.getElementById("testBeepBtn");
-//console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
+
 // Wake/resume the real shared context
 testBeepBtn?.addEventListener("click", () => {
-  //console.log("🔔 Test Beep clicked");
+  
 // Give Safari a tiny moment after resume  
   soundEnabled = true;
   localStorage.setItem("htqs.soundEnabled", "true");
@@ -2037,9 +2033,7 @@ testBeepBtn?.addEventListener("click", () => {
     delay: 0.03
   });
 
- //console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
-
-  if (!ok) {
+ if (!ok) {
     console.warn("playTone failed — using hard fallback beep");
     hardBeepFallback();
   }
