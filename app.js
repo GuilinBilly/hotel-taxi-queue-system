@@ -1589,6 +1589,9 @@ if ((offer?.status ?? "").toUpperCase() !== "OFFERED") {
     hideOfferAlert();
     setAcceptButtonLabel(null);
     accepted = true; // ✅ success
+    if (accepted && typeof triggerAcceptSuccessFeedback === "function") {
+    triggerAcceptSuccessFeedback();
+  }
     suppressOfferBeep = true; // keep silent after accept
     showToast?.("Accepted ✅", "ok", 1500);
 
