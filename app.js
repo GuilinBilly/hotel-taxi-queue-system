@@ -2020,7 +2020,7 @@ acceptBtn.onclick = acceptRide;
 
 // Make sure sound gating can't block the test
 const testBeepBtn = document.getElementById("testBeepBtn");
-console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
+//console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 // Wake/resume the real shared context
 testBeepBtn?.addEventListener("click", () => {
   //console.log("🔔 Test Beep clicked");
