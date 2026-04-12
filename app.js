@@ -1554,8 +1554,8 @@ if ((offer?.status ?? "").toUpperCase() !== "OFFERED") {
   stopOfferBeepLoop?.();
   if (typeof setOfferPulse === "function") setOfferPulse(false);
 
-  setBusy(true);
-
+  setBusy(true, "Accepting...");
+  
   let accepted = false; // ✅ track success
 
   try {
