@@ -167,7 +167,16 @@ body{
 .offer-alert.final-seconds .offer-alert-countdown {
   color: #b91c1c;
 }
+/* ✨ Highlight "offer-ready" button */
+.offer-ready {
+  animation: pulseGlow 1.2s infinite;
+}
 
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 rgba(0, 200, 0, 0.4); }
+  50% { box-shadow: 0 0 12px rgba(0, 200, 0, 0.8); }
+  100% { box-shadow: 0 0 0 rgba(0, 200, 0, 0.4); }
+}
 @keyframes offerPulse {
   0%, 100% {
     transform: scale(1);
