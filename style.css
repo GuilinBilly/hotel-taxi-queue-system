@@ -290,6 +290,32 @@ body{
 }
 
 /* Buttons */
+/* ===== GLOBAL BUTTON UPGRADE ===== */
+
+button {
+  transition: all 0.2s ease;
+}
+
+/* 🖱 Hover effect */
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* 👇 Press (click) effect */
+button:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* 🚫 Disabled state */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .btn{
   padding: 10px 14px;
   border: 1px solid #d0d0d0;
