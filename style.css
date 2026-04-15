@@ -9,8 +9,13 @@
   --text: #111;
   --muted: #555;
   --border: #e6e6e6;
-
-  /* Section accents (color layers) */
+   
+    /* 🎨 Core status colors */
+  --green: #4CAF50;
+  --blue: #2196F3;
+  --red: #f44336;
+   
+   /* Section accents (color layers) */
   --driver: #2f7dd1;
   --queue:  #6f42c1;
   --doorman:#c92a2a;
