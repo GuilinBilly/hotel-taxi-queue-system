@@ -311,7 +311,18 @@ body{
 
   transition: all 0.25s ease;
 }
+/* 🎨 Card identity colors (left border accent) */
+.driver-card {
+  border-left: 4px solid #4CAF50;
+}
 
+.live-queue-card {
+  border-left: 4px solid #2196F3;
+}
+
+.dispatch-card {
+  border-left: 4px solid #f44336;
+}
 /* 🖱 Hover lift (subtle, not too much) */
 .card:hover {
   transform: translateY(-2px);
