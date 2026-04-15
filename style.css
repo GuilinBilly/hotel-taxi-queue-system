@@ -124,11 +124,6 @@ html, body{
   100% { transform: scale(1); opacity: 1; }
 }
 
-.netStatus.offline{
-  opacity: 1;
-  font-weight: 600;
-}
-
 body{
   font-family: Arial, sans-serif;
   color: var(--text);
