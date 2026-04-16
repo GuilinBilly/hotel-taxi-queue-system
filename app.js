@@ -761,7 +761,10 @@ function wireConnectionBadge() {
     wasConnected = isConnected;
 
     if (netStatus) {
-      netStatus.textContent = isConnected ? "Online" : "Reconnecting…";
+     setNetStatus(
+       isConnected ? "online" : "reconnecting",
+       isConnected ? "Live" : "Reconnecting"
+     );
       netStatus.classList.toggle("offline", !isConnected);
     }
   });
