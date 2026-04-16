@@ -748,28 +748,6 @@ function setBusy(on, msg = "Working…") {
   if (on && typeof showToast === "function") showToast(msg, "warn", 1200);
 }
 
-function wireConnectionBadge() {
-  const connectedRef = ref(db, ".info/connected");
-  let wasConnected = true;
-
-  onValue(connectedRef, (snap) => {
-    isConnected = snap.val() === true;
-
-    if (wasConnected && !isConnected) {
-      console.warn("⚠️ RTDB disconnected — UI may be stale until reconnect");
-    }
-    wasConnected = isConnected;
-
-    if (netStatus) {
-     setNetStatus(
-       isConnected ? "online" : "reconnecting",
-       isConnected ? "Live" : "Reconnecting"
-     );
-      netStatus.classList.toggle("offline", !isConnected);
-    }
-  });
-}
-
 // -----------------------------
 // C2 — SMART INPUT UX
 // -----------------------------
