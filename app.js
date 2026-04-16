@@ -43,23 +43,6 @@ const OFFER_MS = 25000;
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 // Detect Firebase connection state
-const connectedRef = ref(db, ".info/connected");
-
-onValue(connectedRef, (snap) => {
-  const connected = snap.val() === true;
-
-  if (connected) {
-    console.log("RTDB connected");
-    setNetStatus("online", "Live");
-
-    // Refresh queue view after reconnect
-    refreshJoinUI?.();
-    refreshAcceptUI?.();
-  } else {
-    console.warn("RTDB disconnected — waiting for reconnect");
-    setNetStatus("reconnecting", "Reconnecting");
-  }
-});
 
 window.addEventListener("offline", () => {
   setNetStatus("offline", "Offline");
@@ -103,6 +86,24 @@ const netStatus = document.getElementById("netStatus"); // optional
 const netStatusText = netStatus?.querySelector(".status-text");
 const queueEmpty = document.getElementById("queueEmpty"); // optional
 const soundToggle = document.getElementById("soundToggle"); // optional
+
+const connectedRef = ref(db, ".info/connected");
+
+onValue(connectedRef, (snap) => {
+  const connected = snap.val() === true;
+
+  if (connected) {
+    console.log("RTDB connected");
+    setNetStatus("online", "Live");
+
+    // Refresh queue view after reconnect
+    refreshJoinUI?.();
+    refreshAcceptUI?.();
+  } else {
+    console.warn("RTDB disconnected — waiting for reconnect");
+    setNetStatus("reconnecting", "Reconnecting");
+  }
+});
 
 // -----------------------------
 // STATE
