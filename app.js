@@ -210,6 +210,20 @@ function triggerAcceptSuccessFeedback() {
     acceptBtnLabel.textContent = oldText;
   }, 900);
 }
+
+function setNetStatus(state, label) {
+  if (!netStatus) return;
+
+  netStatus.classList.remove("online", "reconnecting", "offline");
+  netStatus.classList.add(state);
+
+  if (netStatusText) {
+    netStatusText.textContent = label;
+  } else {
+    netStatus.textContent = label;
+  }
+}
+
 function animateQueueReorder(parentEl, buildRowsFn) {
   if (!parentEl) return buildRowsFn();
 
