@@ -229,10 +229,8 @@ function setNetStatus(state, label) {
   netStatus.classList.add(state);
 
   if (netStatusText) {
-    netStatusText.textContent = label;
-  } else {
-    netStatus.textContent = label;
-  }
+  netStatusText.textContent = label;
+}
 }
 
 function animateQueueReorder(parentEl, buildRowsFn) {
