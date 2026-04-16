@@ -89,6 +89,7 @@ const offerAlertText = document.getElementById("offerAlertText");
 const offerAlertCountdown = document.getElementById("offerAlertCountdown");
 
 const netStatus = document.getElementById("netStatus"); // optional
+const netStatusText = netStatus?.querySelector(".status-text");
 const queueEmpty = document.getElementById("queueEmpty"); // optional
 const soundToggle = document.getElementById("soundToggle"); // optional
 
