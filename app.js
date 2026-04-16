@@ -1976,7 +1976,6 @@ onAuthStateChanged(auth, (user) => {
   if (user) console.log("✅ Signed in (anonymous)", user.uid);
 });
 
-wireConnectionBadge();
 loadSoundPref();
 wireSoundToggle();
    
