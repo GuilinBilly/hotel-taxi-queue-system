@@ -230,7 +230,7 @@ function setNetStatus(state, label) {
 
   if (netStatusText) {
   netStatusText.textContent = label;
-}
+  }
 }
 
 function animateQueueReorder(parentEl, buildRowsFn) {
