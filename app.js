@@ -233,6 +233,31 @@ function setNetStatus(state, label) {
   }
 }
 
+const connectedRef = ref(db, ".info/connected");
+
+onValue(connectedRef, (snap) => {
+  const connected = snap.val() === true;
+
+  if (connected) {
+    console.log("RTDB connected");
+    setNetStatus("online", "Live");
+
+    refreshJoinUI?.();
+    refreshAcceptUI?.();
+  } else {
+    console.warn("RTDB disconnected — waiting for reconnect");
+    setNetStatus("reconnecting", "Reconnecting");
+  }
+});
+
+window.addEventListener("offline", () => {
+  setNetStatus("offline", "Offline");
+});
+
+window.addEventListener("online", () => {
+  setNetStatus("reconnecting", "Reconnecting");
+});
+
 function animateQueueReorder(parentEl, buildRowsFn) {
   if (!parentEl) return buildRowsFn();
 
