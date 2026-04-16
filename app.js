@@ -46,18 +46,21 @@ const db = getDatabase(app);
 const connectedRef = ref(db, ".info/connected");
 
 onValue(connectedRef, (snap) => {
-  const connected = snap.val();
+  const connected = snap.val() === true;
 
-  if (connected === true) {
+  if (connected) {
     console.log("RTDB connected");
+    setNetStatus("online", "Live");
 
     // Refresh queue view after reconnect
     refreshJoinUI?.();
     refreshAcceptUI?.();
   } else {
     console.warn("RTDB disconnected — waiting for reconnect");
+    setNetStatus("reconnecting", "Reconnecting");
   }
 });
+
 const auth = getAuth(app);
 
 const queueRef = ref(db, "queue");
