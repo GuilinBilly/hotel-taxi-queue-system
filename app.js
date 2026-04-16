@@ -61,6 +61,14 @@ onValue(connectedRef, (snap) => {
   }
 });
 
+window.addEventListener("offline", () => {
+  setNetStatus("offline", "Offline");
+});
+
+window.addEventListener("online", () => {
+  setNetStatus("reconnecting", "Reconnecting");
+});
+
 const auth = getAuth(app);
 
 const queueRef = ref(db, "queue");
