@@ -729,7 +729,7 @@ function titleCase(s) {
   return s.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 // -----------------------------
-// CONNECTION BADGE (.info/connected)
+// CONNECTION BADGE 
 // -----------------------------
 let isConnected = true;
 let isBusy = false;
