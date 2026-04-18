@@ -1,3 +1,20 @@
+// ==============================
+// CONFIG
+// ==============================
+const DOORMAN_PIN = "1400";
+const OFFER_MS = 25000
+  
+// ==============================
+// FIREBASE INIT
+// ==============================
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+const queueRef = ref(db, "queue");
+const connectedRef = ref(db, ".info/connected");
+
+
 // app.js (final cleaned version)
 // Firebase (App + RTDB)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
@@ -31,17 +48,10 @@ const firebaseConfig = {
   appId: "1:900324034014:web:4e6cf9b46567a9ee17494f",
 };
 
-// ✅ Change this to your real doorman PIN
-const DOORMAN_PIN = "1400";
-
-// Offer timing
-const OFFER_MS = 25000;
-
 // -----------------------------
 // INIT
 // -----------------------------
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+
 // Detect Firebase connection state
 
 window.addEventListener("offline", () => {
@@ -87,7 +97,7 @@ const netStatusText = netStatus?.querySelector(".status-text");
 const queueEmpty = document.getElementById("queueEmpty"); // optional
 const soundToggle = document.getElementById("soundToggle"); // optional
 
-const connectedRef = ref(db, ".info/connected");
+
 
 onValue(connectedRef, (snap) => {
   const connected = snap.val() === true;
