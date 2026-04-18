@@ -106,10 +106,18 @@ let unsubscribeQueue = null;
 
 function isMeForOffer(v) {
   if (!v) return false;
+
   const inputName = norm(driverNameInput?.value);
   const inputPlate = norm(driverPlateInput?.value);
-  return inputName && inputPlate && norm(v.name) === inputName && norm(v.plate) === inputPlate;
+
+  if (!inputName || !inputPlate) return false;
+
+  return (
+    norm(v.name) === inputName &&
+    norm(v.plate) === inputPlate
+  );
 }
+
 
 
 // -----------------------------
