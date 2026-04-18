@@ -14,6 +14,37 @@ const auth = getAuth(app);
 const queueRef = ref(db, "queue");
 const connectedRef = ref(db, ".info/connected");
 
+// ==============================
+// DOM REFERENCES
+// ==============================
+
+const driverNameInput = document.getElementById("driverName");
+const driverColorInput = document.getElementById("driverColor");
+const driverPlateInput = document.getElementById("driverPlate");
+
+const joinBtn = document.getElementById("joinBtn");
+const leaveBtn = document.getElementById("leaveBtn");
+const acceptBtn = document.getElementById("acceptBtn");
+const acceptBtnLabel = acceptBtn?.querySelector(".btn-label");
+const callNextBtn = document.getElementById("callNextBtn");
+const completeBtn = document.getElementById("completeBtn");
+const resetBtn = document.getElementById("resetBtn");
+
+const doormanPinInput = document.getElementById("doormanPin");
+
+const queueList = document.getElementById("queueList");
+const calledBox = document.getElementById("calledBox");
+const queueHealthBox = document.getElementById("queueHealthBox");
+const offerInfo = document.getElementById("offerInfo"); // optional
+
+const offerAlertBox = document.getElementById("offerAlertBox");
+const offerAlertText = document.getElementById("offerAlertText");
+const offerAlertCountdown = document.getElementById("offerAlertCountdown");
+
+const netStatus = document.getElementById("netStatus"); // optional
+const netStatusText = netStatus?.querySelector(".status-text");
+const queueEmpty = document.getElementById("queueEmpty"); // optional
+const soundToggle = document.getElementById("soundToggle"); // optional
 
 // app.js (final cleaned version)
 // Firebase (App + RTDB)
@@ -65,38 +96,6 @@ window.addEventListener("online", () => {
 const auth = getAuth(app);
 
 const queueRef = ref(db, "queue");
-
-// -----------------------------
-// DOM
-// -----------------------------
-const driverNameInput = document.getElementById("driverName");
-const driverColorInput = document.getElementById("driverColor");
-const driverPlateInput = document.getElementById("driverPlate");
-
-const joinBtn = document.getElementById("joinBtn");
-const leaveBtn = document.getElementById("leaveBtn");
-const acceptBtn = document.getElementById("acceptBtn");
-const acceptBtnLabel = acceptBtn?.querySelector(".btn-label");
-const callNextBtn = document.getElementById("callNextBtn");
-const completeBtn = document.getElementById("completeBtn");
-const resetBtn = document.getElementById("resetBtn");
-
-const doormanPinInput = document.getElementById("doormanPin");
-
-const queueList = document.getElementById("queueList");
-const calledBox = document.getElementById("calledBox");
-const queueHealthBox = document.getElementById("queueHealthBox");
-const offerInfo = document.getElementById("offerInfo"); // optional
-
-const offerAlertBox = document.getElementById("offerAlertBox");
-const offerAlertText = document.getElementById("offerAlertText");
-const offerAlertCountdown = document.getElementById("offerAlertCountdown");
-
-const netStatus = document.getElementById("netStatus"); // optional
-const netStatusText = netStatus?.querySelector(".status-text");
-const queueEmpty = document.getElementById("queueEmpty"); // optional
-const soundToggle = document.getElementById("soundToggle"); // optional
-
 
 
 onValue(connectedRef, (snap) => {
