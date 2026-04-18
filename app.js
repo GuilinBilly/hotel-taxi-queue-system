@@ -104,6 +104,12 @@ let unsubscribeQueue = null;
 // HELPERS
 // ==============================
 
+function isMeForOffer(v) {
+  if (!v) return false;
+  const inputName = norm(driverNameInput?.value);
+  const inputPlate = norm(driverPlateInput?.value);
+  return inputName && inputPlate && norm(v.name) === inputName && norm(v.plate) === inputPlate;
+}
 
 
 // -----------------------------
@@ -659,12 +665,7 @@ function updateSoundHint() {
     el.textContent = "🔊 Tap anywhere to enable sound alerts";
   }
 }
-function isMeForOffer(v) {
-  if (!v) return false;
-  const inputName = norm(driverNameInput?.value);
-  const inputPlate = norm(driverPlateInput?.value);
-  return inputName && inputPlate && norm(v.name) === inputName && norm(v.plate) === inputPlate;
-}
+
 
 function findOfferForMe(data) {
   const entries = Object.entries(data || {});
