@@ -46,6 +46,37 @@ const netStatusText = netStatus?.querySelector(".status-text");
 const queueEmpty = document.getElementById("queueEmpty"); // optional
 const soundToggle = document.getElementById("soundToggle"); // optional
 
+// ==============================
+// STATE
+// ==============================
+
+let offerBeepIntervalId = null;
+let offerBeepStopTimeoutId = null;
+let offerBeepCount = 0;
+let urgentBeepIntervalId = null;
+let urgentDoublePulseActive = false;
+let urgentSecondPulseTimeoutId = null;
+let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
+let driverHeartbeatId = null;
+let offeredCache = null;
+
+// C3: offer lifecycle UX (driver-side)
+let lastOfferWasForMe = false;
+let lastOfferKeyForMe = null;
+let offerCountdownTimer = null;
+let lastQueueSnapshot = {};
+let queueHealthTimer = null;
+let lastOfferSig = null; // key + startedAt
+let soundEnabled = true;
+let suppressOfferBeep = false;
+// Audio
+let audioCtx = null;
+let audioUnlocked = false;
+// Single listener handle
+let unsubscribeQueue = null;
+
+
+
 // app.js (final cleaned version)
 // Firebase (App + RTDB)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
@@ -114,37 +145,6 @@ onValue(connectedRef, (snap) => {
   }
 });
 
-// -----------------------------
-// STATE
-// -----------------------------
-
-let offerBeepIntervalId = null;
-let offerBeepStopTimeoutId = null;
-let offerBeepCount = 0;
-let urgentBeepIntervalId = null;
-let urgentDoublePulseActive = false;
-let urgentSecondPulseTimeoutId = null;
-let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
-let driverHeartbeatId = null;
-let offeredCache = null;
-
-// C3: offer lifecycle UX (driver-side)
-let lastOfferWasForMe = false;
-let lastOfferKeyForMe = null;
-let offerCountdownTimer = null;
-let lastQueueSnapshot = {};
-let queueHealthTimer = null;
-let lastOfferSig = null; // key + startedAt
-let soundEnabled = true;
-let suppressOfferBeep = false;
-
-// Audio
-let audioCtx = null;
-let audioUnlocked = false;
-
-
-// Single listener handle
-let unsubscribeQueue = null;
 
 window.htqs = {
   get soundEnabled() { return soundEnabled; },
