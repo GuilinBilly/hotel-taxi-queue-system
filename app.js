@@ -27,7 +27,7 @@ import {
 // CONFIG
 // ==============================
 const DOORMAN_PIN = "1400";
-const OFFER_MS = 25000
+const OFFER_MS = 25000;
   
 // ==============================
 // FIREBASE INIT
