@@ -1,4 +1,29 @@
 // ==============================
+// IMPORTS
+// ==============================
+
+// app.js (final cleaned version)
+// Firebase (App + RTDB)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  onDisconnect,
+  remove,
+  get,
+  set,
+  update,
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+// Firebase Auth (Anonymous)
+import {
+  getAuth,
+  signInAnonymously,
+  onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+
+// ==============================
 // CONFIG
 // ==============================
 const DOORMAN_PIN = "1400";
@@ -75,27 +100,11 @@ let audioUnlocked = false;
 // Single listener handle
 let unsubscribeQueue = null;
 
+// ==============================
+// HELPERS
+// ==============================
 
 
-// app.js (final cleaned version)
-// Firebase (App + RTDB)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import {
-  getDatabase,
-  ref,
-  onValue,
-  onDisconnect,
-  remove,
-  get,
-  set,
-  update,
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
-// Firebase Auth (Anonymous)
-import {
-  getAuth,
-  signInAnonymously,
-  onAuthStateChanged,
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 // -----------------------------
 // CONFIG
