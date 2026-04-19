@@ -182,6 +182,17 @@ function triggerAcceptSuccessFeedback() {
   }, 900);
 }
 
+function setNetStatus(state, label) {
+  if (!netStatus) return;
+
+  netStatus.classList.remove("online", "reconnecting", "offline");
+  netStatus.classList.add(state);
+
+  if (netStatusText) {
+  netStatusText.textContent = label;
+  }
+}
+
 function isMeForOffer(v) {
   if (!v) return false;
 
@@ -256,16 +267,7 @@ window.htqs = {
 
 
 
-function setNetStatus(state, label) {
-  if (!netStatus) return;
 
-  netStatus.classList.remove("online", "reconnecting", "offline");
-  netStatus.classList.add(state);
-
-  if (netStatusText) {
-  netStatusText.textContent = label;
-  }
-}
 
 window.addEventListener("offline", () => {
   setNetStatus("offline", "Offline");
