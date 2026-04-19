@@ -167,6 +167,20 @@ function triggerAcceptClickFeedback() {
   }, 180);
 }
 
+function triggerAcceptSuccessFeedback() {
+  if (!acceptBtn || !acceptBtnLabel) return;
+
+  acceptBtn.classList.remove("is-clicked");
+  acceptBtn.classList.add("is-success");
+
+  const oldText = acceptBtnLabel.textContent;
+  acceptBtnLabel.textContent = "Accepted ✓";
+
+  setTimeout(() => {
+    acceptBtn.classList.remove("is-success");
+    acceptBtnLabel.textContent = oldText;
+  }, 900);
+}
 
 function isMeForOffer(v) {
   if (!v) return false;
@@ -240,20 +254,7 @@ window.htqs = {
 // -----------------------------
 
 
-function triggerAcceptSuccessFeedback() {
-  if (!acceptBtn || !acceptBtnLabel) return;
 
-  acceptBtn.classList.remove("is-clicked");
-  acceptBtn.classList.add("is-success");
-
-  const oldText = acceptBtnLabel.textContent;
-  acceptBtnLabel.textContent = "Accepted ✓";
-
-  setTimeout(() => {
-    acceptBtn.classList.remove("is-success");
-    acceptBtnLabel.textContent = oldText;
-  }, 900);
-}
 
 function setNetStatus(state, label) {
   if (!netStatus) return;
