@@ -114,6 +114,16 @@ function isMeForOffer(v) {
          norm(v.name) === name &&
          norm(v.plate) === plate;
 }
+function norm(s) {
+  return (s ?? "").toString().trim().toLowerCase();
+}
+
+function updateEmptyState() {
+  if (!queueEmpty || !queueList) return;
+  queueEmpty.style.display = queueList.children.length ? "none" : "block";
+}
+
+
 
 
 // -----------------------------
@@ -175,14 +185,7 @@ window.htqs = {
 // -----------------------------
 // HELPERS
 // -----------------------------
-function norm(s) {
-  return (s ?? "").toString().trim().toLowerCase();
-}
 
-function updateEmptyState() {
-  if (!queueEmpty || !queueList) return;
-  queueEmpty.style.display = queueList.children.length ? "none" : "block";
-}
 
 function setOfferPulse(on) {
   const driverCardEl = document.querySelector(".card.driver");
