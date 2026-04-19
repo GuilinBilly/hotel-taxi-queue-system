@@ -234,6 +234,15 @@ function animateQueueReorder(parentEl, buildRowsFn) {
   });
 }
 
+function lockDriverInputs(locked) {
+  if (driverNameInput) driverNameInput.disabled = locked;
+  if (driverColorInput) driverColorInput.disabled = locked;
+  if (driverPlateInput) driverPlateInput.disabled = locked;
+
+  if (joinBtn) joinBtn.disabled = locked;
+  if (leaveBtn) leaveBtn.disabled = !locked;
+}
+
 
 function isMeForOffer(v) {
   if (!v) return false;
@@ -315,14 +324,7 @@ window.addEventListener("online", () => {
 });
 
 
-function lockDriverInputs(locked) {
-  if (driverNameInput) driverNameInput.disabled = locked;
-  if (driverColorInput) driverColorInput.disabled = locked;
-  if (driverPlateInput) driverPlateInput.disabled = locked;
 
-  if (joinBtn) joinBtn.disabled = locked;
-  if (leaveBtn) leaveBtn.disabled = !locked;
-}
 // Network wake: when Wi-Fi reconnects after sleep
 window.addEventListener("online", () => {
   dlog("Network online — trying audio resume");
