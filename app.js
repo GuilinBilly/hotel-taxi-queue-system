@@ -104,16 +104,7 @@ let unsubscribeQueue = null;
 // HELPERS
 // ==============================
 
-function isMeForOffer(v) {
-  if (!v) return false;
 
-  const name = norm(driverNameInput?.value);
-  const plate = norm(driverPlateInput?.value);
-
-  return name && plate &&
-         norm(v.name) === name &&
-         norm(v.plate) === plate;
-}
 function norm(s) {
   return (s ?? "").toString().trim().toLowerCase();
 }
@@ -143,8 +134,37 @@ function updateAcceptButtonVisual(msLeft = null) {
   }
 }
 
+function setAcceptButtonLabel(msLeft = null) {
+  if (!acceptBtn || !acceptBtnLabel) return;
 
+  if (msLeft == null) {
+    acceptBtnLabel.textContent = "Accept Ride";
+    return;
+  }
 
+  const secLeft = Math.max(0, Math.ceil(msLeft / 1000));
+
+  if (secLeft <= 0) {
+    acceptBtnLabel.textContent = "Offer Expired";
+  } else if (secLeft <= 2) {
+    acceptBtnLabel.textContent = `Accept Now (${secLeft}s)`;
+  } else if (secLeft <= 5) {
+    acceptBtnLabel.textContent = `Accept Ride (${secLeft}s)`;
+  } else {
+    acceptBtnLabel.textContent = `Accept Ride (${secLeft}s)`;
+  }
+}
+
+function isMeForOffer(v) {
+  if (!v) return false;
+
+  const name = norm(driverNameInput?.value);
+  const plate = norm(driverPlateInput?.value);
+
+  return name && plate &&
+         norm(v.name) === name &&
+         norm(v.plate) === plate;
+}
 
 // -----------------------------
 // CONFIG
@@ -211,26 +231,7 @@ window.htqs = {
 
 
 
-function setAcceptButtonLabel(msLeft = null) {
-  if (!acceptBtn || !acceptBtnLabel) return;
 
-  if (msLeft == null) {
-    acceptBtnLabel.textContent = "Accept Ride";
-    return;
-  }
-
-  const secLeft = Math.max(0, Math.ceil(msLeft / 1000));
-
-  if (secLeft <= 0) {
-    acceptBtnLabel.textContent = "Offer Expired";
-  } else if (secLeft <= 2) {
-    acceptBtnLabel.textContent = `Accept Now (${secLeft}s)`;
-  } else if (secLeft <= 5) {
-    acceptBtnLabel.textContent = `Accept Ride (${secLeft}s)`;
-  } else {
-    acceptBtnLabel.textContent = `Accept Ride (${secLeft}s)`;
-  }
-}
 function triggerAcceptClickFeedback() {
   if (!acceptBtn || acceptBtn.disabled) return;
   if (!acceptBtn.classList.contains("is-offered")) return;
