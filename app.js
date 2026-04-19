@@ -28,7 +28,17 @@ import {
 // ==============================
 const DOORMAN_PIN = "1400";
 const OFFER_MS = 25000;
-  
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAFpipCO1XuETiPzuCptlTJhpHy4v7teo4",
+  authDomain: "htqs-afa97.firebaseapp.com",
+  databaseURL: "https://htqs-afa97-default-rtdb.firebaseio.com",
+  projectId: "htqs-afa97",
+  storageBucket: "htqs-afa97.appspot.com",
+  messagingSenderId: "900324034014",
+  appId: "1:900324034014:web:4e6cf9b46567a9ee17494f",
+};
+
 // ==============================
 // FIREBASE INIT
 // ==============================
@@ -262,19 +272,6 @@ function isMeForOffer(v) {
          norm(v.name) === name &&
          norm(v.plate) === plate;
 }
-
-// -----------------------------
-// CONFIG
-// -----------------------------
-const firebaseConfig = {
-  apiKey: "AIzaSyAFpipCO1XuETiPzuCptlTJhpHy4v7teo4",
-  authDomain: "htqs-afa97.firebaseapp.com",
-  databaseURL: "https://htqs-afa97-default-rtdb.firebaseio.com",
-  projectId: "htqs-afa97",
-  storageBucket: "htqs-afa97.appspot.com",
-  messagingSenderId: "900324034014",
-  appId: "1:900324034014:web:4e6cf9b46567a9ee17494f",
-};
 
 // -----------------------------
 // INIT
