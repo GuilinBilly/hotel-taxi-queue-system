@@ -129,6 +129,20 @@ function setOfferPulse(on) {
   if (driverCardEl) driverCardEl.classList.toggle("is-offered", !!on);
 }
 
+function updateAcceptButtonVisual(msLeft = null) {
+  if (!acceptBtn) return;
+
+  acceptBtn.classList.remove("offer-ready", "final-seconds");
+
+  if (!offeredCache) return;
+
+  acceptBtn.classList.add("offer-ready");
+
+  if (typeof msLeft === "number" && msLeft > 0 && msLeft <= 2000) {
+    acceptBtn.classList.add("final-seconds");
+  }
+}
+
 
 
 
@@ -195,19 +209,7 @@ window.htqs = {
 
 
 
-function updateAcceptButtonVisual(msLeft = null) {
-  if (!acceptBtn) return;
 
-  acceptBtn.classList.remove("offer-ready", "final-seconds");
-
-  if (!offeredCache) return;
-
-  acceptBtn.classList.add("offer-ready");
-
-  if (typeof msLeft === "number" && msLeft > 0 && msLeft <= 2000) {
-    acceptBtn.classList.add("final-seconds");
-  }
-}
 
 function setAcceptButtonLabel(msLeft = null) {
   if (!acceptBtn || !acceptBtnLabel) return;
