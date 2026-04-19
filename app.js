@@ -108,7 +108,6 @@ let unsubscribeQueue = null;
 function norm(s) {
   return (s ?? "").toString().trim().toLowerCase();
 }
-
 function updateEmptyState() {
   if (!queueEmpty || !queueList) return;
   queueEmpty.style.display = queueList.children.length ? "none" : "block";
@@ -154,6 +153,20 @@ function setAcceptButtonLabel(msLeft = null) {
     acceptBtnLabel.textContent = `Accept Ride (${secLeft}s)`;
   }
 }
+
+function triggerAcceptClickFeedback() {
+  if (!acceptBtn || acceptBtn.disabled) return;
+  if (!acceptBtn.classList.contains("is-offered")) return;
+
+  acceptBtn.classList.remove("is-clicked");
+  void acceptBtn.offsetWidth;
+  acceptBtn.classList.add("is-clicked");
+
+  setTimeout(() => {
+    acceptBtn.classList.remove("is-clicked");
+  }, 180);
+}
+
 
 function isMeForOffer(v) {
   if (!v) return false;
@@ -227,23 +240,6 @@ window.htqs = {
 // -----------------------------
 
 
-
-
-
-
-
-function triggerAcceptClickFeedback() {
-  if (!acceptBtn || acceptBtn.disabled) return;
-  if (!acceptBtn.classList.contains("is-offered")) return;
-
-  acceptBtn.classList.remove("is-clicked");
-  void acceptBtn.offsetWidth;
-  acceptBtn.classList.add("is-clicked");
-
-  setTimeout(() => {
-    acceptBtn.classList.remove("is-clicked");
-  }, 180);
-}
 function triggerAcceptSuccessFeedback() {
   if (!acceptBtn || !acceptBtnLabel) return;
 
