@@ -123,6 +123,12 @@ function updateEmptyState() {
   queueEmpty.style.display = queueList.children.length ? "none" : "block";
 }
 
+function setOfferPulse(on) {
+  const driverCardEl = document.querySelector(".card.driver");
+  if (acceptBtn) acceptBtn.classList.toggle("is-offered", !!on);
+  if (driverCardEl) driverCardEl.classList.toggle("is-offered", !!on);
+}
+
 
 
 
@@ -187,11 +193,7 @@ window.htqs = {
 // -----------------------------
 
 
-function setOfferPulse(on) {
-  const driverCardEl = document.querySelector(".card.driver");
-  if (acceptBtn) acceptBtn.classList.toggle("is-offered", !!on);
-  if (driverCardEl) driverCardEl.classList.toggle("is-offered", !!on);
-}
+
 
 function updateAcceptButtonVisual(msLeft = null) {
   if (!acceptBtn) return;
