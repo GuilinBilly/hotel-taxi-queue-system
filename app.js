@@ -121,6 +121,56 @@ function setOfferPulse(on) {
   if (driverCardEl) driverCardEl.classList.toggle("is-offered", !!on);
 }
 
+function animateQueueReorder(parentEl, buildRowsFn) {
+  if (!parentEl) return buildRowsFn();
+
+  const oldPositions = new Map();
+
+  Array.from(parentEl.children).forEach((child) => {
+    const key = child.dataset.key;
+    if (!key) return;
+    oldPositions.set(key, child.getBoundingClientRect());
+  });
+
+  buildRowsFn();
+
+  Array.from(parentEl.children).forEach((child) => {
+    const key = child.dataset.key;
+    if (!key || !oldPositions.has(key)) return;
+
+    const oldRect = oldPositions.get(key);
+    const newRect = child.getBoundingClientRect();
+    const deltaY = oldRect.top - newRect.top;
+
+    if (Math.abs(deltaY) > 1) {
+      child.classList.add("queue-moving");
+      child.style.transform = `translateY(${deltaY}px)`;
+
+      requestAnimationFrame(() => {
+        child.style.transform = "translateY(0)";
+      });
+
+      child.addEventListener(
+        "transitionend",
+        () => {
+          child.classList.remove("queue-moving");
+          child.style.transform = "";
+        },
+        { once: true }
+      );
+    }
+  });
+}
+
+function lockDriverInputs(locked) {
+  if (driverNameInput) driverNameInput.disabled = locked;
+  if (driverColorInput) driverColorInput.disabled = locked;
+  if (driverPlateInput) driverPlateInput.disabled = locked;
+
+  if (joinBtn) joinBtn.disabled = locked;
+  if (leaveBtn) leaveBtn.disabled = !locked;
+}
+
 // HELPERS — BUTTON
 function updateAcceptButtonVisual(msLeft = null) {
   if (!acceptBtn) return;
@@ -197,55 +247,9 @@ function setNetStatus(state, label) {
   }
 }
 
-function animateQueueReorder(parentEl, buildRowsFn) {
-  if (!parentEl) return buildRowsFn();
 
-  const oldPositions = new Map();
 
-  Array.from(parentEl.children).forEach((child) => {
-    const key = child.dataset.key;
-    if (!key) return;
-    oldPositions.set(key, child.getBoundingClientRect());
-  });
 
-  buildRowsFn();
-
-  Array.from(parentEl.children).forEach((child) => {
-    const key = child.dataset.key;
-    if (!key || !oldPositions.has(key)) return;
-
-    const oldRect = oldPositions.get(key);
-    const newRect = child.getBoundingClientRect();
-    const deltaY = oldRect.top - newRect.top;
-
-    if (Math.abs(deltaY) > 1) {
-      child.classList.add("queue-moving");
-      child.style.transform = `translateY(${deltaY}px)`;
-
-      requestAnimationFrame(() => {
-        child.style.transform = "translateY(0)";
-      });
-
-      child.addEventListener(
-        "transitionend",
-        () => {
-          child.classList.remove("queue-moving");
-          child.style.transform = "";
-        },
-        { once: true }
-      );
-    }
-  });
-}
-
-function lockDriverInputs(locked) {
-  if (driverNameInput) driverNameInput.disabled = locked;
-  if (driverColorInput) driverColorInput.disabled = locked;
-  if (driverPlateInput) driverPlateInput.disabled = locked;
-
-  if (joinBtn) joinBtn.disabled = locked;
-  if (leaveBtn) leaveBtn.disabled = !locked;
-}
 
 function isFocusOverrideActive() {
   return Date.now() < allowAudioWhenNotFocusedUntil;
