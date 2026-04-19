@@ -104,10 +104,12 @@ let unsubscribeQueue = null;
 // HELPERS
 // ==============================
 
-
+// HELPERS — STRING
 function norm(s) {
   return (s ?? "").toString().trim().toLowerCase();
 }
+
+// HELPERS — UI
 function updateEmptyState() {
   if (!queueEmpty || !queueList) return;
   queueEmpty.style.display = queueList.children.length ? "none" : "block";
@@ -119,6 +121,7 @@ function setOfferPulse(on) {
   if (driverCardEl) driverCardEl.classList.toggle("is-offered", !!on);
 }
 
+// HELPERS — BUTTON
 function updateAcceptButtonVisual(msLeft = null) {
   if (!acceptBtn) return;
 
@@ -182,6 +185,7 @@ function triggerAcceptSuccessFeedback() {
   }, 900);
 }
 
+// HELPERS — SYSTEM
 function setNetStatus(state, label) {
   if (!netStatus) return;
 
@@ -247,7 +251,7 @@ function isFocusOverrideActive() {
   return Date.now() < allowAudioWhenNotFocusedUntil;
 }
 
-
+// HELPERS — DRIVER LOGIC
 function isMeForOffer(v) {
   if (!v) return false;
 
