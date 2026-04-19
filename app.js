@@ -243,6 +243,10 @@ function lockDriverInputs(locked) {
   if (leaveBtn) leaveBtn.disabled = !locked;
 }
 
+function isFocusOverrideActive() {
+  return Date.now() < allowAudioWhenNotFocusedUntil;
+}
+
 
 function isMeForOffer(v) {
   if (!v) return false;
@@ -410,9 +414,7 @@ function allowAudioFor(ms = 1500) {
   allowAudioWhenNotFocusedUntil = Date.now() + ms;
 }
 
-function isFocusOverrideActive() {
-  return Date.now() < allowAudioWhenNotFocusedUntil;
-}
+
 
 function canPlayAlerts(opts = {}) {
   const focused = document.hasFocus?.() ?? true;
