@@ -247,10 +247,6 @@ function setNetStatus(state, label) {
   }
 }
 
-
-
-
-
 function isFocusOverrideActive() {
   return Date.now() < allowAudioWhenNotFocusedUntil;
 }
