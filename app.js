@@ -273,20 +273,16 @@ function isMeForOffer(v) {
          norm(v.plate) === plate;
 }
 
-// -----------------------------
-// INIT
-// -----------------------------
-
-// Detect Firebase connection state
+// ============================
+// EVENT LISTENERS
+// ============================
 
 window.addEventListener("offline", () => {
   setNetStatus("offline", "Offline");
 });
-
 window.addEventListener("online", () => {
   setNetStatus("reconnecting", "Reconnecting");
 });
-
 onValue(connectedRef, (snap) => {
   const connected = snap.val() === true;
 
@@ -303,6 +299,22 @@ onValue(connectedRef, (snap) => {
   }
 });
 
+// -----------------------------
+// INIT
+// -----------------------------
+
+// Detect Firebase connection state
+
+window.addEventListener("offline", () => {
+  setNetStatus("offline", "Offline");
+});
+
+window.addEventListener("online", () => {
+  setNetStatus("reconnecting", "Reconnecting");
+});
+
+
+
 
 window.htqs = {
   get soundEnabled() { return soundEnabled; },
@@ -315,13 +327,7 @@ window.htqs = {
 // HELPERS
 
 
-window.addEventListener("offline", () => {
-  setNetStatus("offline", "Offline");
-});
 
-window.addEventListener("online", () => {
-  setNetStatus("reconnecting", "Reconnecting");
-});
 
 
 
