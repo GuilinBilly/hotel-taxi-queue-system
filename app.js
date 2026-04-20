@@ -287,9 +287,6 @@ window.addEventListener("online", () => {
   setNetStatus("reconnecting", "Reconnecting");
 });
 
-const queueRef = ref(db, "queue");
-
-
 onValue(connectedRef, (snap) => {
   const connected = snap.val() === true;
 
