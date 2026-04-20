@@ -390,9 +390,6 @@ window.htqs = {
   canPlayAlerts,
 };
 
-// -----------------------------
-/
-
 // Allow audio briefly even if Safari says the page isn't focused yet
 let allowAudioWhenNotFocusedUntil = 0;
 
