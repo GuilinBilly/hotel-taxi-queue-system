@@ -94,7 +94,8 @@ let urgentSecondPulseTimeoutId = null;
 let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
 let driverHeartbeatId = null;
 let offeredCache = null;
-
+let isConnected = true;
+let isBusy = false;
 // C3: offer lifecycle UX (driver-side)
 let lastOfferWasForMe = false;
 let lastOfferKeyForMe = null;
@@ -757,8 +758,6 @@ function titleCase(s) {
 // -----------------------------
 // CONNECTION BADGE 
 // -----------------------------
-let isConnected = true;
-let isBusy = false;
 
 function setBusy(on, msg = "Working…") {
   isBusy = on;
