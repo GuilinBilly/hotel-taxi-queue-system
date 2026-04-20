@@ -287,8 +287,6 @@ window.addEventListener("online", () => {
   setNetStatus("reconnecting", "Reconnecting");
 });
 
-const auth = getAuth(app);
-
 const queueRef = ref(db, "queue");
 
 
