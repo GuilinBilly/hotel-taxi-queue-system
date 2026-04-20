@@ -299,27 +299,6 @@ onValue(connectedRef, (snap) => {
   }
 });
 
-// -----------------------------
-// INIT
-// -----------------------------
-
-// Detect Firebase connection state
-
-window.htqs = {
-  get soundEnabled() { return soundEnabled; },
-  set soundEnabled(v) { soundEnabled = !!v; },
-  get audioUnlocked() { return audioUnlocked; },
-  canPlayAlerts,
-};
-
-// -----------------------------
-// HELPERS
-
-
-
-
-
-
 // Network wake: when Wi-Fi reconnects after sleep
 window.addEventListener("online", () => {
   dlog("Network online — trying audio resume");
@@ -397,6 +376,22 @@ document.addEventListener("visibilitychange", async () => {
     console.warn("Focus resync failed:", e);
   }
 });
+
+// -----------------------------
+// INIT
+// -----------------------------
+
+// Detect Firebase connection state
+
+window.htqs = {
+  get soundEnabled() { return soundEnabled; },
+  set soundEnabled(v) { soundEnabled = !!v; },
+  get audioUnlocked() { return audioUnlocked; },
+  canPlayAlerts,
+};
+
+// -----------------------------
+/
 
 // Allow audio briefly even if Safari says the page isn't focused yet
 let allowAudioWhenNotFocusedUntil = 0;
