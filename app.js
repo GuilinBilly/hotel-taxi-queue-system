@@ -381,6 +381,16 @@ document.addEventListener("visibilitychange", async () => {
 // INIT
 // -----------------------------
 
+ensureSignedIn();
+loadSoundPref();
+wireSoundToggle();
+// 🔇 indicator wiring (tab inactive / hidden)
+ensureMuteIndicator();
+updateMuteIndicator();
+wireSmartInputs();
+refreshJoinUI(); // optional but good
+subscribeQueue();
+
 // Detect Firebase connection state
 
 window.htqs = {
@@ -1993,25 +2003,18 @@ function dwarn(...args) {
 }
 addUniversalAudioUnlock(); 
 // Auth first (fixes PERMISSION_DENIED if you set rules to auth != null)
-ensureSignedIn();
+
 updateSoundHint();
 
 onAuthStateChanged(auth, (user) => {
   if (user) console.log("✅ Signed in (anonymous)", user.uid);
 });
-
-loadSoundPref();
-wireSoundToggle();
    
-// 🔇 indicator wiring (tab inactive / hidden)
-ensureMuteIndicator();
-updateMuteIndicator();
+
 document.addEventListener("visibilitychange", updateMuteIndicator);
 window.addEventListener("focus", updateMuteIndicator);
 window.addEventListener("blur", updateMuteIndicator);
-wireSmartInputs();
-refreshJoinUI(); // optional but good
-subscribeQueue();
+
 if (!queueHealthTimer) {
   queueHealthTimer = setInterval(() => {
     updateQueueHealth(lastQueueSnapshot || {});
