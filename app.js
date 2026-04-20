@@ -305,17 +305,6 @@ onValue(connectedRef, (snap) => {
 
 // Detect Firebase connection state
 
-window.addEventListener("offline", () => {
-  setNetStatus("offline", "Offline");
-});
-
-window.addEventListener("online", () => {
-  setNetStatus("reconnecting", "Reconnecting");
-});
-
-
-
-
 window.htqs = {
   get soundEnabled() { return soundEnabled; },
   set soundEnabled(v) { soundEnabled = !!v; },
