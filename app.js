@@ -737,7 +737,6 @@ function showToast(msg, type = "ok", ms = 1800) {
   }, ms);
 }
 
-
 // -----------------------------
 // INPUT POLISH (C1)
 // -----------------------------
@@ -1065,7 +1064,6 @@ function unlockAudio() {
       updateSoundHint();
     });
 }
-
 
 function canVibrate() {
   return typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
