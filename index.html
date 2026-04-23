@@ -13,17 +13,16 @@
     <h1>Hotel Taxi Queue System</h1>
     <p class="sub">Real-time taxi queue &amp; dispatch (HTQS)</p>
   </header>
-  <div id="netStatus" class="netStatus online">
-    <span class="status-dot"></span>
-    <span class="status-text">Live</span>
-  </div>
+  <div id="netStatus" class="netStatus">Online</div>
   <div id="soundHint" class="sound-hint"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <main class="container">
     <!-- Driver Check-In -->
-    <section class="card section driver-card" aria-labelledby="driver-title">
-      <h2 id="driver-title">Driver</h2>
-      <p class="helper">Enter your details and tap <b>Join Queue</b>.</p>
+    <section class="card section driver" aria-labelledby="driver-title">
+      <h2 id="driver-title">Driver Check-In</h2>
+      <p class="helper">Enter your details, then tap <b>Join Queue</b>.</p>
+      <p class="hint">Enter your info, then tap <strong>Join Queue</strong>.</p>
+
       <div class="row">
         <input id="driverName" class="input" placeholder="Driver name (e.g., Billy)" autocomplete="name">
         <input id="driverColor" class="input" placeholder="Car color (e.g., Black)" autocomplete="off">
@@ -31,19 +30,11 @@
       <div class="row actions">
          <button id="joinBtn" class="btn">Join Queue</button>
          <button id="leaveBtn" class="btn" disabled>Leave Queue</button>
-        <button id="acceptBtn" class="btn outline" disabled>
-        <span class="btn-label">Accept Ride</span>
-        </button>
-        
-         <!-- DEBUG button -->
-         <button id="testBeepBtn" class="btn outline" type="button">Test Sound</button>
-      </div>
+         <button id="acceptBtn" class="btn outline" disabled>Accept Ride</button>
 
- <div id="offerAlertBox" class="offer-alert hidden" aria-live="assertive">
-  <div class="offer-alert-title">Taxi Offer</div>
-  <div id="offerAlertText" class="offer-alert-text">No active offer</div>
-  <div id="offerAlertCountdown" class="offer-alert-countdown"></div>
- </div>        
+         <!-- DEBUG button -->
+         <button id="testBeepBtn" class="btn outline" type="button">Test Beep</button>
+       </div>
         <!-- status text updated by JS -->
         <span id="offerInfo" class="status" aria-live="polite"></span>
       </div>
@@ -54,7 +45,7 @@
     </section>
 
     <!-- Live Queue -->
-    <section class="card section live-queue-card" aria-labelledby="queue-title">
+    <section class="card section queue" aria-labelledby="queue-title">
       <h2 id="queue-title">Live Queue</h2>
       <p class="helper">Drivers are served in order. Doorman calls the next taxi.</p>
       <p id="queueEmpty" class="empty">No drivers waiting yet.</p>
@@ -62,9 +53,10 @@
     </section>
 
     <!-- Doorman Control -->
-    <section class="card section dispatch-card" aria-labelledby="doorman-title">
-      <h2 id="doorman-title">Dispatch</h2>
+    <section class="card section doorman" aria-labelledby="doorman-title">
+      <h2 id="doorman-title">Doorman Control</h2>
       <p class="helper">Enter PIN to dispatch the next taxi.</p>
+      <p class="hint">PIN required to dispatch.</p>
       <p id="statusMsg" class="status" aria-live="polite"></p>
       <div class="row">
         <input
@@ -80,21 +72,13 @@
         <button id="completeBtn" class="btn">Complete Pickup</button>
         <button id="resetBtn" class="btn danger">Reset Demo</button>
       </div>
-  <div class="card queue-health-card">
-       <h3>Queue Health</h3>
-       <div id="queueHealthBox">
-       <div>Drivers waiting: 0</div>
-       <div>Longest wait: 0s</div>
-       <div>Inactive drivers: 0</div>
-       <div>System status: OK</div>
-   </div>
- </div>
+
       <!-- optional box for JS messages if your app uses one -->
       <div id="calledBox" class="called" aria-live="polite"></div>
     </section>
   </main>
 
   <!-- IMPORTANT: keep this at the very bottom so elements exist before app.js runs -->
- <script type="module" src="app.js?v=2026-03-02-1"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -9,13 +9,8 @@
   --text: #111;
   --muted: #555;
   --border: #e6e6e6;
-   
-    /* 🎨 Core status colors */
-  --green: #4CAF50;
-  --blue: #2196F3;
-  --red: #f44336;
-   
-   /* Section accents (color layers) */
+
+  /* Section accents (color layers) */
   --driver: #2f7dd1;
   --queue:  #6f42c1;
   --doorman:#c92a2a;
@@ -56,72 +51,15 @@ html, body{
 .toast.warn{ background: #7a4a00; }
 .toast.err{ background: #7a1010; }
 
-.netStatus {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 12px auto 18px;
-  padding: 8px 14px;
+.netStatus{
+  font-size: 12px;
+  opacity: 0.7;
+  margin: 6px auto 0;
   width: fit-content;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 700;
-  background: #f8fafc;
-  border: 1px solid var(--border);
-  color: var(--text);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
 }
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #9ca3af;
-  flex-shrink: 0;
-}
-
-.status-text {
-  line-height: 1;
-}
-
-.netStatus.online {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-  color: #166534;
-}
-
-.netStatus.online .status-dot {
-  background: #22c55e;
-}
-
-.netStatus.reconnecting {
-  background: #fffbeb;
-  border-color: #fde68a;
-  color: #92400e;
-}
-
-.netStatus.reconnecting .status-dot {
-  background: #f59e0b;
-}
-
-.netStatus.offline {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #991b1b;
-}
-
-.netStatus.offline .status-dot {
-  background: #ef4444;
-}
-
-.netStatus.online .status-dot,
-.netStatus.reconnecting .status-dot {
-  animation: statusPulse 1.4s infinite;
-}
-
-@keyframes statusPulse {
-  0%   { transform: scale(1); opacity: 1; }
-  50%  { transform: scale(1.18); opacity: 0.75; }
-  100% { transform: scale(1); opacity: 1; }
+.netStatus.offline{
+  opacity: 1;
+  font-weight: 600;
 }
 
 body{
@@ -229,16 +167,7 @@ body{
 .offer-alert.final-seconds .offer-alert-countdown {
   color: #b91c1c;
 }
-/* ✨ Highlight "offer-ready" button */
-.offer-ready {
-  animation: pulseGlow 1.2s infinite;
-}
 
-@keyframes pulseGlow {
-  0% { box-shadow: 0 0 0 rgba(0, 200, 0, 0.4); }
-  50% { box-shadow: 0 0 12px rgba(0, 200, 0, 0.8); }
-  100% { box-shadow: 0 0 0 rgba(0, 200, 0, 0.4); }
-}
 @keyframes offerPulse {
   0%, 100% {
     transform: scale(1);
@@ -359,66 +288,8 @@ body{
 .input:focus{
   border-color: #b8b8b8;
 }
-/* ===== DASHBOARD CARD UPGRADE ===== */
-.card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
 
-  /* ✨ Depth */
-  box-shadow: 
-    0 2px 6px rgba(0,0,0,0.05),
-    0 8px 20px rgba(0,0,0,0.08);
-
-  transition: all 0.25s ease;
-}
-/* 🎨 Card identity colors (left border accent) */
-.driver-card {
-  border-left: 4px solid var(--green, #4CAF50);
-}
-
-.live-queue-card {
-  border-left: 4px solid var(--blue, #2196F3);
-}
-
-.dispatch-card {
-  border-left: 4px solid var(--red, #f44336);
-}
-/* 🖱 Hover lift (subtle, not too much) */
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    0 6px 14px rgba(0,0,0,0.08),
-    0 12px 28px rgba(0,0,0,0.12);
-}
 /* Buttons */
-/* ===== GLOBAL BUTTON UPGRADE ===== */
-
-button {
-  transition: all 0.2s ease;
-}
-
-/* 🖱 Hover effect */
-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
-
-/* 👇 Press (click) effect */
-button:active {
-  transform: scale(0.96);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-/* 🚫 Disabled state */
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
 .btn{
   padding: 10px 14px;
   border: 1px solid #d0d0d0;
@@ -483,72 +354,15 @@ button:disabled {
 #acceptBtn:disabled {
   opacity: 0.45;
 }
-#acceptBtn::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -140%;
-  width: 70%;
-  height: 100%;
-  background: linear-gradient(
-    100deg,
-    rgba(255,255,255,0) 0%,
-    rgba(255,255,255,0.28) 45%,
-    rgba(255,255,255,0.55) 50%,
-    rgba(255,255,255,0.18) 55%,
-    rgba(255,255,255,0) 100%
-  );
-  transform: skewX(-18deg);
-  pointer-events: none;
-  opacity: 0;
-}
-
-#acceptBtn.is-offered::after,
-#acceptBtn.is-offered.is-urgent::after,
-#acceptBtn.is-offered.is-final::after {
-  animation: acceptShine 2.6s linear infinite;
-  opacity: 1;
-}
-
-@keyframes acceptShine {
-  0% {
-    left: -140%;
-  }
-  100% {
-    left: 160%;
-  }
-}
 
 /* when a real offer is available */
 #acceptBtn.is-offered {
-  border-color: #d97706;
-  background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
-  color: #92400e;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12), 0 10px 24px rgba(245, 158, 11, 0.18);
-  animation: acceptPulse 1.05s ease-in-out infinite;
-}
-#acceptBtn {
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.18s ease,
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease;
-  will-change: transform, box-shadow;
+  background: linear-gradient(180deg, #1fbf63 0%, #16a34a 100%);
+  border-color: #148a3d;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(22, 163, 74, 0.28);
 }
 
-#acceptBtn:not(:disabled):hover {
-  transform: translateY(-1px);
-}
-
-#acceptBtn:not(:disabled):active {
-  transform: scale(0.97);
-}
-
-#acceptBtn:not(:disabled):focus-visible {
-  outline: 3px solid rgba(245, 158, 11, 0.22);
-  outline-offset: 2px;
-}
 /* hover / touch-ready feeling */
 #acceptBtn.is-offered:hover {
   transform: translateY(-1px);
@@ -569,63 +383,13 @@ button:disabled {
   box-shadow: 0 12px 28px rgba(245, 158, 11, 0.34);
 }
 
+/* final seconds */
 #acceptBtn.is-offered.is-final {
-  border-color: #ef4444;
-  color: #991b1b;
-  background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.20),
-            0 14px 30px rgba(239, 68, 68, 0.30);
-   animation: acceptUrgentPulse 0.55s ease-in-out infinite;
-}
-#acceptBtn.is-clicked {
-  transform: scale(0.97);
-  box-shadow:
-    0 0 0 4px rgba(34, 197, 94, 0.18),
-    0 8px 18px rgba(22, 163, 74, 0.22);
-  transition: transform 0.08s ease, box-shadow 0.12s ease;
-}
-#acceptBtn.is-success {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  border-color: #15803d;
-  color: #ffffff;
-  box-shadow:
-    0 0 0 4px rgba(34, 197, 94, 0.18),
-    0 12px 28px rgba(22, 163, 74, 0.28);
-  transform: scale(1.02);
-}
-
-#acceptBtn.is-success .btn-label {
-  display: inline-block;
-  animation: acceptSuccessPop 0.28s ease;
-}
-
-@keyframes acceptSuccessPop {
-  0% {
-    transform: scale(0.96);
-    opacity: 0.85;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-#acceptBtn.is-offered.is-final {
-  font-weight: 800;
-  letter-spacing: 0.2px;
-}
-
-#acceptBtn.is-offered.is-final .btn-label {
-  display: inline-block;
-  animation: acceptTextUrgent 0.55s ease-in-out infinite;
-}
-
-@keyframes acceptTextUrgent {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.04);
-  }
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+  border-color: #b91c1c;
+  color: #fff;
+  box-shadow: 0 14px 30px rgba(239, 68, 68, 0.38);
+  animation: acceptUrgentPulse 0.55s ease-in-out infinite;
 }
 
 @keyframes acceptUrgentPulse {
@@ -634,10 +398,11 @@ button:disabled {
     box-shadow: 0 14px 30px rgba(239, 68, 68, 0.30);
   }
   50% {
-    transform: scale(1.05);
-    box-shadow: 0 20px 40px rgba(239, 68, 68, 0.45);
+    transform: scale(1.03);
+    box-shadow: 0 18px 36px rgba(239, 68, 68, 0.45);
   }
 }
+
 
 @keyframes acceptPulse {
   0%, 100% {
@@ -667,42 +432,12 @@ button:disabled {
   min-height: 40px;
 }
 
-.queue li {
+.queue li{
   border: 1px solid #eee;
   border-radius: 12px;
   padding: 10px 12px;
-  will-change: transform, opacity;
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    border-color 0.18s ease,
-    background 0.18s ease;
 }
 
-.queue li:hover {
-  transform: translateY(-2px) scale(1.01);
-  border-color: #d8d8d8;
-  background: #fcfcfc;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-}
-.queue li.queue-moving {
-  transition: transform 0.28s ease;
-}
-/* Queue row enter animation */
-.queue-enter {
-  animation: queueEnter 0.28s ease-out;
-}
-
-@keyframes queueEnter {
-  0% {
-    opacity: 0;
-    transform: translateY(8px) scale(0.985);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
 /* Optional: if your JS renders a richer “queue-item” layout */
 .queue-item{
   display: flex;
