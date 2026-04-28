@@ -518,3 +518,29 @@ body{
     box-shadow: 0 0 0 6px rgba(70, 120, 255, 0.12);
   }
 }
+/* ============================= */
+/* Connection Status Badge */
+/* ============================= */
+
+.netStatus {
+  display: block;
+  width: fit-content;
+  text-align: center;
+  font-weight: 700;
+  margin: 8px auto 14px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+
+.netStatus.online {
+  color: #2f7d32;
+  background: #e8f5e9;
+  border: 1px solid #b7dfb9;
+}
+
+.netStatus.offline {
+  color: #b26a00;
+  background: #fff3cd;
+  border: 1px solid #f3d27a;
+}
