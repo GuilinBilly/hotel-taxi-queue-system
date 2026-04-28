@@ -1354,7 +1354,6 @@ function wireConnectionBadge() {
   refreshAcceptUI();
 });
 }
-
 // -----------------------------
 // C2 — SMART INPUT UX
 // -----------------------------
