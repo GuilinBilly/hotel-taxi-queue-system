@@ -1841,33 +1841,6 @@ window.addEventListener("touchstart", () => {
   updateSoundHint();
 }, { once: true, passive: true });
 
-testBeepBtn?.addEventListener("click", () => {
-  console.log("🔔 Test Beep clicked");
-
-  // Make sure sound gating can't block the test
-  soundEnabled = true;
-  localStorage.setItem("htqs.soundEnabled", "true");
-
-  // Wake/resume the real shared context
-  ensureAudioNow("test-beep-click");
-
-  // Give Safari a tiny moment after resume
-  const ok = playTone("offer", {
-    force: true,
-    allowNoFocus: true,
-    volumeMul: 1.5,
-    delay: 0.03
-  });
-
-  console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
-
-  // Safety fallback if normal tone truly fails
-  if (!ok) {
-    console.warn("playTone failed — using hard fallback beep");
-    hardBeepFallback();
-  }
-});
-
 // -----------------------------
 // BOOT
 // -----------------------------
@@ -1910,14 +1883,40 @@ if (!queueHealthTimer) {
 setInterval(expireOffersNow, 1000);
 
 // Buttons
+const testBeepBtn = document.getElementById("testBeepBtn");
+
 joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
 acceptBtn.onclick = acceptRide;
 
-const testBeepBtn = document.getElementById("testBeepBtn");
+
+testBeepBtn?.addEventListener("click", () => {
+  console.log("🔔 Test Beep clicked");
+
+  // Make sure sound gating can't block the test
+  soundEnabled = true;
+  localStorage.setItem("htqs.soundEnabled", "true");
+
+  // Wake/resume the real shared context
+  ensureAudioNow("test-beep-click");
+
+  // Give Safari a tiny moment after resume
+  const ok = playTone("offer", {
+    force: true,
+    allowNoFocus: true,
+    volumeMul: 1.5,
+    delay: 0.03
+  });
+
+  console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
+
+  // Safety fallback if normal tone truly fails
+  if (!ok) {
+    console.warn("playTone failed — using hard fallback beep");
+    hardBeepFallback();
+  }
+});
 console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
-
-
 
 callNextBtn.onclick = callNext;
 completeBtn.onclick = completePickup;
