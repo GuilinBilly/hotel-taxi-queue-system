@@ -207,10 +207,10 @@ document.addEventListener("visibilitychange", async () => {
     dlog("Page visible again — forcing audio resume");
     await ensureAudioReady("visibility-wake", 2000, true);
     try {
-  await forceResumeAudio("visibility-return");
-} catch (e) {
-  console.warn("forceResumeAudio visibility-return failed:", e);
-}
+      await forceResumeAudio("visibility-return");
+    } catch (e) {
+      console.warn("forceResumeAudio visibility-return failed:", e);
+    }
     unlockAudio();
     allowAudioFor(2500);
     dlog("visibility-wake complete");
@@ -240,17 +240,17 @@ document.addEventListener("visibilitychange", async () => {
   }
 });
 // Extra protection: when window regains focus (after sleep)
-  window.addEventListener("focus", async () => {
+window.addEventListener("focus", async () => {
   dlog("Window focus — forcing audio resume");
- await ensureAudioReady("focus-wake", 2000, true);
-    try {
-  await forceResumeAudio("focus-return");
-} catch (e) {
-  console.warn("forceResumeAudio focus-return failed:", e);
-} 
-    unlockAudio();
-    allowAudioFor(2500);
-    dlog("focus-wake complete");
+  await ensureAudioReady("focus-wake", 2000, true);
+  try {
+    await forceResumeAudio("focus-return");
+  } catch (e) {
+    console.warn("forceResumeAudio focus-return failed:", e);
+  }
+  unlockAudio();
+  allowAudioFor(2500);
+  dlog("focus-wake complete");
   try {
     refreshJoinUI();
     refreshAcceptUI();
@@ -325,8 +325,8 @@ function updateQueueHealth(queueObj = {}) {
 
     // treat 45s+ as inactive/stale
     if (!lastSeenAt || staleMs > 90000) {
-  inactiveCount++;
-}
+      inactiveCount++;
+    }
   }
 
   let systemStatus = "OK";
@@ -343,7 +343,7 @@ function updateQueueHealth(queueObj = {}) {
     <div>System status: ${systemStatus}</div>
   `;
 }
- function showOfferAlert(message, countdownText = "", mode = "normal") {
+function showOfferAlert(message, countdownText = "", mode = "normal") {
   if (!offerAlertBox) return;
 
   offerAlertText.textContent = message || "Taxi offer";
@@ -443,20 +443,20 @@ async function joinQueue() {
     const isActive = existing && status !== "LEFT";
 
     // ✅ If record is already active, recover state and do NOT overwrite
-if (isActive) {
-  myDriverKey = driverKey;
-  sessionStorage.setItem("htqs.driverKey", driverKey);
+    if (isActive) {
+      myDriverKey = driverKey;
+      sessionStorage.setItem("htqs.driverKey", driverKey);
 
-  lockDriverInputs(true);
-  refreshJoinUI();
-  refreshAcceptUI();
+      lockDriverInputs(true);
+      refreshJoinUI();
+      refreshAcceptUI();
 
-  // Auto-rejoin silently + nicer message
-  showToast?.(`You're already in queue 👍 (${status})`, "ok", 1800);
-  console.log("joinQueue restored existing active driver", driverKey, status);
+      // Auto-rejoin silently + nicer message
+      showToast?.(`You're already in queue 👍 (${status})`, "ok", 1800);
+      console.log("joinQueue restored existing active driver", driverKey, status);
 
-  return;
-}
+      return;
+    }
 
     // Clean up old LEFT record
     if (existing && status === "LEFT") {
@@ -486,26 +486,26 @@ if (isActive) {
     lockDriverInputs(true);
     refreshJoinUI();
     refreshAcceptUI();
-   // Mark this driver stale if device/tab disconnects unexpectedly
-try {
-  await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).set(0);
-  console.log("onDisconnect stale-marker armed for", myDriverKey);
-} catch (e) {
-  console.warn("Failed to arm onDisconnect stale-marker for", myDriverKey, e);
-}
+    // Mark this driver stale if device/tab disconnects unexpectedly
+    try {
+      await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).set(0);
+      console.log("onDisconnect stale-marker armed for", myDriverKey);
+    } catch (e) {
+      console.warn("Failed to arm onDisconnect stale-marker for", myDriverKey, e);
+    }
     console.log("joinQueue success", driverKey);
-    
 
-   // 🔊 Auto test sound so driver knows alerts work
-   setTimeout(() => {
-   const bgBoost = document.hidden ? 1.45 : 1.0;
 
-   playTone("offer", {
-    force: true,
-    allowNoFocus: true,
-    volumeMul: bgBoost
-  });
-}, 300);
+    // 🔊 Auto test sound so driver knows alerts work
+    setTimeout(() => {
+      const bgBoost = document.hidden ? 1.45 : 1.0;
+
+      playTone("offer", {
+        force: true,
+        allowNoFocus: true,
+        volumeMul: bgBoost
+      });
+    }, 300);
 
     showToast("Joined queue ✅", "ok");
   } catch (err) {
@@ -518,7 +518,7 @@ try {
 }
 
 function startDriverHeartbeat() {
-  
+
   // Prevent duplicate intervals
   stopDriverHeartbeat();
 
@@ -529,17 +529,17 @@ function startDriverHeartbeat() {
     console.warn("Heartbeat initial write failed:", e);
   });
   // Then keep updating every 15 seconds
- driverHeartbeatId = setInterval(() => {
+  driverHeartbeatId = setInterval(() => {
 
-  if (!myDriverKey) return;
+    if (!myDriverKey) return;
 
-  update(ref(db, "queue/" + myDriverKey), {
-    lastSeenAt: Date.now()
-  }).catch((e) => {
-    console.warn("Heartbeat update failed:", e);
-  });
+    update(ref(db, "queue/" + myDriverKey), {
+      lastSeenAt: Date.now()
+    }).catch((e) => {
+      console.warn("Heartbeat update failed:", e);
+    });
 
-}, 15000);
+  }, 15000);
 }
 function stopDriverHeartbeat() {
   if (driverHeartbeatId) {
@@ -562,13 +562,13 @@ async function leaveQueue() {
     if (status === "OFFERED" || status === "ACCEPTED") {
       showToast?.(`Can't leave while ${status}.`, "warn", 2000);
       return;
-    }    
+    }
     try {
-  await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).cancel();
-  console.log("onDisconnect stale-marker canceled for", myDriverKey);
-} catch (e) {
-  console.warn("Failed to cancel onDisconnect stale-marker for", myDriverKey, e);
-}
+      await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).cancel();
+      console.log("onDisconnect stale-marker canceled for", myDriverKey);
+    } catch (e) {
+      console.warn("Failed to cancel onDisconnect stale-marker for", myDriverKey, e);
+    }
     await update(ref(db, "queue/" + myDriverKey), { status: "LEFT" });
     hideOfferAlert();
     updateAcceptButtonVisual(null);
@@ -582,7 +582,7 @@ async function leaveQueue() {
     refreshAcceptUI();
     stopOfferBeepLoop();
     setOfferPulse(false);
-    
+
   } catch (err) {
     console.error("leaveQueue error:", err);
     alert("Leave failed");
@@ -784,12 +784,12 @@ async function resetDemo() {
     refreshAcceptUI();
 
     if (!offeredCache) {
-  stopOfferBeepLoop();
-  setOfferPulse(false);
-} else {
-  setOfferPulse(true);
-  if (soundEnabled && !suppressOfferBeep) startOfferBeepLoop();
-}
+      stopOfferBeepLoop();
+      setOfferPulse(false);
+    } else {
+      setOfferPulse(true);
+      if (soundEnabled && !suppressOfferBeep) startOfferBeepLoop();
+    }
     if (typeof showToast === "function") showToast("Demo reset ✅", "ok", 1500);
   } catch (err) {
     console.error("resetDemo error:", err);
@@ -820,250 +820,250 @@ function subscribeQueue() {
       suppressOfferBeep = false;
       stopOfferBeepLoop();
       if (typeof setOfferPulse === "function") setOfferPulse(false);
-      
+
       // ✅ ADD THIS: if queue is empty, nobody is “joined”
-  if (myDriverKey) {
-    sessionStorage.removeItem("htqs.driverKey");
-    myDriverKey = null;
-    lockDriverInputs(false);
-    refreshJoinUI();
-    refreshAcceptUI();
-  }
+      if (myDriverKey) {
+        sessionStorage.removeItem("htqs.driverKey");
+        myDriverKey = null;
+        lockDriverInputs(false);
+        refreshJoinUI();
+        refreshAcceptUI();
+      }
       updateEmptyState();
       refreshAcceptUI();
       updateQueueHealth({});
       return;
     }
 
-   const data = snap.val() || {};
-   updateQueueHealth(data);
+    const data = snap.val() || {};
+    updateQueueHealth(data);
     lastQueueSnapshot = data;
     const entries = Object.entries(data);
-    
-   if (myDriverKey) {
-  const mine = data[myDriverKey];
-  if (!mine || mine.status === "LEFT") {
-    sessionStorage.removeItem("htqs.driverKey");
-    myDriverKey = null;
 
-    stopDriverHeartbeat();
-    offeredCache = null;
-    calledBox.textContent = "";
+    if (myDriverKey) {
+      const mine = data[myDriverKey];
+      if (!mine || mine.status === "LEFT") {
+        sessionStorage.removeItem("htqs.driverKey");
+        myDriverKey = null;
 
-    lastOfferWasForMe = false;
-    lastOfferKeyForMe = null;
-    lastOfferSig = null;
-    suppressOfferBeep = false;
+        stopDriverHeartbeat();
+        offeredCache = null;
+        calledBox.textContent = "";
 
-    stopOfferBeepLoop?.();
-    if (typeof setOfferPulse === "function") setOfferPulse(false);
+        lastOfferWasForMe = false;
+        lastOfferKeyForMe = null;
+        lastOfferSig = null;
+        suppressOfferBeep = false;
 
-    lockDriverInputs(false);
-    refreshJoinUI();
-    refreshAcceptUI();
-    updateEmptyState();
-  }
-}
+        stopOfferBeepLoop?.();
+        if (typeof setOfferPulse === "function") setOfferPulse(false);
+
+        lockDriverInputs(false);
+        refreshJoinUI();
+        refreshAcceptUI();
+        updateEmptyState();
+      }
+    }
     // Render list
     queueList.innerHTML = "";
     calledBox.textContent = "";
 
     const active = entries
-  .filter(([_, v]) =>
-    v &&
-    (v.status ?? "WAITING") !== "LEFT" &&
-    (v.name || v.plate || v.carColor)
-  )
-  .slice()
-  .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+      .filter(([_, v]) =>
+        v &&
+        (v.status ?? "WAITING") !== "LEFT" &&
+        (v.name || v.plate || v.carColor)
+      )
+      .slice()
+      .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
-  active.forEach(([k, v], i) => {
-  const li = document.createElement("li");
-  const status = (v.status ?? "WAITING").toUpperCase();
+    active.forEach(([k, v], i) => {
+      const li = document.createElement("li");
+      const status = (v.status ?? "WAITING").toUpperCase();
 
-  const safeName = v?.name || "Unknown Driver";
-  const safeColor = v?.carColor || "";
-  const safePlate = v?.plate || "";
-  const driverLabel = `${safeName} ${safeColor} ${safePlate}`.replace(/\s+/g, " ").trim();
+      const safeName = v?.name || "Unknown Driver";
+      const safeColor = v?.carColor || "";
+      const safePlate = v?.plate || "";
+      const driverLabel = `${safeName} ${safeColor} ${safePlate}`.replace(/\s+/g, " ").trim();
 
-  li.classList.add("queue-item", `status-${status.toLowerCase()}`);
-  li.innerHTML = `
+      li.classList.add("queue-item", `status-${status.toLowerCase()}`);
+      li.innerHTML = `
     <span class="pos">${i + 1}.</span>
     <span class="driver">${driverLabel}</span>
     <span class="badge">${status}</span>
   `;
-  queueList.appendChild(li);
-});
+      queueList.appendChild(li);
+    });
 
-updateEmptyState();
+    updateEmptyState();
 
-// ✅ Only cache an offer if it’s for THIS driver
-offeredCache = findOfferForMe(data);
-    
-// =============================
-// C3: Beep/pulse + "Offer missed" + countdown
-// Put this RIGHT AFTER: offeredCache = findOfferForMe(data);
-// =============================
+    // ✅ Only cache an offer if it’s for THIS driver
+    offeredCache = findOfferForMe(data);
 
-const hasOfferNow = !!offeredCache;
-const offerKeyNow = hasOfferNow ? offeredCache.key : null;
+    // =============================
+    // C3: Beep/pulse + "Offer missed" + countdown
+    // Put this RIGHT AFTER: offeredCache = findOfferForMe(data);
+    // =============================
 
-// ---- A) Beep/Pulse trigger using signature (key + offerStartedAt) ----
-if (!hasOfferNow) {
-  lastOfferSig = null;
-  suppressOfferBeep = false;        // allow next offer to beep
-  stopOfferBeepLoop?.();            // safe-call
-  if (typeof setOfferPulse === "function") setOfferPulse(false);
+    const hasOfferNow = !!offeredCache;
+    const offerKeyNow = hasOfferNow ? offeredCache.key : null;
 
-} else {
-  const offerObj = unwrapOfferCache(offeredCache);
-  const startedAt = offerObj?.offerStartedAt ?? 0;
-  const key = offeredCache?.key ?? offerObj?.key ?? null;
-  const sigNow = `${key}:${startedAt}`;
+    // ---- A) Beep/Pulse trigger using signature (key + offerStartedAt) ----
+    if (!hasOfferNow) {
+      lastOfferSig = null;
+      suppressOfferBeep = false;        // allow next offer to beep
+      stopOfferBeepLoop?.();            // safe-call
+      if (typeof setOfferPulse === "function") setOfferPulse(false);
 
-  if (sigNow && sigNow !== lastOfferSig) {
-    lastOfferSig = sigNow;
-
-    suppressOfferBeep = false;
-    startOfferBeepLoop?.();
-    if (typeof setOfferPulse === "function") setOfferPulse(true);
-  }
-}    
-// ---- B) "Offer missed" toast when an offer for YOU ends ----
-const mineNow = myDriverKey ? data[myDriverKey] : null;
-
-if (lastOfferWasForMe && !hasOfferNow) {
-  const statusNow = (mineNow?.status ?? "WAITING").toUpperCase();
-
-  // show missed only if you are back to WAITING (not ACCEPTED)
-  if (statusNow === "WAITING") {
-    if (typeof showToast === "function") showToast("Offer missed ⏰ — back to WAITING", "warn", 2200);
-  }
-
-  // stop countdown
-  if (offerCountdownTimer) {
-    clearInterval(offerCountdownTimer);
-    offerCountdownTimer = null;
-  }
-
-  const offerInfo = document.getElementById("offerInfo");
-  if (offerInfo) offerInfo.textContent = "";
-}
-
-// ---- C) Countdown restart when NEW offer for YOU starts ----
-if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
-  if (offerCountdownTimer) {
-    clearInterval(offerCountdownTimer);
-    offerCountdownTimer = null;
-  }
-
-  const offerInfo = document.getElementById("offerInfo");
-  offerCountdownTimer = setInterval(() => {
-  if (!offeredCache) {
-    clearInterval(offerCountdownTimer);
-    offerCountdownTimer = null;
-    if (offerInfo) offerInfo.textContent = "";
-    stopOfferBeepLoop();
-    hideOfferAlert();
-    return;
-  }
-
-  const v = unwrapOfferCache(offeredCache);    
-  // ✅ compute time-left FIRST
-  const msLeft = Math.max(0, (v.offerExpiresAt ?? 0) - Date.now());
-    setAcceptButtonLabel(msLeft);
-    updateAcceptButtonVisual(msLeft);
-    urgentDoublePulseActive = (msLeft > 0 && msLeft <= 2000);
-  // ✅ urgent trigger uses msLeft (not "remaining")
-  if (msLeft <= 5000 && !urgentBeepIntervalId) {
-    startUrgentBeepLoop();
-  }
-
-  const secLeft = Math.ceil(msLeft / 1000);
-const offerName = v?.name ?? v?.driverName ?? "Taxi offer";
-
-if (msLeft > 5000) {
-  showOfferAlert(
-    `Now offering: ${offerName}`,
-    `Expires in ${secLeft}s`,
-    "normal"
-  );
-} else if (msLeft > 2000) {
-  showOfferAlert(
-    `Now offering: ${offerName}`,
-    `Expires in ${secLeft}s`,
-    "urgent"
-  );
-} else if (msLeft > 0) {
-  showOfferAlert(
-    `Now offering: ${offerName}`,
-    `Expires in ${secLeft}s`,
-    "final"
-  );
-} else {
-  showOfferAlert(
-    `Now offering: ${offerName}`,
-    `Offer expired`,
-    "final"
-  );
-}
-    if (msLeft <= 0) {
-  stopOfferBeepLoop();
-  hideOfferAlert();
-  updateAcceptButtonVisual(null);
-  setAcceptButtonLabel(null);
-    }
-  }, 250);
-}
-
-// Track for next onValue tick
-lastOfferWasForMe = hasOfferNow;
-lastOfferKeyForMe = offerKeyNow;
-
-// Track for next onValue tick
-lastOfferWasForMe = hasOfferNow;
-lastOfferKeyForMe = offerKeyNow;
-
-// ✅ UI depends ONLY on offeredCache
-refreshAcceptUI();
-
-// ✅ If no offer for me, clear "Now Offering" and stop
-if (!offeredCache) {
-  calledBox.textContent = "";
-  hideOfferAlert();
-  updateAcceptButtonVisual(null);
-  setAcceptButtonLabel(null);
-  return;
-}
-// offeredCache exists (for THIS driver)
-if (typeof setOfferPulse === "function") setOfferPulse(true);
-
-const offerObj = unwrapOfferCache(offeredCache);
-calledBox.textContent =
-  "Now Offering: " + (offerObj?.name ?? offerObj?.driverName ?? "");
-
-// 🔥 Safari fix: force re-resume right when an offer arrives
-forceResumeAudio("offer-arrived")
-  .catch(() => {}) // ignore errors, continue
-  .then(() => {
-    unlockAudio();           // safe no-op if already unlocked
-    allowAudioFor?.(2000);   // optional but helps Safari
-
-    if (canPlayAlerts() && !suppressOfferBeep) {
-     const bgBoost = document.hidden ? 1.45 : 1.0;
-
-playTone("offer", {
-  force: true,
-  allowNoFocus: true,
-  volumeMul: bgBoost
-});
-      startOfferBeepLoop(); // ✅ DO NOT pass 800 here
     } else {
-      stopOfferBeepLoop();
+      const offerObj = unwrapOfferCache(offeredCache);
+      const startedAt = offerObj?.offerStartedAt ?? 0;
+      const key = offeredCache?.key ?? offerObj?.key ?? null;
+      const sigNow = `${key}:${startedAt}`;
+
+      if (sigNow && sigNow !== lastOfferSig) {
+        lastOfferSig = sigNow;
+
+        suppressOfferBeep = false;
+        startOfferBeepLoop?.();
+        if (typeof setOfferPulse === "function") setOfferPulse(true);
+      }
     }
-  });
+    // ---- B) "Offer missed" toast when an offer for YOU ends ----
+    const mineNow = myDriverKey ? data[myDriverKey] : null;
+
+    if (lastOfferWasForMe && !hasOfferNow) {
+      const statusNow = (mineNow?.status ?? "WAITING").toUpperCase();
+
+      // show missed only if you are back to WAITING (not ACCEPTED)
+      if (statusNow === "WAITING") {
+        if (typeof showToast === "function") showToast("Offer missed ⏰ — back to WAITING", "warn", 2200);
+      }
+
+      // stop countdown
+      if (offerCountdownTimer) {
+        clearInterval(offerCountdownTimer);
+        offerCountdownTimer = null;
+      }
+
+      const offerInfo = document.getElementById("offerInfo");
+      if (offerInfo) offerInfo.textContent = "";
+    }
+
+    // ---- C) Countdown restart when NEW offer for YOU starts ----
+    if (hasOfferNow && offerKeyNow !== lastOfferKeyForMe) {
+      if (offerCountdownTimer) {
+        clearInterval(offerCountdownTimer);
+        offerCountdownTimer = null;
+      }
+
+      const offerInfo = document.getElementById("offerInfo");
+      offerCountdownTimer = setInterval(() => {
+        if (!offeredCache) {
+          clearInterval(offerCountdownTimer);
+          offerCountdownTimer = null;
+          if (offerInfo) offerInfo.textContent = "";
+          stopOfferBeepLoop();
+          hideOfferAlert();
+          return;
+        }
+
+        const v = unwrapOfferCache(offeredCache);
+        // ✅ compute time-left FIRST
+        const msLeft = Math.max(0, (v.offerExpiresAt ?? 0) - Date.now());
+        setAcceptButtonLabel(msLeft);
+        updateAcceptButtonVisual(msLeft);
+        urgentDoublePulseActive = (msLeft > 0 && msLeft <= 2000);
+        // ✅ urgent trigger uses msLeft (not "remaining")
+        if (msLeft <= 5000 && !urgentBeepIntervalId) {
+          startUrgentBeepLoop();
+        }
+
+        const secLeft = Math.ceil(msLeft / 1000);
+        const offerName = v?.name ?? v?.driverName ?? "Taxi offer";
+
+        if (msLeft > 5000) {
+          showOfferAlert(
+            `Now offering: ${offerName}`,
+            `Expires in ${secLeft}s`,
+            "normal"
+          );
+        } else if (msLeft > 2000) {
+          showOfferAlert(
+            `Now offering: ${offerName}`,
+            `Expires in ${secLeft}s`,
+            "urgent"
+          );
+        } else if (msLeft > 0) {
+          showOfferAlert(
+            `Now offering: ${offerName}`,
+            `Expires in ${secLeft}s`,
+            "final"
+          );
+        } else {
+          showOfferAlert(
+            `Now offering: ${offerName}`,
+            `Offer expired`,
+            "final"
+          );
+        }
+        if (msLeft <= 0) {
+          stopOfferBeepLoop();
+          hideOfferAlert();
+          updateAcceptButtonVisual(null);
+          setAcceptButtonLabel(null);
+        }
+      }, 250);
+    }
+
+    // Track for next onValue tick
+    lastOfferWasForMe = hasOfferNow;
+    lastOfferKeyForMe = offerKeyNow;
+
+    // Track for next onValue tick
+    lastOfferWasForMe = hasOfferNow;
+    lastOfferKeyForMe = offerKeyNow;
+
+    // ✅ UI depends ONLY on offeredCache
+    refreshAcceptUI();
+
+    // ✅ If no offer for me, clear "Now Offering" and stop
+    if (!offeredCache) {
+      calledBox.textContent = "";
+      hideOfferAlert();
+      updateAcceptButtonVisual(null);
+      setAcceptButtonLabel(null);
+      return;
+    }
+    // offeredCache exists (for THIS driver)
+    if (typeof setOfferPulse === "function") setOfferPulse(true);
+
+    const offerObj = unwrapOfferCache(offeredCache);
+    calledBox.textContent =
+      "Now Offering: " + (offerObj?.name ?? offerObj?.driverName ?? "");
+
+    // 🔥 Safari fix: force re-resume right when an offer arrives
+    forceResumeAudio("offer-arrived")
+      .catch(() => { }) // ignore errors, continue
+      .then(() => {
+        unlockAudio();           // safe no-op if already unlocked
+        allowAudioFor?.(2000);   // optional but helps Safari
+
+        if (canPlayAlerts() && !suppressOfferBeep) {
+          const bgBoost = document.hidden ? 1.45 : 1.0;
+
+          playTone("offer", {
+            force: true,
+            allowNoFocus: true,
+            volumeMul: bgBoost
+          });
+          startOfferBeepLoop(); // ✅ DO NOT pass 800 here
+        } else {
+          stopOfferBeepLoop();
+        }
+      });
   });  //  ✅ closes onValue(queueRef, (snap) => { ... })
-  }    // ✅ closes function subscribeQueue() { ... }
+}    // ✅ closes function subscribeQueue() { ... }
 
 
 // =============================
@@ -1072,22 +1072,22 @@ playTone("offer", {
 
 // Simple “profiles” you can tune later
 const TONE_PROFILES = {
- offer: {
-  seq: [
-    { wave: "square", freq: 880, dur: 0.12, attack: 0.005, decay: 0.10, volume: 0.28 },
-    { wave: "square", freq: 880, dur: 0.12, attack: 0.005, decay: 0.10, volume: 0.28 },
-    { wave: "square", freq: 880, dur: 0.16, attack: 0.005, decay: 0.12, volume: 0.32 },
-  ],
-  gap: 0.10,
-},
+  offer: {
+    seq: [
+      { wave: "square", freq: 880, dur: 0.12, attack: 0.005, decay: 0.10, volume: 0.28 },
+      { wave: "square", freq: 880, dur: 0.12, attack: 0.005, decay: 0.10, volume: 0.28 },
+      { wave: "square", freq: 880, dur: 0.16, attack: 0.005, decay: 0.12, volume: 0.32 },
+    ],
+    gap: 0.10,
+  },
   urgent: {
-  wave: "triangle",   // sharper than sine, but not harsh like square
-  freq: 1320,         // slightly higher pitch (more urgent)
-  dur: 0.07,          // slightly shorter = more punchy
-  attack: 0.002,      // faster attack
-  decay: 0.045,       // slightly tighter decay
-  volume: 0.34,       // small bump (not huge)
-},
+    wave: "triangle",   // sharper than sine, but not harsh like square
+    freq: 1320,         // slightly higher pitch (more urgent)
+    dur: 0.07,          // slightly shorter = more punchy
+    attack: 0.002,      // faster attack
+    decay: 0.045,       // slightly tighter decay
+    volume: 0.34,       // small bump (not huge)
+  },
   expiring: {
     wave: "triangle",
     freq: 988,        // B5
@@ -1100,8 +1100,8 @@ const TONE_PROFILES = {
     // A short “two-note” confirmation (sounds nicer than one beep)
     seq: [
       { wave: "sine", freq: 659.25, dur: 0.08, attack: 0.005, decay: 0.06, volume: 0.10 }, // E5
-      { wave: "sine", freq: 880,    dur: 0.10, attack: 0.005, decay: 0.08, volume: 0.12 }, // A5
-    ], 
+      { wave: "sine", freq: 880, dur: 0.10, attack: 0.005, decay: 0.08, volume: 0.12 }, // A5
+    ],
     gap: 0.03, // seconds between notes
   },
 };
@@ -1142,9 +1142,10 @@ function _playOneBeep(p, opts = {}) {
     try {
       audioCtx.resume();
     } catch (e) {
-    // ignore
+      // ignore
     }
-    
+  }
+
   const t0 = audioCtx.currentTime + (opts.delay ?? 0);
   const freq = (opts.freq ?? p.freq) * (opts.pitchMul ?? 1);
   const wave = opts.wave ?? p.wave ?? "sine";
@@ -1159,8 +1160,8 @@ function _playOneBeep(p, opts = {}) {
     osc.frequency.setValueAtTime(freq, t0);
 
     const attack = Math.max(0.001, opts.attack ?? p.attack ?? 0.005);
-    const decay  = Math.max(0.01,  opts.decay  ?? p.decay  ?? 0.08);
-    const endT   = t0 + Math.max(0.02, opts.dur ?? p.dur ?? 0.1);
+    const decay = Math.max(0.01, opts.decay ?? p.decay ?? 0.08);
+    const endT = t0 + Math.max(0.02, opts.dur ?? p.dur ?? 0.1);
 
     gain.gain.setValueAtTime(0.0001, t0);
     gain.gain.linearRampToValueAtTime(vol, t0 + attack);
@@ -1172,8 +1173,8 @@ function _playOneBeep(p, opts = {}) {
     osc.stop(endT + 0.02);
 
     osc.onended = () => {
-      try { osc.disconnect(); } catch {}
-      try { gain.disconnect(); } catch {}
+      try { osc.disconnect(); } catch { }
+      try { gain.disconnect(); } catch { }
     };
 
     return true;
@@ -1338,23 +1339,23 @@ function wireConnectionBadge() {
   let wasConnected = true;
 
   onValue(connectedRef, (snap) => {
-  isConnected = snap.val() === true;
+    isConnected = snap.val() === true;
 
-  if (isConnected) {
-    netStatus.textContent = "Online";
-    netStatus.className = "netStatus online";
-    dlog("RTDB connected");
-  } else {
-    netStatus.textContent = "Reconnecting…";
-    netStatus.className = "netStatus offline";
-    dlog("RTDB disconnected — waiting for reconnect");
-  }
+    if (isConnected) {
+      netStatus.textContent = "Online";
+      netStatus.className = "netStatus online";
+      dlog("RTDB connected");
+    } else {
+      netStatus.textContent = "Reconnecting…";
+      netStatus.className = "netStatus offline";
+      dlog("RTDB disconnected — waiting for reconnect");
+    }
 
-  refreshJoinUI();
-  refreshAcceptUI();
-});
+    refreshJoinUI();
+    refreshAcceptUI();
+  });
 }
-// -----------------------------
+// ----------------------------- 
 // C2 — SMART INPUT UX
 // -----------------------------
 const INPUT_STORE_KEY = "htqs.inputs.v1";
@@ -1407,7 +1408,7 @@ function saveInputs() {
   try {
     const { name, carColor, plate } = getInputs();
     localStorage.setItem(INPUT_STORE_KEY, JSON.stringify({ name, carColor, plate }));
-  } catch (_) {}
+  } catch (_) { }
 }
 
 // Restore inputs from localStorage
@@ -1420,7 +1421,7 @@ function restoreInputs() {
     if (driverNameInput && data.name) driverNameInput.value = data.name;
     if (driverColorInput && data.carColor) driverColorInput.value = data.carColor;
     if (driverPlateInput && data.plate) driverPlateInput.value = data.plate;
-  } catch (_) {}
+  } catch (_) { }
 }
 
 // Format inputs *without fighting the cursor*:
@@ -1495,7 +1496,7 @@ function addUniversalAudioUnlock() {
       // Any real user gesture should be allowed to unlock/resume audio
       try {
         await ensureAudioReady("global-gesture", 2000, true);
-      } catch {}
+      } catch { }
     };
 
     // Use multiple gesture types for Safari reliability
@@ -1530,7 +1531,7 @@ function ensureAudioCtx(reason = "") {
 
   // Safari can go weird; if interrupted, recreate
   if (audioCtx.state === "interrupted") {
-    try { audioCtx.close?.(); } catch {}
+    try { audioCtx.close?.(); } catch { }
     audioCtx = new Ctx();
     audioUnlocked = false;
     updateSoundHint?.();
@@ -1546,7 +1547,7 @@ async function forceResumeAudio(reason = "", allowRecreate = true) {
   if (!audioCtx) return false;
 
   // Try normal resume first
-  try { await audioCtx.resume?.(); } catch {}
+  try { await audioCtx.resume?.(); } catch { }
 
   // If still not running...
   if (audioCtx.state !== "running") {
@@ -1558,14 +1559,14 @@ async function forceResumeAudio(reason = "", allowRecreate = true) {
     if (!Ctx) return false;
 
     // Close old context and recreate
-    try { await audioCtx.close?.(); } catch {}
+    try { await audioCtx.close?.(); } catch { }
 
     audioCtx = new Ctx();
     audioUnlocked = false;
     updateSoundHint?.();
 
     // Try resume again
-    try { await audioCtx.resume?.(); } catch {}
+    try { await audioCtx.resume?.(); } catch { }
   }
 
   return audioCtx?.state === "running";
@@ -1573,12 +1574,12 @@ async function forceResumeAudio(reason = "", allowRecreate = true) {
 // ✅ Master audio wake-up (use everywhere)
 async function ensureAudioReady(reason = "ensure", ms = 1500, allowRecreate = false) {
   // Only recreate AudioContext when explicitly allowed (real user gesture paths)
-  try { await forceResumeAudio?.(reason, allowRecreate); } catch {}
-  try { unlockAudio?.(); } catch {}
-  try { allowAudioFor?.(ms); } catch {}
+  try { await forceResumeAudio?.(reason, allowRecreate); } catch { }
+  try { unlockAudio?.(); } catch { }
+  try { allowAudioFor?.(ms); } catch { }
 
   // Extra safety: try resuming AudioContext directly
-  try { await audioCtx?.resume?.(); } catch {}
+  try { await audioCtx?.resume?.(); } catch { }
 }
 
 // Safari/iOS: unlock audio on the first real user gesture anywhere
@@ -1617,9 +1618,9 @@ function hardBeepFallback() {
     osc.stop(now + 0.26);
 
     osc.onended = () => {
-      try { osc.disconnect(); } catch {}
-      try { gain.disconnect(); } catch {}
-      try { ctx.close(); } catch {}
+      try { osc.disconnect(); } catch { }
+      try { gain.disconnect(); } catch { }
+      try { ctx.close(); } catch { }
     };
   } catch (e) {
     console.warn("hardBeepFallback failed:", e);
@@ -1716,11 +1717,11 @@ function startOfferBeepLoop(maxMs = OFFER_MS) {
 
   offerBeepIntervalId = setInterval(() => {
     const bgBoost = document.hidden ? 1.45 : 1.0;
-playTone("offer", {
-  force: true,
-  allowNoFocus: true,
-  volumeMul: bgBoost
-});
+    playTone("offer", {
+      force: true,
+      allowNoFocus: true,
+      volumeMul: bgBoost
+    });
   }, OFFER_BEEP_INTERVAL_MS);
 
   offerBeepStopTimeoutId = setTimeout(stopOfferBeepLoop, maxMs);
@@ -1884,7 +1885,7 @@ function dlog(...args) {
 function dwarn(...args) {
   if (DEBUG) console.warn(...args);
 }
-addUniversalAudioUnlock(); 
+addUniversalAudioUnlock();
 // Auth first (fixes PERMISSION_DENIED if you set rules to auth != null)
 ensureSignedIn();
 updateSoundHint();
@@ -1896,7 +1897,7 @@ onAuthStateChanged(auth, (user) => {
 wireConnectionBadge();
 loadSoundPref();
 wireSoundToggle();
-   
+
 // 🔇 indicator wiring (tab inactive / hidden)
 ensureMuteIndicator();
 updateMuteIndicator();
