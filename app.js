@@ -1877,7 +1877,6 @@ dlog("BUILD:", BUILD);
 // -----------------------------
 // DEBUG SWITCH
 // -----------------------------
-const DEBUG = false; // ✅ change to true when troubleshooting
 
 function dlog(...args) {
   if (DEBUG) console.log(...args);
