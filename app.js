@@ -372,6 +372,25 @@ function hideOfferAlert() {
 // -----------------------------
 // CORE LOGIC
 // -----------------------------
+function startOfferBeepLoop() {
+  if (!offeredCache) return;
+
+  if (window._offerBeepTimer) {
+    clearInterval(window._offerBeepTimer);
+  }
+
+  window._offerBeepTimer = setInterval(() => {
+    if (!offeredCache) {
+      clearInterval(window._offerBeepTimer);
+      return;
+    }
+
+    playTone("offer", { force: true, volumeMul: 1.2 });
+  }, 3000); // every 3 seconds
+}
+
+window._offerBeepTimer = null;
+
 function isMeForOffer(v) {
   if (!v) return false;
   const inputName = norm(driverNameInput?.value);
@@ -712,6 +731,7 @@ async function acceptRide() {
     }
 
     if (latestExpires && latestExpires <= Date.now()) {
+      stopOfferBeepLoop();
       showToast?.("Offer expired", "warn", 2000);
       return;
     }
@@ -724,6 +744,7 @@ async function acceptRide() {
     updateAcceptButtonVisual(null);
     accepted = true; // ✅ success
     suppressOfferBeep = true; // keep silent after accept
+    stopOfferBeepLoop();
     showToast?.("Accepted ✅", "ok", 1500);
 
   } catch (err) {
@@ -839,6 +860,18 @@ function subscribeQueue() {
     updateQueueHealth(data);
     lastQueueSnapshot = data;
     const entries = Object.entries(data);
+
+    const offer = findOfferForMe(data);
+
+    if (!offer) {
+      stopOfferBeepLoop();
+    }
+
+    if (offer && !suppressOfferBeep) {
+      startOfferBeepLoop();
+    } else {
+      stopOfferBeepLoop?.();
+    }
 
     if (myDriverKey) {
       const mine = data[myDriverKey];
@@ -1242,7 +1275,6 @@ function updateSoundHint() {
     el.textContent = "🔊 Tap anywhere to enable sound alerts";
   }
 }
-
 
 
 function refreshAcceptUI() {
