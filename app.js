@@ -372,22 +372,7 @@ function hideOfferAlert() {
 // -----------------------------
 // CORE LOGIC
 // -----------------------------
-function startOfferBeepLoop() {
-  if (!offeredCache) return;
 
-  if (window._offerBeepTimer) {
-    clearInterval(window._offerBeepTimer);
-  }
-
-  window._offerBeepTimer = setInterval(() => {
-    if (!offeredCache) {
-      clearInterval(window._offerBeepTimer);
-      return;
-    }
-
-    playTone("offer", { force: true, volumeMul: 1.2 });
-  }, 3000); // every 3 seconds
-}
 
 window._offerBeepTimer = null;
 
