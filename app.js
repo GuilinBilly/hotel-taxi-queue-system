@@ -374,8 +374,6 @@ function hideOfferAlert() {
 // -----------------------------
 
 
-window._offerBeepTimer = null;
-
 function isMeForOffer(v) {
   if (!v) return false;
   const inputName = norm(driverNameInput?.value);
