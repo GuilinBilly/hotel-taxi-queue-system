@@ -850,11 +850,6 @@ function subscribeQueue() {
       stopOfferBeepLoop();
     }
 
-    if (offer && !suppressOfferBeep) {
-      startOfferBeepLoop();
-    } else {
-      stopOfferBeepLoop?.();
-    }
 
     if (myDriverKey) {
       const mine = data[myDriverKey];
@@ -985,6 +980,7 @@ function subscribeQueue() {
         }
 
         const v = unwrapOfferCache(offeredCache);
+        window._offerExpiresAt = v.offerExpiresAt ?? Date.now() + OFFER_MS;
         // ✅ compute time-left FIRST
         const msLeft = Math.max(0, (v.offerExpiresAt ?? 0) - Date.now());
         setAcceptButtonLabel(msLeft);
@@ -1031,10 +1027,6 @@ function subscribeQueue() {
         }
       }, 250);
     }
-
-    // Track for next onValue tick
-    lastOfferWasForMe = hasOfferNow;
-    lastOfferKeyForMe = offerKeyNow;
 
     // Track for next onValue tick
     lastOfferWasForMe = hasOfferNow;
@@ -1731,13 +1723,45 @@ function startOfferBeepLoop(maxMs = OFFER_MS) {
   playOfferArrivedBeep();
 
   offerBeepIntervalId = setInterval(() => {
-    const bgBoost = document.hidden ? 1.45 : 1.0;
+  const bgBoost = document.hidden ? 1.45 : 1.0;
+
+  // ✅ Calculate remaining time
+  const msLeft = Math.max(0, (window._offerExpiresAt ?? 0) - Date.now());
+
+  if (msLeft <= 1000) {
+    // 🔥 FINAL 1 second (strong + clear for iPhone)
+    playTone("offer", {
+      force: true,
+      allowNoFocus: true,
+
+      volumeMul: 1.6 * bgBoost,
+      pitchMul: 1.25,
+
+      attack: 0.01,
+      decay: 0.25,
+      dur: 0.35
+    });
+
+  } else if (msLeft <= 5000) {
+    // ⚠️ URGENT phase
+    playTone("offer", {
+      force: true,
+      allowNoFocus: true,
+
+      volumeMul: 1.3 * bgBoost,
+      pitchMul: 1.1
+    });
+
+  } else {
+    // 🙂 NORMAL phase
     playTone("offer", {
       force: true,
       allowNoFocus: true,
       volumeMul: bgBoost
     });
-  }, OFFER_BEEP_INTERVAL_MS);
+  }
+
+}, OFFER_BEEP_INTERVAL_MS);
 
   offerBeepStopTimeoutId = setTimeout(stopOfferBeepLoop, maxMs);
 }
@@ -1803,8 +1827,6 @@ async function ensureSignedIn() {
 // Driver heartbeat helpers
 // ============================
 
-
-
 async function expireOffersNow() {
   const snap = await get(queueRef);
   if (!snap.exists()) return;
@@ -1866,8 +1888,21 @@ dlog("BUILD:", BUILD);
 // DEBUG SWITCH
 // -----------------------------
 
-
 addUniversalAudioUnlock();
+document.addEventListener("click", () => {
+  try {
+    if (!audioCtx && typeof ensureAudioCtx === "function") {
+      ensureAudioCtx("first-user-click");
+    }
+
+    if (audioCtx && audioCtx.state !== "running") {
+      audioCtx.resume();
+    }
+  } catch (e) {
+    // ignore
+  }
+}, { once: true });
+
 // Auth first (fixes PERMISSION_DENIED if you set rules to auth != null)
 ensureSignedIn();
 updateSoundHint();
