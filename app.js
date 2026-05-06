@@ -119,6 +119,7 @@ let lastQueueSnapshot = {};
 let queueHealthTimer = null;
 let lastOfferSig = null; // key + startedAt
 let soundEnabled = true;
+let audioUnlocked = false;
 let suppressOfferBeep = false;
 
 // Audio
@@ -614,22 +615,24 @@ async function callNext() {
   setBusy(true);
 
   try {
-    const now = Date.now();
-
+    
     // 1) Expire any expired offers first
     await expireOffersNow();
-
+    const now = Date.now();
     // 2) Pull fresh queue
     const snap = await get(queueRef);
     const data = snap.exists() ? snap.val() : {};
     const entries = Object.entries(data);
 
     // 3) C3 rule: do NOT create a new offer if one is still active
-    const activeOffer = entries.find(([_, v]) =>
-      v &&
-      (v.status ?? "WAITING") === "OFFERED" &&
-      (v.offerExpiresAt ?? 0) > now
-    );
+    const activeOffer = entries.find(([_, v]) => {
+      if (!v) return false;
+
+      const status = (v.status ?? "WAITING").toUpperCase();
+      const expiresAt = Number(v.offerExpiresAt ?? 0);
+
+      return status === "OFFERED" && expiresAt > Date.now();
+    });
 
     if (activeOffer) {
       const [, v] = activeOffer;
@@ -845,6 +848,8 @@ function subscribeQueue() {
     const entries = Object.entries(data);
 
     const offer = findOfferForMe(data);
+    offeredCache = offer;
+    refreshAcceptUI();
 
     if (!offer) {
       stopOfferBeepLoop();
@@ -1198,6 +1203,10 @@ function _playOneBeep(p, opts = {}) {
  * playTone("expiring", { volumeMul: 1.2 })
  */
 function playTone(name, opts = {}) {
+   if (!audioUnlocked) {
+    console.log("🔇 Audio blocked (not unlocked yet)");
+    return false;
+   }
   const profile = TONE_PROFILES[name];
   if (!profile) return false;
 
@@ -1830,8 +1839,9 @@ async function ensureSignedIn() {
 async function expireOffersNow() {
   const snap = await get(queueRef);
   if (!snap.exists()) return;
-
   const now = Date.now();
+  // 2) Pull fresh queue
+  const snap = await get(queueRef);
   const entries = Object.entries(snap.val() || {});
   let bump = 0;
 
@@ -1939,14 +1949,12 @@ joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
 acceptBtn.onclick = acceptRide;
 
-
 testBeepBtn?.addEventListener("click", () => {
   console.log("🔔 Test Beep clicked");
-
+  audioUnlocked = true;
   // Make sure sound gating can't block the test
   soundEnabled = true;
   localStorage.setItem("htqs.soundEnabled", "true");
-
   // Wake/resume the real shared context
   ensureAudioNow("test-beep-click");
 
