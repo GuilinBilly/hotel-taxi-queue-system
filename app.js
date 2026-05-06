@@ -124,8 +124,6 @@ let suppressOfferBeep = false;
 
 // Audio
 let audioCtx = null;
-let audioUnlocked = false;
-
 
 // Single listener handle
 let unsubscribeQueue = null;
