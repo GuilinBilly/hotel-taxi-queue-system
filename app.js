@@ -1839,7 +1839,7 @@ async function expireOffersNow() {
   if (!snap.exists()) return;
   const now = Date.now();
   // 2) Pull fresh queue
-  const snap = await get(queueRef);
+  
   const entries = Object.entries(snap.val() || {});
   let bump = 0;
 
