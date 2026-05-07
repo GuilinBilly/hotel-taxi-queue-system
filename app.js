@@ -1969,24 +1969,22 @@ testBeepBtn?.addEventListener("click", () => {
 
   const unlocked = ensureAudioNow("test-beep-click");
 
-  setTimeout(() => {
-    const ok = playTone("offer", {
-      force: true,
-      allowNoFocus: true,
-      volumeMul: 1.8
-    });
+  const ok = playTone("offer", {
+  force: true,
+  allowNoFocus: true,
+  volumeMul: 1.8
+});
 
-    console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
+console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
 
-    if (!ok) {
-      console.warn("playTone failed — using hard fallback beep");
-      hardBeepFallback();
-    }
+if (!ok) {
+  console.warn("playTone failed — using hard fallback beep");
+  hardBeepFallback();
+}
 
-    if (typeof showToast === "function") {
-      showToast(unlocked ? "Sound enabled 🔊" : "Tap again to enable sound 🔊", "ok", 1800);
-    }
-  }, 80);
+if (typeof showToast === "function") {
+  showToast(unlocked ? "Sound enabled 🔊" : "Tap again to enable sound 🔇", "ok", 1800);
+}
 });
 
 console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
