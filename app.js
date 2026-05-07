@@ -1532,13 +1532,23 @@ function addUniversalAudioUnlock() {
 // Safari-safe: do everything "now" inside a user gesture (no await)
 function ensureAudioNow(reason = "") {
   try {
-    ensureAudioCtx(reason); // creates audioCtx if needed
-    if (audioCtx && audioCtx.state === "suspended") {
-      audioCtx.resume(); // DO NOT await (keeps gesture chain)
+    ensureAudioCtx(reason);
+
+    if (!audioCtx) return false;
+
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
     }
-    audioUnlocked = true; // mark unlocked (your app uses this flag)
+
+    audioUnlocked = true;
+    soundEnabled = true;
+    localStorage.setItem("htqs.soundEnabled", "true");
+
+    updateSoundHint?.();
+    return true;
   } catch (e) {
-    dwarn("ensureAudioNow failed:", e);
+    console.warn("ensureAudioNow failed:", e);
+    return false;
   }
 }
 function ensureAudioCtx(reason = "") {
@@ -1955,30 +1965,30 @@ leaveBtn.onclick = leaveQueue;
 acceptBtn.onclick = acceptRide;
 
 testBeepBtn?.addEventListener("click", () => {
-  console.log("🔔 Test Beep clicked");
-  audioUnlocked = true;
-  // Make sure sound gating can't block the test
-  soundEnabled = true;
-  localStorage.setItem("htqs.soundEnabled", "true");
-  // Wake/resume the real shared context
-  ensureAudioNow("test-beep-click");
+  console.log("🔔 Enable Sound / Test Beep clicked");
 
-  // Give Safari a tiny moment after resume
-  const ok = playTone("offer", {
-    force: true,
-    allowNoFocus: true,
-    volumeMul: 1.5,
-    delay: 0.03
-  });
+  const unlocked = ensureAudioNow("test-beep-click");
 
-  console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
+  setTimeout(() => {
+    const ok = playTone("offer", {
+      force: true,
+      allowNoFocus: true,
+      volumeMul: 1.8
+    });
 
-  // Safety fallback if normal tone truly fails
-  if (!ok) {
-    console.warn("playTone failed — using hard fallback beep");
-    hardBeepFallback();
-  }
+    console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
+
+    if (!ok) {
+      console.warn("playTone failed — using hard fallback beep");
+      hardBeepFallback();
+    }
+
+    if (typeof showToast === "function") {
+      showToast(unlocked ? "Sound enabled 🔊" : "Tap again to enable sound 🔊", "ok", 1800);
+    }
+  }, 80);
 });
+
 console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 
 callNextBtn.onclick = callNext;
