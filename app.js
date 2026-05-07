@@ -624,13 +624,20 @@ async function callNext() {
 
     // 3) C3 rule: do NOT create a new offer if one is still active
     const activeOffer = entries.find(([_, v]) => {
-      if (!v) return false;
+  if (!v) return false;
 
-      const status = (v.status ?? "WAITING").toUpperCase();
-      const expiresAt = Number(v.offerExpiresAt ?? 0);
+  const status = (v.status ?? "WAITING").toUpperCase();
+  const expiresAt = Number(v.offerExpiresAt ?? 0);
 
-      return status === "OFFERED" && expiresAt > Date.now();
-    });
+  const hasDriverInfo =
+    Boolean(v.name || v.driverName || v.plate || v.carColor);
+
+  return (
+    status === "OFFERED" &&
+    expiresAt > Date.now() &&
+    hasDriverInfo
+  );
+});
 
     if (activeOffer) {
       const [, v] = activeOffer;
