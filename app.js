@@ -118,8 +118,13 @@ let offerCountdownTimer = null;
 let lastQueueSnapshot = {};
 let queueHealthTimer = null;
 let lastOfferSig = null; // key + startedAt
-let soundEnabled = true;
 let audioUnlocked = false;
+let soundEnabled = true;
+// iPhone Safari fallback audio
+const fallbackBeep = new Audio("./beep.mp3");
+fallbackBeep.preload = "auto";
+fallbackBeep.volume = 1.0;
+
 let suppressOfferBeep = false;
 
 // Audio
@@ -1976,11 +1981,24 @@ testBeepBtn?.addEventListener("click", () => {
   console.log("🔔 Enable Sound / Test Beep clicked");
 
   const unlocked = ensureAudioNow("test-beep-click");
+  testBeepBtn?.addEventListener("click", () => {
+
+  console.log("🔔 Enable Sound / Test Beep clicked");
+
+  const unlocked = ensureAudioNow("test-beep-click");
+
+  // iPhone Safari MP3 fallback
+  fallbackBeep.currentTime = 0;
+  fallbackBeep.play().catch((err) => {
+    console.warn("fallbackBeep failed:", err);
+  });
 
   const ok = playTone("offer", {
-  force: true,
-  allowNoFocus: true,
-  volumeMul: 1.8
+    force: true,
+    allowNoFocus: true,
+    volumeMul: 1.8
+  });
+
 });
 
 console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
