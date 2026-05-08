@@ -789,6 +789,14 @@ async function resetDemo() {
 
     const keys = Object.keys(snap.val());
     await Promise.all(keys.map((k) => remove(ref(db, "queue/" + k))));
+    // Clear this device's saved driver session
+    sessionStorage.removeItem("htqs.driverKey");
+    localStorage.removeItem("htqs.soundEnabled");
+    
+    myDriverKey = null;
+    audioUnlocked = false;
+
+    console.log("🧹 Local device session cleared");
 
     offeredCache = null;
     stopOfferBeepLoop();
