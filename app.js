@@ -422,6 +422,31 @@ function unwrapOfferCache(offeredCache) {
 // =======================
 async function joinQueue() {
   if (isBusy) return;
+  // Validate saved driver session before joining
+if (myDriverKey) {
+  const existingSnap = await get(ref(db, "queue/" + myDriverKey));
+
+  if (!existingSnap.exists()) {
+    console.log("🧹 Removing stale local driver session");
+
+    sessionStorage.removeItem("htqs.driverKey");
+    myDriverKey = null;
+
+    stopDriverHeartbeat();
+
+    offeredCache = null;
+    lastOfferWasForMe = false;
+    lastOfferKeyForMe = null;
+    lastOfferSig = null;
+    suppressOfferBeep = false;
+
+    stopOfferBeepLoop();
+    setOfferPulse(false);
+
+    refreshJoinUI();
+    refreshAcceptUI();
+  }
+}
   setBusy(true, "Joining…");
   unlockAudio();
 
@@ -470,7 +495,7 @@ async function joinQueue() {
     }
 
     const joinedAt =
-      existing && status !== "LEFT" && existing.joinedAt != nullF
+      existing && status !== "LEFT" && existing.joinedAt != null
         ? existing.joinedAt
         : Date.now();
 
@@ -873,8 +898,7 @@ function subscribeQueue() {
       stopOfferBeepLoop();
     }
 
-
-    if (myDriverKey) {
+      if (myDriverKey) {
       const mine = data[myDriverKey];
       if (!mine || mine.status === "LEFT") {
         sessionStorage.removeItem("htqs.driverKey");
