@@ -101,6 +101,21 @@ body{
   opacity: 0;
   pointer-events: none;
 }
+.sound-banner {
+  max-width: 520px;
+  margin: 12px auto;
+  padding: 12px 18px;
+  text-align: center;
+  border-radius: 12px;
+  background: #fff3cd;
+  border: 1px solid #f0d98c;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
 
 .offer-alert-title {
   font-size: 0.82rem;

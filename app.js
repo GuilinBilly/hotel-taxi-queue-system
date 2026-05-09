@@ -1996,10 +1996,36 @@ setInterval(expireOffersNow, 1000);
 
 // Buttons
 const testBeepBtn = document.getElementById("testBeepBtn");
-
+const soundUnlockBanner = document.getElementById("soundUnlockBanner");
 joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
 acceptBtn.onclick = acceptRide;
+
+function showSoundUnlockBanner() {
+  if (!soundUnlockBanner) return;
+
+  if (!audioUnlocked && soundEnabled) {
+    soundUnlockBanner.classList.remove("hidden");
+  } else {
+    soundUnlockBanner.classList.add("hidden");
+  }
+}
+
+soundUnlockBanner?.addEventListener("click", () => {
+  ensureAudioNow("sound-banner-click");
+
+  fallbackBeep.currentTime = 0;
+  fallbackBeep.play().catch(() => {});
+
+  playTone("offer", {
+    force: true,
+    allowNoFocus: true,
+    volumeMul: 1.5
+  });
+
+  soundUnlockBanner.classList.add("hidden");
+  showToast?.("Sound enabled 🔔", "ok", 1800);
+});
 
 testBeepBtn?.addEventListener("click", () => {
   console.log("🔔 Enable Sound / Test Beep clicked");
@@ -2049,7 +2075,7 @@ driverPlateInput.oninput = refreshAcceptUI;
 lockDriverInputs(!!myDriverKey);
 updateEmptyState();
 refreshAcceptUI();
-
+showSoundUnlockBanner();
 window.HTQS = {
   state: () => ({
     isConnected,
