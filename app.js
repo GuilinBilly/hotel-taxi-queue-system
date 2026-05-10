@@ -483,7 +483,7 @@ if (myDriverKey) {
       refreshAcceptUI();
 
       // Auto-rejoin silently + nicer message
-      showToast("Session restored after refresh 🔄", "ok", 1800);
+      showToast("You are already in the queue ✅", "ok", 1800);
       console.log("joinQueue restored existing active driver", driverKey, status);
 
       return;
