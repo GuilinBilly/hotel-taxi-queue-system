@@ -699,6 +699,7 @@ async function callNext() {
       lastOfferedAt: now,        // C3: helpful for UI/debug
       lastOfferedBy: "doorman",  // optional
       offerBeepCount: 0,
+      lastSeenAt: Date.now(),
     });
 
     if (typeof showToast === "function") showToast("Offer sent ✅", "ok", 1500);
@@ -760,6 +761,7 @@ async function acceptRide() {
     await update(ref(db, "queue/" + key), {
       status: "ACCEPTED",
       acceptedAt: Date.now(),
+      lastSeenAt: Date.now(),
     });
     hideOfferAlert();
     updateAcceptButtonVisual(null);
