@@ -473,6 +473,17 @@ if (myDriverKey) {
 
     const isActive = existing && status !== "LEFT";
 
+    const STALE_MS = 10 * 60 * 1000; // 10 minutes
+    const isStale =
+      existing &&
+      existing.lastSeenAt &&
+      Date.now() - existing.lastSeenAt > STALE_MS;
+
+     if (isStale) {
+      await remove(driverRef);
+      sessionStorage.removeItem("htqs.driverKey");
+     }
+
     // ✅ If record is already active, recover state and do NOT overwrite
     if (isActive) {
       myDriverKey = driverKey;
