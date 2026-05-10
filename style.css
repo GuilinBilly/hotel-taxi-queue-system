@@ -102,17 +102,21 @@ body{
   pointer-events: none;
 }
 
-  .sound-unlock-banner {
+.sound-unlock-banner {
+  display: block;
   max-width: 640px;
   margin: 16px auto 24px;
   padding: 14px 18px;
-}
   text-align: center;
   border-radius: 12px;
   background: #fff3cd;
   border: 1px solid #f0d98c;
   font-weight: 700;
   cursor: pointer;
+}
+
+.sound-unlock-banner.hidden {
+  display: none;
 }
 
 .hidden {
@@ -524,6 +528,7 @@ body{
   color: #333;
   background: #fff3cd;
   border: 1px solid #ffe69c;
+  
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }

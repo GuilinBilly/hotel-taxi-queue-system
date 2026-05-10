@@ -2005,9 +2005,9 @@ function showSoundUnlockBanner() {
   if (!soundUnlockBanner) return;
 
   if (!audioUnlocked && soundEnabled) {
-    soundUnlockBanner.classList.remove("hidden");
+    soundUnlockBanner.style.display = "block";
   } else {
-    soundUnlockBanner.classList.add("hidden");
+    soundUnlockBanner.style.display = "none";
   }
 }
 
@@ -2023,7 +2023,7 @@ soundUnlockBanner?.addEventListener("click", () => {
     volumeMul: 1.5
   });
 
-  soundUnlockBanner.classList.add("hidden");
+  soundUnlockBanner.style.display = "none";
   showToast?.("Sound enabled 🔔", "ok", 1800);
 });
 
