@@ -1690,7 +1690,10 @@ function hardBeepFallback() {
 }
 
 function unlockAudio() {
-  if (audioUnlocked) return;
+  if (audioUnlocked) {
+  soundUnlockBanner.style.display = "none";
+  return;
+  }
 
   ensureAudioCtx();
   if (!audioCtx) return;
@@ -2006,6 +2009,7 @@ function showSoundUnlockBanner() {
 }
 
 soundUnlockBanner?.addEventListener("click", () => {
+
   ensureAudioNow("sound-banner-click");
 
   fallbackBeep.currentTime = 0;
@@ -2021,12 +2025,24 @@ soundUnlockBanner?.addEventListener("click", () => {
   showToast?.("Sound enabled 🔔", "ok", 1800);
 });
 
+// Auto unlock audio on first user interaction anywhere
+ document.addEventListener("pointerdown", async () => {
+
+  // already unlocked → do nothing
+  if (audioUnlocked) return;
+
+  await ensureAudioNow("first-user-tap");
+
+  fallbackBeep.currentTime = 0;
+  fallbackBeep.play().catch(() => {});
+
+  soundUnlockBanner.style.display = "none";
+
+  showToast?.("🔔 Alert sounds enabled", "ok", 1800);
+
+}, { once: true });
+
 testBeepBtn?.addEventListener("click", () => {
-  console.log("🔔 Enable Sound / Test Beep clicked");
-
-  const unlocked = ensureAudioNow("test-beep-click");
-  testBeepBtn?.addEventListener("click", () => {
-
   console.log("🔔 Enable Sound / Test Beep clicked");
 
   const unlocked = ensureAudioNow("test-beep-click");
@@ -2036,24 +2052,25 @@ testBeepBtn?.addEventListener("click", () => {
   fallbackBeep.play().catch((err) => {
     console.warn("fallbackBeep failed:", err);
   });
+
   const ok = playTone("offer", {
     force: true,
     allowNoFocus: true,
     volumeMul: 1.8
   });
 
-});
+  //console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
 
-console.log("playTone('offer') returned:", ok, "ctx:", audioCtx?.state);
+  if (!ok) {
+    console.warn("playTone failed — using hard fallback beep");
+    hardBeepFallback();
+  }
 
-if (!ok) {
-  console.warn("playTone failed — using hard fallback beep");
-  hardBeepFallback();
-}
-
-if (typeof showToast === "function") {
-  showToast(unlocked ? "Sound enabled 🔊" : "Tap again to enable sound 🔇", "ok", 1800);
-}
+  showToast?.(
+    unlocked ? "Sound enabled 🔔" : "Tap again to enable sound 🔕",
+    "ok",
+    1800
+  );
 });
 
 console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
