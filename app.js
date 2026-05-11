@@ -648,7 +648,7 @@ async function callNext(isAuto = false) {
   if (isBusy) return;
 
   // PIN check first (don’t lock UI if PIN is wrong)
-  if (!auto && doormanPinInput.value.trim() !== DOORMAN_PIN) {
+  if (!isAuto && doormanPinInput.value.trim() !== DOORMAN_PIN) {
     if (typeof showToast === "function") showToast("Wrong PIN", "err", 1800);
     else alert("Wrong PIN");
     return;
