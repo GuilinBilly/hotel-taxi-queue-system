@@ -716,7 +716,7 @@ async function callNext() {
       offerBeepCount: 0,
       lastSeenAt: Date.now(),
     });
-      await refreshQueueUI?.();
+      
       refreshAcceptUI?.();  
 
     if (typeof showToast === "function") showToast("Offer sent ✅", "ok", 1500);
