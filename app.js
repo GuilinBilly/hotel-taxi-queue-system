@@ -468,21 +468,25 @@ if (myDriverKey) {
     const driverRef = ref(db, "queue/" + driverKey);
 
     const existingSnap = await get(driverRef);
-    const existing = existingSnap.exists() ? existingSnap.val() : null;
-    const status = (existing?.status ?? "").toUpperCase();
+    let existing = existingSnap.exists() ? existingSnap.val() : null;
 
-    const isActive = existing && status !== "LEFT";
-
+    let status = (existing?.status ?? "").toUpperCase();
+    let isActive = existing && status !== "LEFT";
+    
     const STALE_MS = 10 * 60 * 1000; // 10 minutes
     const isStale =
-      existing &&
-      existing.lastSeenAt &&
-      Date.now() - existing.lastSeenAt > STALE_MS;
+    existing &&
+    typeof existing.lastSeenAt === "number" &&
+    Date.now() - existing.lastSeenAt > STALE_MS;
 
-     if (isStale) {
-      await remove(driverRef);
-      sessionStorage.removeItem("htqs.driverKey");
-     }
+    if (isStale) {
+     await remove(driverRef);
+     sessionStorage.removeItem("htqs.driverKey");
+
+     existing = null;
+     status = "";
+     isActive = false;
+    }
 
     // ✅ If record is already active, recover state and do NOT overwrite
     if (isActive) {
