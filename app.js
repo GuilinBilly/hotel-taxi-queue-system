@@ -636,7 +636,7 @@ async function leaveQueue() {
     setBusy(false);
   }
 }
-async function callNext() {
+async function callNext(auto = false) {
   // Guard #1 — offline
   if (!isConnected) {
     if (typeof showToast === "function") showToast("Offline — try again in a moment", "warn", 2000);
@@ -648,7 +648,7 @@ async function callNext() {
   if (isBusy) return;
 
   // PIN check first (don’t lock UI if PIN is wrong)
-  if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
+  if (!auto && doormanPinInput.value.trim() !== DOORMAN_PIN) {
     if (typeof showToast === "function") showToast("Wrong PIN", "err", 1800);
     else alert("Wrong PIN");
     return;
@@ -1934,7 +1934,14 @@ async function expireOffersNow() {
 
         // keep fairness: put them at end (your original behavior)
         joinedAt: now + bump++,
-      });
+        });
+        // Auto-call next waiting taxi
+
+        setTimeout(() => {
+
+        callNext(true);
+
+        }, 500);
     })
   );
 }
