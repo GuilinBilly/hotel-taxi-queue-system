@@ -636,7 +636,7 @@ async function leaveQueue() {
     setBusy(false);
   }
 }
-async function callNext(auto = false) {
+async function callNext(isAuto = false) {
   // Guard #1 — offline
   if (!isConnected) {
     if (typeof showToast === "function") showToast("Offline — try again in a moment", "warn", 2000);
