@@ -1729,7 +1729,6 @@ function unlockAudio() {
     });
 }
 
-
 function canVibrate() {
   return typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
 }
