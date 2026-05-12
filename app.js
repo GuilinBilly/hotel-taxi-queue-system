@@ -88,7 +88,7 @@ const queueList = document.getElementById("queueList");
 const calledBox = document.getElementById("calledBox");
 const queueHealthBox = document.getElementById("queueHealthBox");
 const offerInfo = document.getElementById("offerInfo"); // optional
-
+const queuePositionEl = document.getElementById("queuePosition");
 const offerAlertBox = document.getElementById("offerAlertBox");
 const offerAlertText = document.getElementById("offerAlertText");
 const offerAlertCountdown = document.getElementById("offerAlertCountdown");
@@ -908,6 +908,42 @@ function subscribeQueue() {
     updateQueueHealth(data);
     lastQueueSnapshot = data;
     const entries = Object.entries(data);
+    function updateQueuePosition(entries) {
+  if (!queuePositionEl || !myDriverKey) {
+    if (queuePositionEl) queuePositionEl.textContent = "";
+    return;
+  }
+
+  const waitingDrivers = entries
+    .filter(([_, v]) => v && (v.status ?? "WAITING").toUpperCase() === "WAITING")
+    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+
+  const offeredDriver = entries.find(([key, v]) =>
+    key === myDriverKey &&
+    v &&
+    (v.status ?? "").toUpperCase() === "OFFERED"
+  );
+
+  if (offeredDriver) {
+    queuePositionEl.textContent = "You are being offered now.";
+    return;
+  }
+
+  const index = waitingDrivers.findIndex(([key]) => key === myDriverKey);
+
+  if (index === -1) {
+    queuePositionEl.textContent = "";
+    return;
+  }
+
+  if (index === 0) {
+    queuePositionEl.textContent = "You are #1 in queue.";
+  } else {
+    queuePositionEl.textContent =
+  `${index} driver${index === 1 ? "" : "s"} ahead of you.`;
+  }
+}
+    updateQueuePosition(entries);
 
     const offer = findOfferForMe(data);
     offeredCache = offer;
