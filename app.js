@@ -1908,6 +1908,8 @@ async function expireOffersNow() {
   const snap = await get(queueRef);
   if (!snap.exists()) return;
   const now = Date.now();
+  console.log("expireOffersNow running", new Date(now).toLocaleTimeString());
+  
   // 2) Pull fresh queue
   
   const entries = Object.entries(snap.val() || {});
@@ -2013,8 +2015,8 @@ if (!queueHealthTimer) {
   }, 1000);
 }
 
-
 // Expire loop
+console.log("Starting expire interval");
 setInterval(expireOffersNow, 1000);
 
 // Buttons
