@@ -1452,6 +1452,14 @@ function wireConnectionBadge() {
       netStatus.textContent = "Online";
       netStatus.className = "netStatus online";
       dlog("RTDB connected");
+
+      // Re-sync UI after reconnect / phone unlock
+      setTimeout(() => {
+        refreshJoinUI();
+        refreshJoinLeaveUI?.();
+        refreshAcceptUI();
+        updateQueuePosition?.(Object.entries(lastQueueSnapshot || {}));
+      }, 300);
     } else {
       netStatus.textContent = "Reconnecting…";
       netStatus.className = "netStatus offline";
