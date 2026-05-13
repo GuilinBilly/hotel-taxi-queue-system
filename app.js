@@ -2008,6 +2008,33 @@ window.addEventListener("touchstart", () => {
   updateSoundHint();
 }, { once: true, passive: true });
 
+function resyncAfterMobileWake() {
+  setTimeout(() => {
+    refreshJoinUI?.();
+    refreshJoinLeaveUI?.();
+    refreshAcceptUI?.();
+    updateQueuePosition?.(Object.entries(lastQueueSnapshot || {}));
+
+    // Re-bind button clicks after mobile wake
+    joinBtn.onclick = joinQueue;
+    leaveBtn.onclick = leaveQueue;
+    acceptBtn.onclick = acceptRide;
+    callNextBtn.onclick = callNext;
+    completeBtn.onclick = completePickup;
+    resetBtn.onclick = resetDemo;
+  }, 500);
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    resyncAfterMobileWake();
+  }
+});
+
+window.addEventListener("pageshow", () => {
+  resyncAfterMobileWake();
+});
+
 // -----------------------------
 // BOOT
 // -----------------------------
