@@ -2016,9 +2016,12 @@ function resyncAfterMobileWake() {
     }
 
     refreshJoinUI?.();
-    refreshJoinUI();
+    refreshJoinUI()
     refreshAcceptUI?.();
-    updateQueuePosition?.(Object.entries(lastQueueSnapshot || {}));
+    
+    if (typeof updateQueuePosition === "function") {
+      updateQueuePosition(Object.entries(lastQueueSnapshot || {}));
+    }
 
     // Re-bind button clicks after mobile wake
     joinBtn.onclick = joinQueue;
