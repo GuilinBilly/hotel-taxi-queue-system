@@ -1456,9 +1456,10 @@ function wireConnectionBadge() {
       // Re-sync UI after reconnect / phone unlock
       setTimeout(() => {
         refreshJoinUI();
-        refreshJoinUI();
         refreshAcceptUI();
-        updateQueuePosition?.(Object.entries(lastQueueSnapshot || {}));
+        if (typeof updateQueuePosition === "function") {
+          updateQueuePosition(Object.entries(lastQueueSnapshot || {}));
+        }
       }, 300);
     } else {
       netStatus.textContent = "Reconnecting…";
