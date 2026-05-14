@@ -2016,7 +2016,7 @@ function resyncAfterMobileWake() {
     }
 
     refreshJoinUI?.();
-    refreshJoinLeaveUI?.();
+    refreshJoinUI();
     refreshAcceptUI?.();
     updateQueuePosition?.(Object.entries(lastQueueSnapshot || {}));
 
