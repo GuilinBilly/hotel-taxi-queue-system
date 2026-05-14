@@ -1621,8 +1621,7 @@ function addUniversalAudioUnlock() {
     window.addEventListener("mousedown", handler, opts);
     window.addEventListener("keydown", handler, opts);
   }
-
-  install();
+    install();
 }
 // Safari-safe: do everything "now" inside a user gesture (no await)
 function ensureAudioNow(reason = "") {
