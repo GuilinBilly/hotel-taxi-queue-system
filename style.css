@@ -334,6 +334,12 @@ body{
   height:18px;
 }
 
+.muted{
+  color: #666;
+  font-size: 14px;
+  margin-top: 8px;
+  line
+
 .btn:hover{ filter: brightness(0.97); }
 .btn:disabled{
   opacity: 0.45;

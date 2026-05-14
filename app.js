@@ -2009,7 +2009,12 @@ window.addEventListener("touchstart", () => {
 }, { once: true, passive: true });
 
 function resyncAfterMobileWake() {
-  setTimeout(() => {
+    setTimeout(() => {
+    const savedKey = sessionStorage.getItem("htqs.driverKey");
+    if (!myDriverKey && savedKey) {
+      myDriverKey = savedKey;
+    }
+
     refreshJoinUI?.();
     refreshJoinLeaveUI?.();
     refreshAcceptUI?.();
@@ -2027,8 +2032,8 @@ function resyncAfterMobileWake() {
 
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
-    resyncAfterMobileWake();
-  }
+   location.reload();
+}
 });
 
 window.addEventListener("pageshow", () => {
