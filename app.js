@@ -243,8 +243,9 @@ document.addEventListener("visibilitychange", async () => {
     }
   }
 });
+
 // Extra protection: when window regains focus (after sleep)
-window.addEventListener("focus", async () => {
+  window.addEventListener("focus", async () => {
   dlog("Window focus — forcing audio resume");
   await ensureAudioReady("focus-wake", 2000, true);
   try {
@@ -1499,24 +1500,31 @@ function canJoinNow() {
   return true;
 }
 
-// Enable/disable Join button based on input state + other conditions
+// Enable/disable Join + Leave buttons based on current state
 function refreshJoinUI() {
+  console.log("refreshJoinUI myDriverKey:", myDriverKey);
   const joinBtn = document.getElementById("joinBtn");
-  if (!joinBtn) return;
+  const leaveBtn = document.getElementById("leaveBtn");
 
-  // Don't enable Join while busy
+  if (!joinBtn || !leaveBtn) return;
+
+  // Busy state
   if (isBusy) {
     joinBtn.disabled = true;
+    leaveBtn.disabled = true;
     return;
   }
 
-  // If already joined (myDriverKey exists), Join should be disabled
+  // Driver already joined
   if (myDriverKey) {
     joinBtn.disabled = true;
+    leaveBtn.disabled = false;
     return;
   }
 
+  // Driver not joined
   joinBtn.disabled = !canJoinNow();
+  leaveBtn.disabled = true;
 }
 
 // Save inputs to localStorage
@@ -2009,6 +2017,7 @@ window.addEventListener("touchstart", () => {
 }, { once: true, passive: true });
 
 function resyncAfterMobileWake() {
+    console.log("📱 resyncAfterMobileWake running", myDriverKey, sessionStorage.getItem("htqs.driverKey"));
     setTimeout(() => {
     const savedKey = sessionStorage.getItem("htqs.driverKey");
     if (!myDriverKey && savedKey) {
@@ -2040,6 +2049,17 @@ document.addEventListener("visibilitychange", () => {
 });
 
 window.addEventListener("pageshow", () => {
+  resyncAfterMobileWake();
+});
+window.addEventListener("focus", () => {
+  resyncAfterMobileWake();
+});
+
+window.addEventListener("touchstart", () => {
+  resyncAfterMobileWake();
+}, { passive: true });
+
+window.addEventListener("pointerdown", () => {
   resyncAfterMobileWake();
 });
 
