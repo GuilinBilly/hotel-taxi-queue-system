@@ -107,7 +107,7 @@ let offerBeepCount = 0;
 let urgentBeepIntervalId = null;
 let urgentDoublePulseActive = false;
 let urgentSecondPulseTimeoutId = null;
-let myDriverKey = sessionStorage.getItem("htqs.driverKey") || null;
+let myDriverKey = localStorage.getItem("htqs.driverKey") || null;
 let driverHeartbeatId = null;
 let offeredCache = null;
 
@@ -430,7 +430,7 @@ if (myDriverKey) {
   if (!existingSnap.exists()) {
     console.log("🧹 Removing stale local driver session");
 
-    sessionStorage.removeItem("htqs.driverKey");
+    localStorage.removeItem("htqs.driverKey");
     myDriverKey = null;
 
     stopDriverHeartbeat();
@@ -482,7 +482,7 @@ if (myDriverKey) {
 
     if (isStale) {
      await remove(driverRef);
-     sessionStorage.removeItem("htqs.driverKey");
+     localStorage.removeItem("htqs.driverKey");
 
      existing = null;
      status = "";
@@ -492,7 +492,7 @@ if (myDriverKey) {
     // ✅ If record is already active, recover state and do NOT overwrite
     if (isActive) {
       myDriverKey = driverKey;
-      sessionStorage.setItem("htqs.driverKey", driverKey);
+      localStorage.setItem("htqs.driverKey", driverKey);
 
       lockDriverInputs(true);
       refreshJoinUI();
@@ -528,7 +528,7 @@ if (myDriverKey) {
     });
 
     myDriverKey = driverKey;
-    sessionStorage.setItem("htqs.driverKey", driverKey);
+    localStorage.setItem("htqs.driverKey", driverKey);
     startDriverHeartbeat();
     lockDriverInputs(true);
     refreshJoinUI();
@@ -620,7 +620,7 @@ async function leaveQueue() {
     hideOfferAlert();
     updateAcceptButtonVisual(null);
     setAcceptButtonLabel(null);
-    sessionStorage.removeItem("htqs.driverKey");
+    localStorage.removeItem("htqs.driverKey");
     stopDriverHeartbeat();
     myDriverKey = null;
 
@@ -840,7 +840,7 @@ async function resetDemo() {
     const keys = Object.keys(snap.val());
     await Promise.all(keys.map((k) => remove(ref(db, "queue/" + k))));
     // Clear this device's saved driver session
-    sessionStorage.removeItem("htqs.driverKey");
+    localStorage.removeItem("htqs.driverKey");
     localStorage.removeItem("htqs.soundEnabled");
     
     myDriverKey = null;
@@ -893,7 +893,7 @@ function subscribeQueue() {
 
       // ✅ ADD THIS: if queue is empty, nobody is “joined”
       if (myDriverKey) {
-        sessionStorage.removeItem("htqs.driverKey");
+        localStorage.removeItem("htqs.driverKey");
         myDriverKey = null;
         lockDriverInputs(false);
         refreshJoinUI();
@@ -957,7 +957,7 @@ function subscribeQueue() {
       if (myDriverKey) {
       const mine = data[myDriverKey];
       if (!mine || mine.status === "LEFT") {
-        sessionStorage.removeItem("htqs.driverKey");
+        localStorage.removeItem("htqs.driverKey");
         myDriverKey = null;
 
         stopDriverHeartbeat();
@@ -2017,9 +2017,9 @@ window.addEventListener("touchstart", () => {
 }, { once: true, passive: true });
 
 function resyncAfterMobileWake() {
-    console.log("📱 resyncAfterMobileWake running", myDriverKey, sessionStorage.getItem("htqs.driverKey"));
+    console.log("📱 resyncAfterMobileWake running", myDriverKey, localStorage.getItem("htqs.driverKey"));
     setTimeout(() => {
-    const savedKey = sessionStorage.getItem("htqs.driverKey");
+    const savedKey = localStorage.getItem("htqs.driverKey");
     if (!myDriverKey && savedKey) {
       myDriverKey = savedKey;
     }
