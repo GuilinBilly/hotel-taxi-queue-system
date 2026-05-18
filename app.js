@@ -428,7 +428,7 @@ if (myDriverKey) {
   const existingSnap = await get(ref(db, "queue/" + myDriverKey));
 
   if (!existingSnap.exists()) {
-    console.log("🧹 Removing stale local driver session");
+    //console.log("🧹 Removing stale local driver session");
 
     localStorage.removeItem("htqs.driverKey");
     myDriverKey = null;
@@ -500,7 +500,7 @@ if (myDriverKey) {
 
       // Auto-rejoin silently + nicer message
       showToast("You are already in the queue ✅", "ok", 1800);
-      console.log("joinQueue restored existing active driver", driverKey, status);
+      //console.log("joinQueue restored existing active driver", driverKey, status);
 
       return;
     }
@@ -536,7 +536,7 @@ if (myDriverKey) {
     // Mark this driver stale if device/tab disconnects unexpectedly
     try {
       await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).set(0);
-      console.log("onDisconnect stale-marker armed for", myDriverKey);
+      //console.log("onDisconnect stale-marker armed for", myDriverKey);
     } catch (e) {
       console.warn("Failed to arm onDisconnect stale-marker for", myDriverKey, e);
     }
@@ -612,7 +612,7 @@ async function leaveQueue() {
     }
     try {
       await onDisconnect(ref(db, `queue/${myDriverKey}/lastSeenAt`)).cancel();
-      console.log("onDisconnect stale-marker canceled for", myDriverKey);
+      //console.log("onDisconnect stale-marker canceled for", myDriverKey);
     } catch (e) {
       console.warn("Failed to cancel onDisconnect stale-marker for", myDriverKey, e);
     }
@@ -846,7 +846,7 @@ async function resetDemo() {
     myDriverKey = null;
     audioUnlocked = false;
 
-    console.log("🧹 Local device session cleared");
+    //console.log("🧹 Local device session cleared");
 
     offeredCache = null;
     stopOfferBeepLoop();
@@ -1502,7 +1502,7 @@ function canJoinNow() {
 
 // Enable/disable Join + Leave buttons based on current state
 function refreshJoinUI() {
-  console.log("refreshJoinUI myDriverKey:", myDriverKey);
+  //console.log("refreshJoinUI myDriverKey:", myDriverKey);
   const joinBtn = document.getElementById("joinBtn");
   const leaveBtn = document.getElementById("leaveBtn");
 
@@ -1515,12 +1515,23 @@ function refreshJoinUI() {
     return;
   }
 
-  // Driver already joined
-  if (myDriverKey) {
-    joinBtn.disabled = true;
-    leaveBtn.disabled = false;
-    return;
-  }
+  // Driver already joined only if still exists in Live Queue
+const queueHasMe =
+  myDriverKey &&
+  lastQueueSnapshot &&
+  Object.prototype.hasOwnProperty.call(lastQueueSnapshot, myDriverKey);
+
+if (queueHasMe) {
+  joinBtn.disabled = true;
+  leaveBtn.disabled = false;
+  return;
+}
+
+// Clear stale local driver session
+if (myDriverKey && !queueHasMe) {
+  myDriverKey = null;
+  localStorage.removeItem("htqs.driverKey");
+}
 
   // Driver not joined
   joinBtn.disabled = !canJoinNow();
@@ -2017,7 +2028,7 @@ window.addEventListener("touchstart", () => {
 }, { once: true, passive: true });
 
 function resyncAfterMobileWake() {
-    console.log("📱 resyncAfterMobileWake running", myDriverKey, localStorage.getItem("htqs.driverKey"));
+    //console.log("📱 resyncAfterMobileWake running", myDriverKey, localStorage.getItem("htqs.driverKey"));
     setTimeout(() => {
     const savedKey = localStorage.getItem("htqs.driverKey");
     if (!myDriverKey && savedKey) {
