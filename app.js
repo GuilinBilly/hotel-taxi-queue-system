@@ -2168,7 +2168,7 @@ soundUnlockBanner?.addEventListener("click", () => {
 
 }, { once: true });
 
-testBeepBtn?.addEventListener("click", () => {
+  testBeepBtn?.addEventListener("click", () => {
   console.log("🔔 Enable Sound / Test Beep clicked");
 
   const unlocked = ensureAudioNow("test-beep-click");
