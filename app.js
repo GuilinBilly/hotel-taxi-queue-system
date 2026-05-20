@@ -806,7 +806,7 @@ async function completePickup() {
 
   try {
     stopOfferBeepLoop();
-    stopUrgentBeepLoop?.();
+    if (typeof stopUrgentBeepLoop === "function") stopUrgentBeepLoop();
     hideOfferAlert?.();
 
     if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
@@ -843,7 +843,7 @@ async function completePickup() {
     calledBox.textContent = "";
 
     stopOfferBeepLoop();
-    stopUrgentBeepLoop?.();
+    if (typeof stopUrgentBeepLoop === "function") stopUrgentBeepLoop();
     hideOfferAlert?.();
     refreshAcceptUI();
     refreshJoinUI();
