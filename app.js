@@ -806,16 +806,49 @@ async function completePickup() {
 
   try {
     stopOfferBeepLoop();
+    stopUrgentBeepLoop?.();
+    hideOfferAlert?.();
 
-    if (doormanPinInput.value.trim() !== DOORMAN_PIN) return alert("Wrong PIN");
+    if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
+      alert("Wrong PIN");
+      return;
+    }
 
     const snap = await get(queueRef);
-    if (!snap.exists()) return;
+    if (!snap.exists()) {
+      offeredCache = null;
+      calledBox.textContent = "";
+      refreshAcceptUI();
+      refreshJoinUI();
+      updateEmptyState?.();
+      return;
+    }
 
-    const accepted = Object.entries(snap.val()).find(([_, v]) => v.status === "ACCEPTED");
-    if (!accepted) return alert("No ACCEPTED ride to complete.");
+    const accepted = Object.entries(snap.val()).find(
+      ([_, v]) => v && v.status === "ACCEPTED"
+    );
+
+    if (!accepted) {
+      alert("No ACCEPTED ride to complete.");
+      return;
+    }
 
     await remove(ref(db, "queue/" + accepted[0]));
+
+    offeredCache = null;
+    lastOfferWasForMe = false;
+    lastOfferKeyForMe = null;
+    lastOfferSig = null;
+    suppressOfferBeep = false;
+    calledBox.textContent = "";
+
+    stopOfferBeepLoop();
+    stopUrgentBeepLoop?.();
+    hideOfferAlert?.();
+    refreshAcceptUI();
+    refreshJoinUI();
+    updateEmptyState?.();
+
   } finally {
     setBusy(false);
   }
@@ -908,6 +941,7 @@ function subscribeQueue() {
     const data = snap.val() || {};
     updateQueueHealth(data);
     lastQueueSnapshot = data;
+    refreshJoinUI();
     const entries = Object.entries(data);
     function updateQueuePosition(entries) {
   if (!queuePositionEl || !myDriverKey) {
@@ -978,6 +1012,7 @@ function subscribeQueue() {
         updateEmptyState();
       }
     }
+       refreshJoinUI();
     // Render list
     queueList.innerHTML = "";
     calledBox.textContent = "";
@@ -1502,38 +1537,23 @@ function canJoinNow() {
 
 // Enable/disable Join + Leave buttons based on current state
 function refreshJoinUI() {
-  //console.log("refreshJoinUI myDriverKey:", myDriverKey);
   const joinBtn = document.getElementById("joinBtn");
   const leaveBtn = document.getElementById("leaveBtn");
 
   if (!joinBtn || !leaveBtn) return;
 
-  // Busy state
   if (isBusy) {
     joinBtn.disabled = true;
     leaveBtn.disabled = true;
     return;
   }
 
-  // Driver already joined only if still exists in Live Queue
-const queueHasMe =
-  myDriverKey &&
-  lastQueueSnapshot &&
-  Object.prototype.hasOwnProperty.call(lastQueueSnapshot, myDriverKey);
+  if (myDriverKey) {
+    joinBtn.disabled = true;
+    leaveBtn.disabled = false;
+    return;
+  }
 
-if (queueHasMe) {
-  joinBtn.disabled = true;
-  leaveBtn.disabled = false;
-  return;
-}
-
-// Clear stale local driver session
-if (myDriverKey && !queueHasMe) {
-  myDriverKey = null;
-  localStorage.removeItem("htqs.driverKey");
-}
-
-  // Driver not joined
   joinBtn.disabled = !canJoinNow();
   leaveBtn.disabled = true;
 }
@@ -2050,13 +2070,13 @@ function resyncAfterMobileWake() {
     callNextBtn.onclick = callNext;
     completeBtn.onclick = completePickup;
     resetBtn.onclick = resetDemo;
-  }, 500);
+  }, 1500);
 }
 
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) {
-   location.reload();
-}
+    resyncAfterMobileWake();
+  }
 });
 
 window.addEventListener("pageshow", () => {
