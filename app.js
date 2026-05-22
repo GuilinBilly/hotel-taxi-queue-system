@@ -575,6 +575,7 @@ function startDriverHeartbeat() {
   }).catch((e) => {
     console.warn("Heartbeat initial write failed:", e);
   });
+  
   // Then keep updating every 15 seconds
   driverHeartbeatId = setInterval(() => {
 
