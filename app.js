@@ -944,6 +944,7 @@ function subscribeQueue() {
     lastQueueSnapshot = data;
     refreshJoinUI();
     const entries = Object.entries(data);
+
     function updateQueuePosition(entries) {
   if (!queuePositionEl || !myDriverKey) {
     if (queuePositionEl) queuePositionEl.textContent = "";
@@ -1037,11 +1038,22 @@ function subscribeQueue() {
       const driverLabel = `${safeName} ${safeColor} ${safePlate}`.replace(/\s+/g, " ").trim();
 
       li.classList.add("queue-item", `status-${status.toLowerCase()}`);
+      let badgeText = status;
+
+      if (status === "OFFERED") {
+         const secs = Math.max(
+         0,
+         Math.ceil(((v.offerExpiresAt ?? 0) - Date.now()) / 1000)
+      );
+
+       badgeText = `OFFERED (${secs}s)`;
+      }
+
       li.innerHTML = `
-    <span class="pos">${i + 1}.</span>
-    <span class="driver">${driverLabel}</span>
-    <span class="badge">${status}</span>
-  `;
+        <span class="pos">${i + 1}.</span>
+        <span class="driver">${driverLabel}</span>
+        <span class="badge">${badgeText}</span>
+`     ;
       queueList.appendChild(li);
     });
 
@@ -2139,6 +2151,14 @@ updateMuteIndicator();
 wireSmartInputs();
 refreshJoinUI(); // optional but good
 subscribeQueue();
+
+// Refresh local countdown UI every second
+setInterval(() => {
+  if (typeof refreshQueueCountdowns === "function") {
+    refreshQueueCountdowns();
+  }
+}, 1000);
+
 if (!queueHealthTimer) {
   queueHealthTimer = setInterval(() => {
     updateQueueHealth(lastQueueSnapshot || {});
