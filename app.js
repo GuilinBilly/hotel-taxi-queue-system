@@ -697,7 +697,7 @@ async function callNext(isAuto = false) {
 
     // 4) Find oldest WAITING
     const waiting = entries
-      .filter(([_, v]) => (v && (v.status ?? "WAITING") === "WAITING"))
+      .filter(([_, v]) => v && (v.status ?? "WAITING").toUpperCase() === "WAITING")
       .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
     if (!waiting.length) {
