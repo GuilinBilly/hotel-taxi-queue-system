@@ -831,7 +831,20 @@ async function completePickup() {
 
     const [acceptedKey] = accepted;
 
-    await remove(ref(db, "queue/" + acceptedKey));
+   // Mark completed first
+await update(ref(db, "queue/" + accepted[0]), {
+  status: "COMPLETED",
+  completedAt: Date.now(),
+});
+
+// Brief visual polish
+showToast?.("Pickup completed ✅", "ok", 1500);
+
+// Wait before removing
+await new Promise(resolve => setTimeout(resolve, 2000));
+
+// Remove from queue
+await remove(ref(db, "queue/" + accepted[0]));
 
     // If this device was the completed driver, clear local driver session
     if (myDriverKey === acceptedKey) {
@@ -926,6 +939,7 @@ function subscribeQueue() {
   unsubscribeQueue = onValue(queueRef, (snap) => {
     // If empty and offline, keep current UI
     if (!snap.exists()) {
+      if (typeof stopAutoCallLoop === "function") stopAutoCallLoop();
       if (!isConnected) return;
 
       queueList.innerHTML = "";
@@ -2047,6 +2061,11 @@ async function expireOffersNow() {
         // Auto-call next waiting taxi
 
         setTimeout(() => {
+        const hasWaitingDriver = Object.values(lastQueueSnapshot || {}).some(v =>
+        v && (v.status ?? "WAITING").toUpperCase() === "WAITING"
+        );
+
+        if (!hasWaitingDriver) return;
 
         callNext(true);
 
