@@ -803,6 +803,12 @@ async function acceptRide() {
 
 async function completePickup() {
   if (isBusy) return;
+
+  if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
+    showToast?.("Wrong PIN", "err", 1800) || alert("Wrong PIN");
+    return;
+  }
+
   setBusy(true, "Completing…");
 
   try {
@@ -810,31 +816,30 @@ async function completePickup() {
     if (typeof stopUrgentBeepLoop === "function") stopUrgentBeepLoop();
     hideOfferAlert?.();
 
-    if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
-      alert("Wrong PIN");
-      return;
-    }
-
     const snap = await get(queueRef);
-    if (!snap.exists()) {
-      offeredCache = null;
-      calledBox.textContent = "";
-      refreshAcceptUI();
-      refreshJoinUI();
-      updateEmptyState?.();
-      return;
-    }
+    const data = snap.exists() ? snap.val() : {};
 
-    const accepted = Object.entries(snap.val()).find(
-      ([_, v]) => v && v.status === "ACCEPTED"
+    const accepted = Object.entries(data).find(
+      ([_, v]) => v && (v.status ?? "").toUpperCase() === "ACCEPTED"
     );
 
     if (!accepted) {
-      alert("No ACCEPTED ride to complete.");
+      showToast?.("No ACCEPTED ride to complete.", "warn", 2000) ||
+        alert("No ACCEPTED ride to complete.");
       return;
     }
 
-    await remove(ref(db, "queue/" + accepted[0]));
+    const [acceptedKey] = accepted;
+
+    await remove(ref(db, "queue/" + acceptedKey));
+
+    // If this device was the completed driver, clear local driver session
+    if (myDriverKey === acceptedKey) {
+      myDriverKey = null;
+      localStorage.removeItem("htqs.driverKey");
+      lockDriverInputs(false);
+      stopDriverHeartbeat?.();
+    }
 
     offeredCache = null;
     lastOfferWasForMe = false;
@@ -846,10 +851,17 @@ async function completePickup() {
     stopOfferBeepLoop();
     if (typeof stopUrgentBeepLoop === "function") stopUrgentBeepLoop();
     hideOfferAlert?.();
+
     refreshAcceptUI();
     refreshJoinUI();
     updateEmptyState?.();
 
+    showToast?.("Pickup completed ✅", "ok", 1500);
+
+  } catch (err) {
+    console.error("completePickup error:", err);
+    showToast?.("Complete Pickup failed", "err", 2200) ||
+      alert("Complete Pickup failed");
   } finally {
     setBusy(false);
   }
