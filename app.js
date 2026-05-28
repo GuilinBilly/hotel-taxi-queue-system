@@ -959,6 +959,7 @@ function subscribeQueue() {
         refreshJoinUI();
         refreshAcceptUI();
       }
+      if (queuePositionEl) queuePositionEl.textContent = "";
       updateEmptyState();
       refreshAcceptUI();
       updateQueueHealth({});
