@@ -837,14 +837,21 @@ await update(ref(db, "queue/" + accepted[0]), {
   completedAt: Date.now(),
 });
 
-// Brief visual polish
-showToast?.("Pickup completed ✅", "ok", 1500);
-
 // Wait before removing
 await new Promise(resolve => setTimeout(resolve, 2000));
 
 // Remove from queue
-await remove(ref(db, "queue/" + accepted[0]));
+await update(ref(db, "queue/" + accepted[0]), {
+  status: "COMPLETED",
+  completedAt: Date.now(),
+  lastSeenAt: Date.now(),
+});
+
+showToast?.("Pickup complete ✅", "ok", 1800);
+
+setTimeout(async () => {
+  await remove(ref(db, "queue/" + accepted[0]));
+}, 1500);
 
     // If this device was the completed driver, clear local driver session
     if (myDriverKey === acceptedKey) {
@@ -869,7 +876,6 @@ await remove(ref(db, "queue/" + accepted[0]));
     refreshJoinUI();
     updateEmptyState?.();
 
-    showToast?.("Pickup completed ✅", "ok", 1500);
 
   } catch (err) {
     console.error("completePickup error:", err);
