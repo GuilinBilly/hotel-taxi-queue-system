@@ -507,6 +507,17 @@ body{
 }
 .queue-item.status-accepted .badge{ background:#d1f7d6; border-color:#8fdaa0; }
 
+.queue-item.status-arrived {
+  background: #dbeafe;
+  border: 1px solid #60a5fa;
+}
+
+.queue-item.status-arrived .badge {
+  background: #bfdbfe;
+  border-color: #60a5fa;
+  color: #1e3a8a;
+}
+
 /* Small screens */
 @media (max-width: 520px){
   .header h1{ font-size: 28px; }

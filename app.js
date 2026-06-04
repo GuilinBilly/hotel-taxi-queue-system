@@ -77,6 +77,7 @@ const driverPlateInput = document.getElementById("driverPlate");
 
 const joinBtn = document.getElementById("joinBtn");
 const leaveBtn = document.getElementById("leaveBtn");
+const arrivedBtn = document.getElementById("arrivedBtn");
 const acceptBtn = document.getElementById("acceptBtn");
 const callNextBtn = document.getElementById("callNextBtn");
 const completeBtn = document.getElementById("completeBtn");
@@ -801,6 +802,37 @@ async function acceptRide() {
   }
 }
 
+async function arrivedRide() {
+  if (!myDriverKey) return;
+
+  try {
+    const driverRef = ref(db, "queue/" + myDriverKey);
+    const snap = await get(driverRef);
+
+    if (!snap.exists()) return;
+
+    const status = (snap.val().status ?? "").toUpperCase();
+
+    if (status !== "ACCEPTED") {
+      showToast?.("Please accept before arriving", "warn", 1800);
+      return;
+    }
+
+    await update(driverRef, {
+      status: "ARRIVED",
+      arrivedAt: Date.now(),
+      lastSeenAt: Date.now(),
+    });
+
+    showToast?.("Marked as arrived 🚖", "ok", 1500);
+    refreshAcceptUI();
+
+  } catch (err) {
+    console.error("arrivedRide error:", err);
+    showToast?.("Arrival update failed", "err", 2000);
+  }
+}
+
 async function completePickup() {
   if (isBusy) return;
 
@@ -1080,6 +1112,9 @@ function subscribeQueue() {
       );
 
        badgeText = `OFFERED (${secs}s)`;
+      }
+      if (status === "ARRIVED") {
+         badgeText = "ARRIVED";
       }
 
       li.innerHTML = `
@@ -1447,7 +1482,11 @@ function refreshAcceptUI() {
   const notExpired = !expiresAt || expiresAt > now;
 
   const canAccept = hasOffer && status === "OFFERED" && notExpired;
-
+  if (status === "ACCEPTED" && key === myDriverKey) {
+  arrivedBtn.disabled = false;
+  } else {
+  arrivedBtn.disabled = true;
+  }
   acceptBtn.disabled = !canAccept;
 
   // Pulse + beep should follow "canAccept"
@@ -2212,6 +2251,7 @@ const testBeepBtn = document.getElementById("testBeepBtn");
 const soundUnlockBanner = document.getElementById("soundUnlockBanner");
 joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
+arrivedBtn.onclick = arrivedRide;
 acceptBtn.onclick = acceptRide;
 
 function showSoundUnlockBanner() {
