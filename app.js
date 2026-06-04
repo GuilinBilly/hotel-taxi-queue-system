@@ -1482,11 +1482,14 @@ function refreshAcceptUI() {
   const notExpired = !expiresAt || expiresAt > now;
 
   const canAccept = hasOffer && status === "OFFERED" && notExpired;
-  if (status === "ACCEPTED" && key === myDriverKey) {
-  arrivedBtn.disabled = false;
+  const offerKey = offeredCache?.key ?? myDriverKey;
+
+  if (status === "ACCEPTED" && offerKey === myDriverKey) {
+     arrivedBtn.disabled = false;
   } else {
   arrivedBtn.disabled = true;
   }
+
   acceptBtn.disabled = !canAccept;
 
   // Pulse + beep should follow "canAccept"
