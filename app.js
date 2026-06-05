@@ -1484,14 +1484,10 @@ function refreshAcceptUI() {
   const canAccept = hasOffer && status === "OFFERED" && notExpired;
   const offerKey = offeredCache?.key ?? myDriverKey;
 
-  const myRecord = myDriverKey ? lastQueueSnapshot?.[myDriverKey] : null;
-  const myStatus = (myRecord?.status ?? "").toUpperCase();
+  const currentDriver = myDriverKey ? lastQueueSnapshot?.[myDriverKey] : null;
+  const currentStatus = (currentDriver?.status ?? "").toUpperCase();
 
-  if (myStatus === "ACCEPTED") {
-  arrivedBtn.disabled = false;
-  } else {
-  arrivedBtn.disabled = true;
-  }
+  arrivedBtn.disabled = currentStatus !== "ACCEPTED";
 
   acceptBtn.disabled = !canAccept;
 
