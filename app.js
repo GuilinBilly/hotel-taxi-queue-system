@@ -851,15 +851,16 @@ async function completePickup() {
     const snap = await get(queueRef);
     const data = snap.exists() ? snap.val() : {};
 
-    const accepted = Object.entries(data).find(
-      ([_, v]) => v && (v.status ?? "").toUpperCase() === "ACCEPTED"
-    );
+    const accepted = Object.entries(data).find(([_, v]) => {
+  const status = (v?.status ?? "").toUpperCase();
+  return status === "ACCEPTED" || status === "ARRIVED";
+});
 
-    if (!accepted) {
-      showToast?.("No ACCEPTED ride to complete.", "warn", 2000) ||
-        alert("No ACCEPTED ride to complete.");
-      return;
-    }
+if (!accepted) {
+  showToast?.("No ACCEPTED or ARRIVED ride to complete.", "warn", 2000) ||
+    alert("No ACCEPTED or ARRIVED ride to complete.");
+  return;
+}
 
     const [acceptedKey] = accepted;
 
@@ -1492,9 +1493,9 @@ function refreshAcceptUI() {
     (d?.plate ?? "").trim() === driverPlateInput.value.trim()
   );
 
-const currentStatus = (currentDriver?.status ?? "").toUpperCase();
+  const currentStatus = (currentDriver?.status ?? "").toUpperCase();
 
-arrivedBtn.disabled = currentStatus !== "ACCEPTED";
+  arrivedBtn.disabled = currentStatus !== "ACCEPTED";
 
   acceptBtn.disabled = !canAccept;
 
