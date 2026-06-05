@@ -862,7 +862,7 @@ if (!accepted) {
   return;
 }
 
-    const [acceptedKey] = accepted;
+  const [acceptedKey] = accepted;
 
    // Mark completed first
 await update(ref(db, "queue/" + accepted[0]), {
