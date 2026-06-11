@@ -487,6 +487,15 @@ if (myDriverKey) {
       alert("Enter name and cab number.");
       return;
     }
+    
+    // HTQS v1.2 — GPS location check placeholder
+    if (!navigator.geolocation) {
+    showToast?.("GPS is not supported on this device.", "err", 2200) ||
+    alert("GPS is not supported on this device.");
+    return;
+    }
+
+    showToast?.("Checking GPS location…", "warn", 1500);
 
     const driverKey = `${norm(name)}_${norm(plate)}`;
     const driverRef = ref(db, "queue/" + driverKey);
