@@ -495,7 +495,24 @@ if (myDriverKey) {
     return;
     }
 
-    showToast?.("Checking GPS location…", "warn", 1500);
+    showToast?.("Checking GPS location...", "warn", 1500);
+
+    const position = await new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+    resolve,
+    reject,
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+      );
+    });
+
+    const driverLat = position.coords.latitude;
+    const driverLng = position.coords.longitude;
+
+    console.log("Driver GPS:", driverLat, driverLng);
 
     const driverKey = `${norm(name)}_${norm(plate)}`;
     const driverRef = ref(db, "queue/" + driverKey);
