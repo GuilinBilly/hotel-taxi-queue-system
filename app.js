@@ -513,6 +513,15 @@ if (myDriverKey) {
     const driverLng = position.coords.longitude;
 
     console.log("Driver GPS:", driverLat, driverLng);
+    
+    const distance = milesBetween(
+      driverLat,
+      driverLng,
+      HOTEL_LAT,
+      HOTEL_LNG
+    );
+
+    console.log("Distance from hotel:", distance.toFixed(3), "miles");
 
     const driverKey = `${norm(name)}_${norm(plate)}`;
     const driverRef = ref(db, "queue/" + driverKey);
