@@ -522,6 +522,18 @@ if (myDriverKey) {
     );
 
     console.log("Distance from hotel:", distance.toFixed(3), "miles");
+    
+    if (distance > QUEUE_RADIUS_MILES) {
+      showToast?.(
+       `You are ${distance.toFixed(2)} miles from the hotel. Please move within ${QUEUE_RADIUS_MILES} miles to join the queue.`,
+       "err",
+       3500
+    ) || alert(
+       `You are ${distance.toFixed(2)} miles from the hotel. Please move closer to join the queue.`
+  );
+
+  return;
+}
 
     const driverKey = `${norm(name)}_${norm(plate)}`;
     const driverRef = ref(db, "queue/" + driverKey);
