@@ -850,7 +850,7 @@ async function acceptRide() {
   }
 }
 
-async function arrivedRide() {
+  async function arrivedRide() {
   if (!myDriverKey) return;
 
   try {
