@@ -966,7 +966,6 @@ setTimeout(async () => {
     refreshJoinUI();
     updateEmptyState?.();
 
-
   } catch (err) {
     console.error("completePickup error:", err);
     showToast?.("Complete Pickup failed", "err", 2200) ||
