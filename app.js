@@ -595,6 +595,9 @@ if (myDriverKey) {
       offerStartedAt: null,
       offerExpiresAt: null,
       lastSeenAt: Date.now(),
+      lat: driverLat,
+      lng: driverLng,
+      distanceMiles: Number(distance.toFixed(3)),
     });
 
     myDriverKey = driverKey;
