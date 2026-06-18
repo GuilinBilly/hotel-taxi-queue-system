@@ -89,7 +89,9 @@ function milesBetween(lat1, lng1, lat2, lng2) {
 
   return R * c;
 }
-
+function isDriverWithinGeofence(distance) {
+  return distance <= 0.2;
+}
 // -----------------------------
 // DOM
 // -----------------------------
@@ -520,6 +522,12 @@ if (myDriverKey) {
       HOTEL_LAT,
       HOTEL_LNG
     );
+    
+    if (!isDriverWithinGeofence(distance)) {
+    driverStatus.textContent =
+    `You are ${distance.toFixed(2)} miles from the hotel. Please move within 0.2 miles to join the queue.`;
+    return;
+    }
 
     console.log("Distance from hotel:", distance.toFixed(3), "miles");
     
