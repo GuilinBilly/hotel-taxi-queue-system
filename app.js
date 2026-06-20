@@ -92,6 +92,53 @@ function milesBetween(lat1, lng1, lat2, lng2) {
 function isDriverWithinGeofence(distance) {
   return distance <= 0.2;
 }
+
+function autoCheckLocation() {
+  const gpsStatus = document.getElementById("gpsStatus");
+
+  if (!gpsStatus) return;
+
+  if (!navigator.geolocation) {
+    gpsStatus.textContent = "GPS Status: Not supported by this browser.";
+    return;
+  }
+
+  gpsStatus.textContent = "GPS Status: Checking location...";
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      currentLat = position.coords.latitude;
+      currentLng = position.coords.longitude;
+
+      currentDistance = milesBetween(
+        currentLat,
+        currentLng,
+        HOTEL_LAT,
+        HOTEL_LNG
+      );
+
+      currentInsideGeofence = isDriverWithinGeofence(currentDistance);
+
+      gpsStatus.textContent = currentInsideGeofence
+        ? "✅ GPS Status: Inside hotel zone. Ready to join queue."
+        : `❌ GPS Status: ${currentDistance.toFixed(2)} miles from hotel. Outside hotel zone.`;
+
+      console.log("Auto GPS latitude:", currentLat);
+      console.log("Auto GPS longitude:", currentLng);
+      console.log("Auto GPS distance:", currentDistance);
+      console.log("Auto GPS inside geofence:", currentInsideGeofence);
+    },
+    (error) => {
+      gpsStatus.textContent = "GPS Status: Unable to get location.";
+      console.error("Auto GPS error:", error);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+  );
+}
 // -----------------------------
 // DOM
 // -----------------------------
@@ -164,6 +211,12 @@ window.htqs = {
   get audioUnlocked() { return audioUnlocked; },
   canPlayAlerts,
 };
+
+// GPS state (HTQS v1.3)
+let currentLat = null;
+let currentLng = null;
+let currentDistance = null;
+let currentInsideGeofence = false;
 
 // -----------------------------
 // HELPERS
@@ -2316,6 +2369,7 @@ updateMuteIndicator();
 
 wireSmartInputs();
 refreshJoinUI(); // optional but good
+autoCheckLocation();
 subscribeQueue();
 
 // Refresh local countdown UI every second
