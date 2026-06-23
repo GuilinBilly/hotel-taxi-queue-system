@@ -777,6 +777,7 @@ async function leaveQueue() {
     setBusy(false);
   }
 }
+
 async function callNext(isAuto = false) {
   // Guard #1 — offline
   if (!isConnected) {
