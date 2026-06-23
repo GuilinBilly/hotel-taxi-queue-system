@@ -498,11 +498,11 @@ function unwrapOfferCache(offeredCache) {
 
 // =======================
 // FIREBASE ACTIONS
-// =======================
-async function joinQueue() {
+// =======================z
+ async function joinQueue() { // Validate saved driver session before ...
   if (isBusy) return;
-  // Validate saved driver session before joining
-if (myDriverKey) {
+ 
+  if (myDriverKey) {
   const existingSnap = await get(ref(db, "queue/" + myDriverKey));
 
   if (!existingSnap.exists()) {
@@ -533,6 +533,11 @@ if (myDriverKey) {
     const name = normSpaces(driverNameInput.value);
     const plate = normPlate(driverPlateInput.value);
     const carColor = titleCase(driverColorInput.value);
+
+    // Save driver profile locally (HTQS v1.3)
+    localStorage.setItem("htqs.driverName", name);
+    localStorage.setItem("htqs.driverPlate", plate);
+    localStorage.setItem("htqs.driverColor", carColor);
 
     driverNameInput.value = name;
     driverPlateInput.value = plate;
@@ -577,8 +582,8 @@ if (myDriverKey) {
     );
     
     if (!isDriverWithinGeofence(distance)) {
-    driverStatus.textContent =
-    `You are ${distance.toFixed(2)} miles from the hotel. Please move within 0.2 miles to join the queue.`;
+    document.getElementById("gpsStatus").textContent =
+    `❌ GPS Status: ${distance.toFixed(2)} miles from hotel. Outside hotel zone.`;
     return;
     }
 
@@ -2368,6 +2373,15 @@ ensureMuteIndicator();
 updateMuteIndicator();
 
 wireSmartInputs();
+// HTQS v1.3 - Restore saved driver profile
+driverNameInput.value =
+  localStorage.getItem("htqs.driverName") || "";
+
+driverPlateInput.value =
+  localStorage.getItem("htqs.driverPlate") || "";
+
+driverColorInput.value =
+  localStorage.getItem("htqs.driverColor") || "";
 refreshJoinUI(); // optional but good
 autoCheckLocation();
 subscribeQueue();
