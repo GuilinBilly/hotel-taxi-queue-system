@@ -118,10 +118,19 @@ function autoCheckLocation() {
       );
 
       currentInsideGeofence = isDriverWithinGeofence(currentDistance);
+      // HTQS v1.3 Auto Check-In preparation
+      if (
+       currentInsideGeofence &&
+       !autoCheckInAttempted
+     ) {
+       autoCheckInAttempted = true;
+
+       console.log("HTQS Auto Check-In ready");
+     }
 
       gpsStatus.textContent = currentInsideGeofence
-        ? "✅ GPS Status: Inside hotel zone. Ready to join queue."
-        : `❌ GPS Status: ${currentDistance.toFixed(2)} miles from hotel. Outside hotel zone.`;
+      ? "✅ GPS Status: Inside hotel zone. Auto Check-In ready."
+      : `❌ GPS Status: ${currentDistance.toFixed(2)} miles from hotel. Outside hotel zone.`;
 
       console.log("Auto GPS latitude:", currentLat);
       console.log("Auto GPS longitude:", currentLng);
@@ -217,6 +226,7 @@ let currentLat = null;
 let currentLng = null;
 let currentDistance = null;
 let currentInsideGeofence = false;
+let autoCheckInAttempted = false;
 
 // -----------------------------
 // HELPERS
