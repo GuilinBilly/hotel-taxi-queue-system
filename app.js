@@ -123,9 +123,14 @@ function autoCheckLocation() {
        currentInsideGeofence &&
        !autoCheckInAttempted
      ) {
-       autoCheckInAttempted = true;
-
        console.log("HTQS Auto Check-In ready");
+
+      autoCheckInAttempted = true;
+
+      joinQueue().catch((err) => {
+      console.error("Auto Check-In failed:", err);
+      autoCheckInAttempted = false;
+      });
      }
 
       gpsStatus.textContent = currentInsideGeofence
