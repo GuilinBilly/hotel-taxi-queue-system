@@ -117,6 +117,15 @@ function autoCheckLocation() {
         HOTEL_LNG
       );
 
+       console.log("Reached geofence calculation");
+       
+      // Developer Test Mode
+        if (devTestMode) {
+        showToast("Developer Test Mode enabled", "ok", 2000);
+        currentInsideGeofence = true;
+        currentDistance = 0.01;
+        console.log("🧪 Developer Test Mode enabled");
+      }
       currentInsideGeofence = isDriverWithinGeofence(currentDistance);
       // HTQS v1.3 Auto Check-In preparation
       if (
@@ -127,10 +136,8 @@ function autoCheckLocation() {
 
       autoCheckInAttempted = true;
 
-      joinQueue().catch((err) => {
-      console.error("Auto Check-In failed:", err);
-      autoCheckInAttempted = false;
-      });
+      joinBtn.click();
+      
      }
 
       gpsStatus.textContent = currentInsideGeofence
@@ -232,6 +239,7 @@ let currentLng = null;
 let currentDistance = null;
 let currentInsideGeofence = false;
 let autoCheckInAttempted = false;
+let devTestMode = true; // HTQS v1.3-C test mode
 
 // -----------------------------
 // HELPERS
