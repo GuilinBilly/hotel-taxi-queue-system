@@ -581,6 +581,8 @@ function unwrapOfferCache(offeredCache) {
 showToast?.("Checking GPS location...", "warn", 1500);
 
 let distance;
+let driverLat = null;
+let driverLng = null;
 
 if (devTestMode) {
   currentInsideGeofence = true;
@@ -590,7 +592,7 @@ if (devTestMode) {
   console.log("🧪 Developer Test Mode — skipping GPS");
 } else {
   const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(
+    navigator.geolocation.getCurrentPosition(
       resolve,
       reject,
       {
@@ -601,8 +603,8 @@ if (devTestMode) {
     );
   });
 
-  const driverLat = position.coords.latitude;
-  const driverLng = position.coords.longitude;
+  driverLat = devTestMode ? HOTEL_LAT : position.coords.latitude;
+  driverLng = devTestMode ? HOTEL_LNG : position.coords.longitude;
 
   console.log("Driver GPS:", driverLat, driverLng);
 
