@@ -572,57 +572,58 @@ function unwrapOfferCache(offeredCache) {
     }
     
     // HTQS v1.2 — GPS location check placeholder
-    if (!navigator.geolocation) {
+    if (!navigator.geolocation && !devTestMode) {
     showToast?.("GPS is not supported on this device.", "err", 2200) ||
     alert("GPS is not supported on this device.");
     return;
     }
 
-    showToast?.("Checking GPS location...", "warn", 1500);
+showToast?.("Checking GPS location...", "warn", 1500);
 
-    const position = await new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(
-    resolve,
-    reject,
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0
-    }
-      );
-    });
+let distance;
 
-    const driverLat = position.coords.latitude;
-    const driverLng = position.coords.longitude;
+if (devTestMode) {
+  currentInsideGeofence = true;
+  currentDistance = 0.01;
+  distance = 0.01;
 
-    console.log("Driver GPS:", driverLat, driverLng);
-    
-    const distance = milesBetween(
-      driverLat,
-      driverLng,
-      HOTEL_LAT,
-      HOTEL_LNG
+  console.log("🧪 Developer Test Mode — skipping GPS");
+} else {
+  const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+      resolve,
+      reject,
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
     );
-    
-    if (!isDriverWithinGeofence(distance)) {
-    document.getElementById("gpsStatus").textContent =
+  });
+
+  const driverLat = position.coords.latitude;
+  const driverLng = position.coords.longitude;
+
+  console.log("Driver GPS:", driverLat, driverLng);
+
+  distance = milesBetween(
+    driverLat,
+    driverLng,
+    HOTEL_LAT,
+    HOTEL_LNG
+  );
+}
+
+console.log("Distance from hotel:", distance.toFixed(3), "miles");
+
+if (!isDriverWithinGeofence(distance)) {
+  document.getElementById("gpsStatus").textContent =
     `❌ GPS Status: ${distance.toFixed(2)} miles from hotel. Outside hotel zone.`;
-    return;
-    }
+  return;
+}
 
     console.log("Distance from hotel:", distance.toFixed(3), "miles");
     
-    if (distance > QUEUE_RADIUS_MILES) {
-      showToast?.(
-       `You are ${distance.toFixed(2)} miles from the hotel. Please move within ${QUEUE_RADIUS_MILES} miles to join the queue.`,
-       "err",
-       3500
-    ) || alert(
-       `You are ${distance.toFixed(2)} miles from the hotel. Please move closer to join the queue.`
-  );
-
-  return;
-}
 
     const driverKey = `${norm(name)}_${norm(plate)}`;
     const driverRef = ref(db, "queue/" + driverKey);
