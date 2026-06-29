@@ -619,9 +619,9 @@ if (devTestMode) {
 console.log("Distance from hotel:", distance.toFixed(3), "miles");
 
 if (!isDriverWithinGeofence(distance)) {
-  document.getElementById("gpsStatus").textContent =
+   document.getElementById("gpsStatus").textContent =
     `❌ GPS Status: ${distance.toFixed(2)} miles from hotel. Outside hotel zone.`;
-  return;
+   return;
 }
 
     console.log("Distance from hotel:", distance.toFixed(3), "miles");
