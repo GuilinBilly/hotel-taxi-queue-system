@@ -626,7 +626,6 @@ if (!isDriverWithinGeofence(distance)) {
 
     console.log("Distance from hotel:", distance.toFixed(3), "miles");
     
-
     const driverKey = `${norm(name)}_${norm(plate)}`;
     const driverRef = ref(db, "queue/" + driverKey);
 
