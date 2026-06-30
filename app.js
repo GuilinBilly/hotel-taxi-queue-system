@@ -1016,9 +1016,9 @@ async function completePickup() {
     const data = snap.exists() ? snap.val() : {};
 
     const accepted = Object.entries(data).find(([_, v]) => {
-  const status = (v?.status ?? "").toUpperCase();
-  return status === "ACCEPTED" || status === "ARRIVED";
-});
+     const status = (v?.status ?? "").toUpperCase();
+     return status === "ARRIVED";
+    });
 
 if (!accepted) {
   showToast?.("No ACCEPTED or ARRIVED ride to complete.", "warn", 2000) ||
