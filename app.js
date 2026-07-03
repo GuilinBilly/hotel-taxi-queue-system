@@ -172,6 +172,7 @@ const leaveBtn = document.getElementById("leaveBtn");
 const arrivedBtn = document.getElementById("arrivedBtn");
 const acceptBtn = document.getElementById("acceptBtn");
 const callNextBtn = document.getElementById("callNextBtn");
+const customerWaitingBtn = document.getElementById("customerWaitingBtn");
 const completeBtn = document.getElementById("completeBtn");
 const resetBtn = document.getElementById("resetBtn");
 
@@ -801,6 +802,22 @@ async function leaveQueue() {
   } finally {
     setBusy(false);
   }
+}
+
+// =============================
+// SMART DISPATCH (HTQS v1.4)
+// =============================
+async function markCustomerWaiting() {
+  if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
+    showToast?.("Wrong PIN", "err", 1800) || alert("Wrong PIN");
+    return;
+  }
+
+  showToast?.("Customer waiting added 🚕", "ok", 1500);
+
+  console.log("Customer Waiting button clicked");
+
+  await callNext(true);
 }
 
 async function callNext(isAuto = false) {
@@ -2331,6 +2348,10 @@ function resyncAfterMobileWake() {
     leaveBtn.onclick = leaveQueue;
     acceptBtn.onclick = acceptRide;
     callNextBtn.onclick = callNext;
+    customerWaitingBtn.onclick = () => {
+      console.log("Customer Waiting button clicked");
+      markCustomerWaiting();
+    };
     completeBtn.onclick = completePickup;
     resetBtn.onclick = resetDemo;
   }, 1500);
@@ -2436,6 +2457,13 @@ joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
 arrivedBtn.onclick = arrivedRide;
 acceptBtn.onclick = acceptRide;
+callNextBtn.onclick = callNext;
+customerWaitingBtn.onclick = () => {
+  console.log("Customer Waiting button clicked");
+  markCustomerWaiting();
+};
+completeBtn.onclick = completePickup;
+resetBtn.onclick = resetDemo;
 
 function showSoundUnlockBanner() {
   if (!soundUnlockBanner) return;
