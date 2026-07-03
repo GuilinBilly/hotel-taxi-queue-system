@@ -2044,7 +2044,6 @@ function hardBeepFallback() {
     const gain = ctx.createGain();
     osc.type = "square";
     osc.frequency.value = 440;
-
     const now = ctx.currentTime;
     gain.gain.setValueAtTime(0.0001, now);
     gain.gain.linearRampToValueAtTime(0.6, now + 0.02);
