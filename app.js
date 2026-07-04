@@ -173,6 +173,7 @@ const arrivedBtn = document.getElementById("arrivedBtn");
 const acceptBtn = document.getElementById("acceptBtn");
 const callNextBtn = document.getElementById("callNextBtn");
 const customerWaitingBtn = document.getElementById("customerWaitingBtn");
+const customerDemandStatus = document.getElementById("customerDemandStatus");
 const completeBtn = document.getElementById("completeBtn");
 const resetBtn = document.getElementById("resetBtn");
 
@@ -203,6 +204,10 @@ let urgentDoublePulseActive = false;
 let urgentSecondPulseTimeoutId = null;
 let myDriverKey = localStorage.getItem("htqs.driverKey") || null;
 let driverHeartbeatId = null;
+
+// HTQS v1.4 – Smart Dispatch
+let customerDemandCount = 0;
+
 let offeredCache = null;
 
 // C3: offer lifecycle UX (driver-side)
@@ -813,10 +818,12 @@ async function markCustomerWaiting() {
     return;
   }
 
-  showToast?.("Customer waiting added 🚕", "ok", 1500);
+  showToast?.(`Customer waiting added 🚕 Demand: ${customerDemandCount + 1}`, "ok", 1500);
 
   console.log("Customer Waiting button clicked");
-
+  customerDemandCount++;
+  updateCustomerDemandUI();
+  
   await callNext(true);
 }
 
@@ -825,6 +832,11 @@ async function callNext(isAuto = false) {
   if (!isConnected) {
     if (typeof showToast === "function") showToast("Offline — try again in a moment", "warn", 2000);
     else alert("Offline — try again in a moment");
+    return;
+  }
+    // HTQS v1.4 – Smart Dispatch demand guard
+    if (isAuto && customerDemandCount <= 0) {
+    showToast?.("No customer demand waiting", "info", 1500);
     return;
   }
 
@@ -900,6 +912,11 @@ async function callNext(isAuto = false) {
       offerBeepCount: 0,
       lastSeenAt: Date.now(),
     });
+      // HTQS v1.4 – Customer demand satisfied
+      customerDemandCount = Math.max(0, customerDemandCount - 1);
+      updateCustomerDemandUI();
+
+      console.log("Remaining customer demand:", customerDemandCount);
       
       refreshAcceptUI?.();  
 
@@ -1689,6 +1706,17 @@ function refreshAcceptUI() {
     stopOfferBeepLoop?.();
     suppressOfferBeep = false; // reset so next offer can beep
   }
+}
+// HTQS v1.4 – Customer demand display
+
+function updateCustomerDemandUI() {
+
+  if (!customerDemandStatus) return;
+
+  customerDemandStatus.textContent =
+
+    `Customer Demand: ${customerDemandCount}`;
+
 }
 let toastTimer = null;
 
