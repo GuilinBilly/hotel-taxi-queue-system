@@ -834,11 +834,10 @@ async function callNext(isAuto = false) {
     else alert("Offline — try again in a moment");
     return;
   }
-    // HTQS v1.4 – Smart Dispatch demand guard
+    // HTQS v1.5 – Demand is helpful, not required
     if (isAuto && customerDemandCount <= 0) {
-    showToast?.("No customer demand waiting", "info", 1500);
-    return;
-  }
+    console.log("Smart Dispatch: no recorded demand, but dispatch may continue.");
+    }
 
   // Guard #2 — double-click
   if (isBusy) return;
