@@ -276,15 +276,28 @@ function renderRoleInterface() {
   const driverSection = document.querySelector(".section.driver");
   const doormanSection = document.querySelector(".section.doorman");
   const customerSection = document.querySelector(".section.customer");
+  const queueSection = document.querySelector(".section.queue");
 
-  if (!roleSelectionPanel || !driverSection || !doormanSection || !customerSection) {
-    return;
+  if (roleSelectionPanel) {
+    roleSelectionPanel.style.display = currentRole ? "none" : "block";
   }
 
-  roleSelectionPanel.style.display = currentRole ? "none" : "block";
-  driverSection.style.display = currentRole === "driver" ? "block" : "none";
-  doormanSection.style.display = currentRole === "doorman" ? "block" : "none";
-  customerSection.style.display = currentRole === "customer" ? "block" : "none";
+  if (driverSection) {
+    driverSection.style.display = currentRole === "driver" ? "block" : "none";
+  }
+
+  if (doormanSection) {
+    doormanSection.style.display = currentRole === "doorman" ? "block" : "none";
+  }
+
+  if (customerSection) {
+    customerSection.style.display = currentRole === "customer" ? "block" : "none";
+  }
+
+  if (queueSection) {
+    queueSection.style.display =
+      currentRole === "driver" || currentRole === "doorman" ? "block" : "none";
+  }
 }
 
 function setOfferPulse(on) {
