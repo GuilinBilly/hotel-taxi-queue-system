@@ -207,6 +207,8 @@ let driverHeartbeatId = null;
 
 // HTQS v1.4 – Smart Dispatch
 let customerDemandCount = 0;
+// HTQS v1.5 – Role-based interface
+let currentRole = localStorage.getItem("htqs.role") || null;
 
 let offeredCache = null;
 
@@ -257,6 +259,32 @@ function norm(s) {
 function updateEmptyState() {
   if (!queueEmpty || !queueList) return;
   queueEmpty.style.display = queueList.children.length ? "none" : "block";
+}
+
+// HTQS v1.5 – Role selection logic
+function setRole(role) {
+  currentRole = role;
+  localStorage.setItem("htqs.role", role);
+  renderRoleInterface();
+}
+
+// Show the correct interface for the selected role
+function renderRoleInterface() {
+  console.log("Current role:", currentRole);
+
+  const roleSelectionPanel = document.getElementById("roleSelectionPanel");
+  const driverSection = document.querySelector(".section.driver");
+  const doormanSection = document.querySelector(".section.doorman");
+  const customerSection = document.querySelector(".section.customer");
+
+  if (!roleSelectionPanel || !driverSection || !doormanSection || !customerSection) {
+    return;
+  }
+
+  roleSelectionPanel.style.display = currentRole ? "none" : "block";
+  driverSection.style.display = currentRole === "driver" ? "block" : "none";
+  doormanSection.style.display = currentRole === "doorman" ? "block" : "none";
+  customerSection.style.display = currentRole === "customer" ? "block" : "none";
 }
 
 function setOfferPulse(on) {
@@ -2446,6 +2474,24 @@ ensureMuteIndicator();
 updateMuteIndicator();
 
 wireSmartInputs();
+// HTQS v1.5 – Role button listeners
+const driverRoleBtn = document.getElementById("driverRoleBtn");
+const doormanRoleBtn = document.getElementById("doormanRoleBtn");
+const customerRoleBtn = document.getElementById("customerRoleBtn");
+
+if (driverRoleBtn) {
+  driverRoleBtn.addEventListener("click", () => setRole("driver"));
+}
+
+if (doormanRoleBtn) {
+  doormanRoleBtn.addEventListener("click", () => setRole("doorman"));
+}
+
+if (customerRoleBtn) {
+  customerRoleBtn.addEventListener("click", () => setRole("customer"));
+}
+
+renderRoleInterface();
 // HTQS v1.3 - Restore saved driver profile
 driverNameInput.value =
   localStorage.getItem("htqs.driverName") || "";
