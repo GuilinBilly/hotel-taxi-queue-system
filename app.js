@@ -2432,7 +2432,7 @@ function resyncAfterMobileWake() {
     callNextBtn.onclick = callNext;
     customerWaitingBtn.onclick = () => {
       console.log("Customer Waiting button clicked");
-      markCustomerWaiting();
+      sendCustomerRequest();
     };
     completeBtn.onclick = completePickup;
     resetBtn.onclick = resetDemo;
