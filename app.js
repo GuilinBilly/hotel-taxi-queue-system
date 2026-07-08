@@ -71,6 +71,7 @@ onValue(connectedRef, (snap) => {
 const auth = getAuth(app);
 
 const queueRef = ref(db, "queue");
+const customerRequestRef = ref(db, "customerRequest");
 
 function milesBetween(lat1, lng1, lat2, lng2) {
   const R = 3958.8; // Earth radius in miles
@@ -569,7 +570,20 @@ function unwrapOfferCache(offeredCache) {
 
 // =======================
 // FIREBASE ACTIONS
-// =======================z
+// =======================
+
+ // HTQS v1.5 – Customer sends taxi request
+function sendCustomerRequest() {
+  set(customerRequestRef, {
+    waiting: true,
+    requestedAt: Date.now()
+  });
+
+  const customerStatus = document.getElementById("customerStatus");
+  if (customerStatus) {
+    customerStatus.textContent = "Taxi request sent. Please wait for the doorman.";
+  }
+}
  async function joinQueue() { // Validate saved driver session before ...
   if (isBusy) return;
  
@@ -2545,8 +2559,8 @@ arrivedBtn.onclick = arrivedRide;
 acceptBtn.onclick = acceptRide;
 callNextBtn.onclick = callNext;
 customerWaitingBtn.onclick = () => {
-  console.log("Customer Waiting button clicked");
-  markCustomerWaiting();
+    console.log("Customer Waiting button clicked");
+    sendCustomerRequest();
 };
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
