@@ -364,6 +364,7 @@ function setAcceptButtonLabel(msLeft = null) {
     acceptBtn.textContent = `Accept Ride (${secLeft}s)`;
   }
 }
+
 function lockDriverInputs(locked) {
   if (driverNameInput) driverNameInput.disabled = locked;
   if (driverColorInput) driverColorInput.disabled = locked;
