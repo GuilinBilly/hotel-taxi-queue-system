@@ -299,6 +299,29 @@ function renderRoleInterface() {
     queueSection.style.display =
       currentRole === "driver" || currentRole === "doorman" ? "block" : "none";
   }
+  if (currentRole === "doorman") {
+  initializeDoormanListeners();
+  }
+}
+
+// HTQS v1.5 — Doorman real-time listeners
+function initializeDoormanListeners() {
+  console.log("Doorman listeners initialized");
+
+  onValue(customerRequestRef, (snap) => {
+    const request = snap.val();
+
+    if (!customerDemandStatus) return;
+
+    if (request && request.waiting === true) {
+      const requestTime = new Date(request.requestedAt).toLocaleTimeString();
+
+      customerDemandStatus.textContent =
+       "🔔 Customer Waiting — Requested at " + requestTime;
+  } else {
+    customerDemandStatus.textContent = "Customer Demand: 0";
+  }
+  });
 }
 
 function setOfferPulse(on) {
