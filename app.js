@@ -313,7 +313,7 @@ function initializeDoormanListeners() {
 
     if (!customerDemandStatus) return;
 
-    if (request && request.waiting === true) {
+    if (request && request.status === "waiting") {
       const requestTime = new Date(request.requestedAt).toLocaleTimeString();
 
       customerDemandStatus.textContent =
@@ -596,16 +596,34 @@ function unwrapOfferCache(offeredCache) {
 // FIREBASE ACTIONS
 // =======================
 
- // HTQS v1.5 – Customer sends taxi request
-function sendCustomerRequest() {
-  set(customerRequestRef, {
-    waiting: true,
-    requestedAt: Date.now()
-  });
-
+ 
+ // HTQS v1.5 — Create a professional customer request
+ async function sendCustomerRequest() {
   const customerStatus = document.getElementById("customerStatus");
-  if (customerStatus) {
-    customerStatus.textContent = "Taxi request sent. Please wait for the doorman.";
+
+  try {
+    await set(customerRequestRef, {
+      status: "waiting",
+      requestedAt: Date.now(),
+      acknowledgedAt: null,
+      assignedAt: null,
+      assignedDriverKey: null,
+      completedAt: null
+    });
+
+    if (customerStatus) {
+      customerStatus.textContent =
+        "Taxi request sent. Please wait for the doorman.";
+    }
+
+    console.log("Customer request created with status: waiting");
+  } catch (error) {
+    console.error("Unable to send customer request:", error);
+
+    if (customerStatus) {
+      customerStatus.textContent =
+        "Unable to send taxi request. Please try again.";
+    }
   }
 }
  async function joinQueue() { // Validate saved driver session before ...
