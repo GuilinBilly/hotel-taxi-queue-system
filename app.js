@@ -172,6 +172,8 @@ const joinBtn = document.getElementById("joinBtn");
 const leaveBtn = document.getElementById("leaveBtn");
 const arrivedBtn = document.getElementById("arrivedBtn");
 const acceptBtn = document.getElementById("acceptBtn");
+const acknowledgeRequestBtn =
+  document.getElementById("acknowledgeRequestBtn");
 const callNextBtn = document.getElementById("callNextBtn");
 const customerWaitingBtn = document.getElementById("customerRequestBtn");
 const customerDemandStatus = document.getElementById("customerDemandStatus");
@@ -313,14 +315,35 @@ function initializeDoormanListeners() {
 
     if (!customerDemandStatus) return;
 
-    if (request && request.status === "waiting") {
-      const requestTime = new Date(request.requestedAt).toLocaleTimeString();
+    if (!request) {
+  customerDemandStatus.textContent = "Customer Demand: 0";
+  return;
+}
 
-      customerDemandStatus.textContent =
-       "🔔 Customer Waiting — Requested at " + requestTime;
-  } else {
-    customerDemandStatus.textContent = "Customer Demand: 0";
-  }
+if (request.status === "waiting") {
+  const requestTime = new Date(
+    request.requestedAt
+  ).toLocaleTimeString();
+
+  customerDemandStatus.textContent =
+    "🔔 Customer Waiting — Requested at " + requestTime;
+} else if (request.status === "acknowledged") {
+  const acknowledgedTime = new Date(
+    request.acknowledgedAt
+  ).toLocaleTimeString();
+
+  customerDemandStatus.textContent =
+    "✅ Request Acknowledged — At " + acknowledgedTime;
+} else if (request.status === "assigned") {
+  customerDemandStatus.textContent =
+    "🚕 Driver Assigned";
+} else if (request.status === "completed") {
+  customerDemandStatus.textContent =
+    "✔ Ride Completed";
+} else {
+  customerDemandStatus.textContent =
+    "Customer Demand: 0";
+}
   });
 }
 
@@ -626,6 +649,60 @@ function unwrapOfferCache(offeredCache) {
     }
   }
 }
+
+ // HTQS v1.5 – Doorman acknowledges customer request
+async function acknowledgeCustomerRequest() {
+  try {
+    const requestSnapshot = await get(customerRequestRef);
+
+    if (!requestSnapshot.exists()) {
+      console.warn("No customer request exists.");
+
+      if (customerDemandStatus) {
+        customerDemandStatus.textContent = "No customer request to acknowledge.";
+      }
+
+      return;
+    }
+
+    const request = requestSnapshot.val();
+
+    if (request.status !== "waiting") {
+      console.warn(
+        "Customer request cannot be acknowledged from status:",
+        request.status
+      );
+
+      if (customerDemandStatus) {
+        customerDemandStatus.textContent =
+          "This customer request has already been processed.";
+      }
+
+      return;
+    }
+
+    await set(customerRequestRef, {
+      ...request,
+      status: "acknowledged",
+      acknowledgedAt: Date.now()
+    });
+
+    if (customerDemandStatus) {
+      customerDemandStatus.textContent =
+        "✅ Customer request acknowledged.";
+    }
+
+    console.log("Customer request status changed to: acknowledged");
+  } catch (error) {
+    console.error("Unable to acknowledge customer request:", error);
+
+    if (customerDemandStatus) {
+      customerDemandStatus.textContent =
+        "Unable to acknowledge request. Please try again.";
+    }
+  }
+}
+
  async function joinQueue() { // Validate saved driver session before ...
   if (isBusy) return;
  
@@ -2471,6 +2548,7 @@ function resyncAfterMobileWake() {
     joinBtn.onclick = joinQueue;
     leaveBtn.onclick = leaveQueue;
     acceptBtn.onclick = acceptRide;
+    acknowledgeRequestBtn.onclick = acknowledgeCustomerRequest;
     callNextBtn.onclick = callNext;
     customerWaitingBtn.onclick = () => {
       console.log("Customer Waiting button clicked");
