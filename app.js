@@ -304,6 +304,9 @@ function renderRoleInterface() {
   if (currentRole === "doorman") {
   initializeDoormanListeners();
   }
+  if (currentRole === "customer") {
+    initializeCustomerRequestListener();
+}
 }
 
 // HTQS v1.5 — Doorman real-time listeners
@@ -344,6 +347,42 @@ if (request.status === "waiting") {
   customerDemandStatus.textContent =
     "Customer Demand: 0";
 }
+  });
+}
+
+// HTQS v1.5 – Customer real-time request status listener
+function initializeCustomerRequestListener() {
+  console.log("Customer request listener initialized");
+
+  onValue(customerRequestRef, (snap) => {
+    const request = snap.val();
+    const customerStatus = document.getElementById("customerStatus");
+
+    if (!customerStatus) return;
+
+    if (!request) {
+      customerStatus.textContent = "No taxi requested yet.";
+      return;
+    }
+
+    if (request.status === "waiting") {
+      customerStatus.textContent =
+        "📨 Taxi request sent. Please wait for the doorman.";
+    } else if (request.status === "acknowledged") {
+      customerStatus.textContent =
+        "✅ Your taxi request has been acknowledged. Please wait while a driver is assigned.";
+    } else if (request.status === "assigned") {
+      customerStatus.textContent =
+        "🚕 A driver has been assigned to your taxi request.";
+    } else if (request.status === "arriving") {
+      customerStatus.textContent =
+        "🚖 Your taxi is arriving. Please be ready at the hotel entrance.";
+    } else if (request.status === "completed") {
+      customerStatus.textContent =
+        "✔ Ride completed. Thank you for using HTQS.";
+    } else {
+      customerStatus.textContent = "Your taxi request is being processed.";
+    }
   });
 }
 
