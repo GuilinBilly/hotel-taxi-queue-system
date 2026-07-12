@@ -658,9 +658,8 @@ function unwrapOfferCache(offeredCache) {
 // FIREBASE ACTIONS
 // =======================
 
- 
- // HTQS v1.5 — Create a professional customer request
- async function sendCustomerRequest() {
+  // HTQS v1.5 — Create a professional customer request
+  async function sendCustomerRequest() {
   const customerStatus = document.getElementById("customerStatus");
 
   try {
