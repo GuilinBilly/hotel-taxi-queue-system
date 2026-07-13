@@ -1193,6 +1193,27 @@ async function acceptRide() {
       acceptedAt: Date.now(),
       lastSeenAt: Date.now(),
     });
+
+    // HTQS v1.5 — Assign accepted driver to the customer request
+const customerRequestSnapshot = await get(customerRequestRef);
+
+if (customerRequestSnapshot.exists()) {
+  const customerRequest = customerRequestSnapshot.val();
+
+  if (
+    customerRequest.status === "acknowledged" ||
+    customerRequest.status === "waiting"
+  ) {
+    await update(customerRequestRef, {
+      status: "assigned",
+      assignedAt: Date.now(),
+      assignedDriverKey: key,
+    });
+
+    console.log("Customer request status changed to: assigned");
+  }
+}
+
     hideOfferAlert();
     updateAcceptButtonVisual(null);
     accepted = true; // ✅ success
