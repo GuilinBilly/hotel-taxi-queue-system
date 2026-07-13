@@ -614,7 +614,6 @@ function hideOfferAlert() {
 // CORE LOGIC
 // -----------------------------
 
-
 function isMeForOffer(v) {
   if (!v) return false;
   const inputName = norm(driverNameInput?.value);
