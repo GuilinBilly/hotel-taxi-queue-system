@@ -1923,6 +1923,7 @@ function refreshAcceptUI() {
   );
 
   const currentStatus = (currentDriver?.status ?? "").toUpperCase();
+  
 
   arrivedBtn.disabled = currentStatus !== "ACCEPTED";
 
