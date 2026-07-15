@@ -340,6 +340,9 @@ if (request.status === "waiting") {
 } else if (request.status === "assigned") {
   customerDemandStatus.textContent =
     "🚕 Driver Assigned";
+} else if (request.status === "arriving") {
+  customerDemandStatus.textContent =
+    "🚗 Driver Arrived — Ready for passenger pickup";
 } else if (request.status === "completed") {
   customerDemandStatus.textContent =
     "✔ Ride Completed";
@@ -1252,6 +1255,11 @@ if (customerRequestSnapshot.exists()) {
       status: "ARRIVED",
       arrivedAt: Date.now(),
       lastSeenAt: Date.now(),
+    });
+    await update(customerRequestRef, {
+      status: "arriving",
+      arrivingAt: Date.now(),
+      assignedDriverKey: myDriverKey,
     });
 
     showToast?.("Marked as arrived 🚖", "ok", 1500);
