@@ -2551,7 +2551,6 @@ async function expireOffersNow() {
   
   
   // 2) Pull fresh queue
-  
   const entries = Object.entries(snap.val() || {});
   let bump = 0;
 
