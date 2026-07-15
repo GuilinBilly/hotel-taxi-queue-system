@@ -1439,6 +1439,22 @@ function subscribeQueue() {
     lastQueueSnapshot = data;
     refreshJoinUI();
     const entries = Object.entries(data);
+    const arrivedEntry = entries.find(([, driver]) => {
+  return (driver?.status ?? "").toUpperCase() === "ARRIVED";
+});
+
+if (arrivedEntry) {
+  const [, arrivedDriver] = arrivedEntry;
+
+  const arrivedName =
+    arrivedDriver?.name ??
+    arrivedDriver?.driverName ??
+    "Driver";
+
+  calledBox.textContent =
+    `🚗 ${arrivedName} has arrived at the hotel entrance. ` +
+    `Ready for passenger pickup.`;
+}
 
     function updateQueuePosition(entries) {
   if (!queuePositionEl || !myDriverKey) {
@@ -1686,7 +1702,7 @@ function subscribeQueue() {
 
     // ✅ If no offer for me, clear "Now Offering" and stop
     if (!offeredCache) {
-      calledBox.textContent = "";
+      if (!arrivedEntry) calledBox.textContent = "";
       hideOfferAlert();
       updateAcceptButtonVisual(null);
       setAcceptButtonLabel(null);
