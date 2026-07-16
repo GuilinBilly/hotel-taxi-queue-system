@@ -342,7 +342,7 @@ if (request.status === "waiting") {
     "🚕 Driver Assigned";
 } else if (request.status === "arriving") {
   customerDemandStatus.textContent =
-    "🚗 Driver Arrived — Ready for passenger pickup";
+    "🚗 Driver Arrived — Waiting for passenger to board"
 } else if (request.status === "completed") {
   customerDemandStatus.textContent =
     "✔ Ride Completed";
