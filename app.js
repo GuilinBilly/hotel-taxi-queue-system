@@ -1312,10 +1312,16 @@ await update(ref(db, "queue/" + accepted[0]), {
 await new Promise(resolve => setTimeout(resolve, 2000));
 
 // Remove from queue
-await update(ref(db, "queue/" + accepted[0]), {
-  status: "COMPLETED",
-  completedAt: Date.now(),
+aawait update(ref(db, "queue/" + acceptedKey), {
+  status: "PICKED_UP",
+  pickedUpAt: Date.now(),
   lastSeenAt: Date.now(),
+});
+
+await update(customerRequestRef, {
+  status: "completed",
+  completedAt: Date.now(),
+  assignedDriverKey: acceptedKey,
 });
 
 showToast?.("Pickup complete ✅", "ok", 1800);
