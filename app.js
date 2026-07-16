@@ -1312,7 +1312,7 @@ await update(ref(db, "queue/" + accepted[0]), {
 await new Promise(resolve => setTimeout(resolve, 2000));
 
 // Remove from queue
-aawait update(ref(db, "queue/" + acceptedKey), {
+await update(ref(db, "queue/" + acceptedKey), {
   status: "PICKED_UP",
   pickedUpAt: Date.now(),
   lastSeenAt: Date.now(),
