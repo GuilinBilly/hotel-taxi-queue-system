@@ -691,7 +691,7 @@ function unwrapOfferCache(offeredCache) {
 }
 
  // HTQS v1.5 – Doorman acknowledges customer request
-async function acknowledgeCustomerRequest() {
+  async function acknowledgeCustomerRequest() {
   try {
     const requestSnapshot = await get(customerRequestRef);
 
