@@ -1318,13 +1318,40 @@ await update(ref(db, "queue/" + acceptedKey), {
   lastSeenAt: Date.now(),
 });
 
+const requestCompletedAt = Date.now();
+
 await update(customerRequestRef, {
-  status: "completed",
-  completedAt: Date.now(),
+  status: "Completed",
+  completedAt: requestCompletedAt,
   assignedDriverKey: acceptedKey,
 });
 
 showToast?.("Pickup complete ✅", "ok", 1800);
+
+// Clear the completed customer request after the confirmation is shown
+setTimeout(async () => {
+  try {
+    const requestSnap = await get(customerRequestRef);
+
+    if (!requestSnap.exists()) return;
+
+    const currentRequest = requestSnap.val();
+    const currentStatus = (currentRequest?.status ?? "").toUpperCase();
+
+    // Only remove the request that this pickup just completed
+    if (
+      currentStatus === "COMPLETED" &&
+      currentRequest.completedAt === requestCompletedAt
+    ) {
+      await remove(customerRequestRef);
+      console.log(
+        "Customer request cleared — HTQS ready for the next passenger."
+      );
+    }
+  } catch (err) {
+    console.error("Customer request reset error:", err);
+  }
+}, 3000);
 
 setTimeout(async () => {
   await remove(ref(db, "queue/" + accepted[0]));
