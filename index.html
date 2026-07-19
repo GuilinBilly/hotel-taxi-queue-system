@@ -109,7 +109,39 @@
 
       <!-- optional box for JS messages if your app uses one -->
       <div id="calledBox" class="called" aria-live="polite"></div>
-    </section>
+      <div id="operationsDashboard" class="operations-dashboard">
+         <h3>📊 Operations Dashboard</h3>
+
+         <div class="dashboard-grid">
+           <div class="dashboard-card">
+             <span class="dashboard-label">Today's Requests</span>
+             <strong id="dashboardRequests">0</strong>
+         </div>
+
+    <div class="dashboard-card">
+      <span class="dashboard-label">Completed Trips</span>
+      <strong id="dashboardCompletedTrips">0</strong>
+    </div>
+
+    <div class="dashboard-card">
+      <span class="dashboard-label">Drivers Waiting</span>
+      <strong id="dashboardDriversWaiting">0</strong>
+    </div>
+
+    <div class="dashboard-card">
+      <span class="dashboard-label">Current Queue Length</span>
+      <strong id="dashboardQueueLength">0</strong>
+    </div>
+  </div>
+
+  <div class="dashboard-system-status">
+    <span>System Status</span>
+    <strong id="dashboardSystemStatus">
+      🟢 Operating Normally
+    </strong>
+    </div>
+   </div>
+ </section>
     
     <!-- Customer Request -->
     <section class="card section customer" aria-labelledby="customer-title">
