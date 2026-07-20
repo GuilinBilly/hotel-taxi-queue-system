@@ -196,6 +196,13 @@ const netStatus = document.getElementById("netStatus"); // optional
 const queueEmpty = document.getElementById("queueEmpty"); // optional
 const soundToggle = document.getElementById("soundToggle"); // optional
 
+const dashboardDriversWaiting = document.getElementById(
+   "dashboardDriversWaiting"
+  );
+const dashboardQueueLength = document.getElementById(
+   "dashboardQueueLength"
+  );
+
 // -----------------------------
 // STATE
 // -----------------------------
@@ -263,6 +270,24 @@ function norm(s) {
 function updateEmptyState() {
   if (!queueEmpty || !queueList) return;
   queueEmpty.style.display = queueList.children.length ? "none" : "block";
+}
+
+function updateLiveQueueDashboard(entries) {
+  const activeEntries = entries.filter(([, driver]) => {
+    return driver && driver.status !== "COMPLETE";
+  });
+
+  const waitingEntries = activeEntries.filter(([, driver]) => {
+    return driver.status === "WAITING";
+  });
+
+  if (dashboardDriversWaiting) {
+    dashboardDriversWaiting.textContent = waitingEntries.length;
+  }
+
+  if (dashboardQueueLength) {
+    dashboardQueueLength.textContent = activeEntries.length;
+  }
 }
 
 // HTQS v1.5 – Role selection logic
@@ -1473,6 +1498,7 @@ function subscribeQueue() {
       updateEmptyState();
       refreshAcceptUI();
       updateQueueHealth({});
+      updateLiveQueueDashboard([]);
       return;
     }
 
@@ -1481,6 +1507,7 @@ function subscribeQueue() {
     lastQueueSnapshot = data;
     refreshJoinUI();
     const entries = Object.entries(data);
+    updateLiveQueueDashboard(entries);
     const arrivedEntry = entries.find(([, driver]) => {
   return (driver?.status ?? "").toUpperCase() === "ARRIVED";
 });
