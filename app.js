@@ -1192,7 +1192,6 @@ async function callNext(isAuto = false) {
 
   const status = (v.status ?? "WAITING").toUpperCase();
   const expiresAt = Number(v.offerExpiresAt ?? 0);
-
   const hasDriverInfo =
     Boolean(v.name || v.driverName || v.plate || v.carColor);
 
