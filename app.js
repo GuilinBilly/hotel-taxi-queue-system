@@ -10,6 +10,7 @@ import {
   get,
   set,
   update,
+  runTransaction,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 // Firebase Auth (Anonymous)
 import {
@@ -73,6 +74,20 @@ const auth = getAuth(app);
 
 const queueRef = ref(db, "queue");
 const customerRequestRef = ref(db, "customerRequest");
+// HTQS v1.9 - Daily Operations Statistics
+function getLocalDateKey() {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getDailyStatisticsRef() {
+  return ref(db, `statistics/daily/${getLocalDateKey()}`);
+}
 
 function milesBetween(lat1, lng1, lat2, lng2) {
   const R = 3958.8; // Earth radius in miles
@@ -196,6 +211,14 @@ const netStatus = document.getElementById("netStatus"); // optional
 const queueEmpty = document.getElementById("queueEmpty"); // optional
 const soundToggle = document.getElementById("soundToggle"); // optional
 
+const dashboardRequests = document.getElementById(
+  "dashboardRequests"
+);
+
+const dashboardCompletedTrips = document.getElementById(
+  "dashboardCompletedTrips"
+);
+
 const dashboardDriversWaiting = document.getElementById(
    "dashboardDriversWaiting"
   );
@@ -288,6 +311,65 @@ function updateLiveQueueDashboard(entries) {
   if (dashboardQueueLength) {
     dashboardQueueLength.textContent = activeEntries.length;
   }
+}
+// HTQS v1.9 - Watch today's Operations Dashboard statistics
+function subscribeDailyStatistics() {
+  const dailyStatisticsRef = getDailyStatisticsRef();
+
+  onValue(
+    dailyStatisticsRef,
+    (snapshot) => {
+      const statistics = snapshot.val() || {};
+
+      const requests = Number(statistics.requests || 0);
+      const completedTrips = Number(statistics.completedTrips || 0);
+
+      if (dashboardRequests) {
+        dashboardRequests.textContent = requests;
+      }
+
+      if (dashboardCompletedTrips) {
+        dashboardCompletedTrips.textContent = completedTrips;
+      }
+    },
+    (error) => {
+      console.error("Daily statistics listener error:", error);
+
+      if (dashboardRequests) {
+        dashboardRequests.textContent = "—";
+      }
+
+      if (dashboardCompletedTrips) {
+        dashboardCompletedTrips.textContent = "—";
+      }
+    }
+  );
+}
+
+subscribeDailyStatistics();
+
+// HTQS v1.9 - Safely increment today's request total
+async function incrementTodayRequests() {
+  const requestsRef = ref(
+    db,
+    `statistics/daily/${getLocalDateKey()}/requests`
+  );
+
+  await runTransaction(requestsRef, (currentValue) => {
+    return Number(currentValue || 0) + 1;
+  });
+}
+
+// HTQS v1.9 - Safely increment today's completed-trip total
+async function incrementCompletedTrips() {
+  const completedTripsRef = ref(
+    db,
+    `statistics/daily/${getLocalDateKey()}/completedTrips`
+  );
+
+  await runTransaction(completedTripsRef, (currentValue) => {
+    return Number(currentValue || 0) + 1;
+  });
 }
 
 // HTQS v1.5 – Role selection logic
@@ -699,6 +781,7 @@ function unwrapOfferCache(offeredCache) {
       assignedDriverKey: null,
       completedAt: null
     });
+    await incrementTodayRequests();
 
     if (customerStatus) {
       customerStatus.textContent =
@@ -1333,6 +1416,7 @@ await update(ref(db, "queue/" + accepted[0]), {
   status: "COMPLETED",
   completedAt: Date.now(),
 });
+await incrementCompletedTrips();
 
 // Wait before removing
 await new Promise(resolve => setTimeout(resolve, 2000));
