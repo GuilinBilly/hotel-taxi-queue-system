@@ -304,13 +304,15 @@ function updateLiveQueueDashboard(entries) {
     return driver.status === "WAITING";
   });
 
-  if (dashboardDriversWaiting) {
-    dashboardDriversWaiting.textContent = waitingEntries.length;
-  }
+  updateDashboardValue(
+    dashboardDriversWaiting,
+    waitingEntries.length
+  );
 
-  if (dashboardQueueLength) {
-    dashboardQueueLength.textContent = activeEntries.length;
-  }
+  updateDashboardValue(
+    dashboardQueueLength,
+    activeEntries.length
+  );
 }
 // HTQS v1.9 - Watch today's Operations Dashboard statistics
 function subscribeDailyStatistics() {
@@ -324,13 +326,15 @@ function subscribeDailyStatistics() {
       const requests = Number(statistics.requests || 0);
       const completedTrips = Number(statistics.completedTrips || 0);
 
-      if (dashboardRequests) {
-        dashboardRequests.textContent = requests;
-      }
+      updateDashboardValue(
+        dashboardRequests,
+        requests
+      );
 
-      if (dashboardCompletedTrips) {
-        dashboardCompletedTrips.textContent = completedTrips;
-      }
+      updateDashboardValue(
+        dashboardCompletedTrips,
+        ompletedTrips
+      );
     },
     (error) => {
       console.error("Daily statistics listener error:", error);
@@ -2260,6 +2264,38 @@ function refreshJoinUI() {
   joinBtn.disabled = !canJoinNow();
   leaveBtn.disabled = true;
 }
+
+/* ==========================================
+
+   HTQS v2.0 – Dashboard Change Animation
+
+   ========================================== */
+
+function animateDashboardCard(cardElement) {
+  if (!cardElement) return;
+
+  cardElement.classList.remove("dashboard-updated");
+
+  // Restart the animation
+  void cardElement.offsetWidth;
+
+  cardElement.classList.add("dashboard-updated");
+}
+
+function updateDashboardValue(valueElement, newValue) {
+  if (!valueElement) return;
+
+  const oldValue = valueElement.textContent;
+  const nextValue = String(newValue);
+
+  valueElement.textContent = nextValue;
+
+  if (oldValue !== nextValue) {
+    const cardElement = valueElement.closest(".dashboard-card");
+    animateDashboardCard(cardElement);
+  }
+}
+
 
 // Save inputs to localStorage
 function saveInputs() {
