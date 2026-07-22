@@ -333,7 +333,7 @@ function subscribeDailyStatistics() {
 
       updateDashboardValue(
         dashboardCompletedTrips,
-        ompletedTrips
+        completedTrips
       );
     },
     (error) => {
