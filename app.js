@@ -403,7 +403,6 @@ async function incrementCompletedTrips() {
     return Number(currentValue || 0) + 1;
   });
 }
-
 // HTQS v1.5 – Role selection logic
 function setRole(role) {
   currentRole = role;
