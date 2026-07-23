@@ -710,3 +710,27 @@ body{
     box-shadow: 0 0 0 rgba(0,0,0,0);
   }
 }
+
+/* ==========================================
+   HTQS v2.0 – Dashboard Status Colors
+   ========================================== */
+
+.dashboard-card.status-neutral {
+  background: #f8fafc;
+  border-color: #dbe4ee;
+}
+
+.dashboard-card.status-active {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.dashboard-card.status-success {
+  background: #ecfdf3;
+  border-color: #86efac;
+}
+
+.dashboard-card.status-attention {
+  background: #fff7ed;
+  border-color: #fdba74;
+}

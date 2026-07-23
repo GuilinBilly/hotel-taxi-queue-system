@@ -313,6 +313,21 @@ function updateLiveQueueDashboard(entries) {
     dashboardQueueLength,
     activeEntries.length
   );
+  setDashboardCardStatus(
+  dashboardDriversWaiting,
+  waitingEntries.length > 0
+    ? "status-success"
+    : "status-attention"
+);
+
+setDashboardCardStatus(
+  dashboardQueueLength,
+  activeEntries.length === 0
+    ? "status-neutral"
+    : activeEntries.length >= 6
+      ? "status-attention"
+      : "status-active"
+);
 }
 // HTQS v1.9 - Watch today's Operations Dashboard statistics
 function subscribeDailyStatistics() {
@@ -335,6 +350,19 @@ function subscribeDailyStatistics() {
         dashboardCompletedTrips,
         completedTrips
       );
+      setDashboardCardStatus(
+       dashboardRequests,
+       requests > 0
+       ? "status-active"
+       : "status-neutral"
+      );
+
+      setDashboardCardStatus(
+       dashboardCompletedTrips,
+       completedTrips > 0
+       ? "status-success"
+       : "status-neutral"
+    );
     },
     (error) => {
       console.error("Daily statistics listener error:", error);
@@ -2279,6 +2307,25 @@ function animateDashboardCard(cardElement) {
   void cardElement.offsetWidth;
 
   cardElement.classList.add("dashboard-updated");
+}
+
+function setDashboardCardStatus(valueElement, statusClass) {
+  if (!valueElement) return;
+
+  const card = valueElement.closest(".dashboard-card");
+
+  if (!card) return;
+
+  card.classList.remove(
+    "status-neutral",
+    "status-active",
+    "status-success",
+    "status-attention"
+  );
+
+  if (statusClass) {
+    card.classList.add(statusClass);
+  }
 }
 
 function updateDashboardValue(valueElement, newValue) {
