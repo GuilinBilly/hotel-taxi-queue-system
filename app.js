@@ -4,6 +4,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/fireba
 import {
   getDatabase,
   ref,
+  push,
   onValue,
   onDisconnect,
   remove,
@@ -403,6 +404,7 @@ async function incrementCompletedTrips() {
     return Number(currentValue || 0) + 1;
   });
 }
+
 // HTQS v1.5 – Role selection logic
 function setRole(role) {
   currentRole = role;
@@ -813,6 +815,10 @@ function unwrapOfferCache(offeredCache) {
       completedAt: null
     });
     await incrementTodayRequests();
+    await addDispatchTimelineEvent(
+       "CUSTOMER_REQUESTED",
+       "Customer requested a taxi"
+    );
 
     if (customerStatus) {
       customerStatus.textContent =
@@ -827,6 +833,26 @@ function unwrapOfferCache(offeredCache) {
       customerStatus.textContent =
         "Unable to send taxi request. Please try again.";
     }
+  }
+}
+  // HTQS v2.1 – Record dispatch timeline events
+  async function addDispatchTimelineEvent(eventType, message, details = {}) {
+    console.log("🚀 addDispatchTimelineEvent called:", eventType);
+  try {
+    const timelineEventRef = push(
+      ref(db, "dispatchTimeline")
+    );
+
+    await set(timelineEventRef, {
+      eventType,
+      message,
+      details,
+      createdAt: Date.now()
+    });
+
+    console.log("Dispatch timeline event recorded:", message);
+  } catch (error) {
+    console.error("Failed to record dispatch timeline event:", error);
   }
 }
 
@@ -866,6 +892,11 @@ function unwrapOfferCache(offeredCache) {
       status: "acknowledged",
       acknowledgedAt: Date.now()
     });
+
+    await addDispatchTimelineEvent(
+      "REQUEST_ACKNOWLEDGED",
+      "Doorman acknowledged the customer request"
+    );
 
     if (customerDemandStatus) {
       customerDemandStatus.textContent =
@@ -1350,6 +1381,10 @@ if (customerRequestSnapshot.exists()) {
       assignedAt: Date.now(),
       assignedDriverKey: key,
     });
+    await addDispatchTimelineEvent(
+      "DRIVER_ASSIGNED",
+      "Driver assigned to the customer request"
+    );
 
     console.log("Customer request status changed to: assigned");
   }
@@ -1395,11 +1430,17 @@ if (customerRequestSnapshot.exists()) {
       arrivedAt: Date.now(),
       lastSeenAt: Date.now(),
     });
+
     await update(customerRequestRef, {
       status: "arriving",
       arrivingAt: Date.now(),
       assignedDriverKey: myDriverKey,
     });
+
+    await addDispatchTimelineEvent(
+      "DRIVER_ARRIVED",
+      "Driver arrived at the hotel"
+    );
 
     showToast?.("Marked as arrived 🚖", "ok", 1500);
     refreshAcceptUI();
@@ -1465,6 +1506,11 @@ await update(customerRequestRef, {
   completedAt: requestCompletedAt,
   assignedDriverKey: acceptedKey,
 });
+
+await addDispatchTimelineEvent(
+  "PASSENGER_BOARDED",
+  "Passenger boarded the taxi"
+);
 
 showToast?.("Pickup complete ✅", "ok", 1800);
 
