@@ -855,6 +855,165 @@ function unwrapOfferCache(offeredCache) {
     console.error("Failed to record dispatch timeline event:", error);
   }
 }
+// HTQS v2.2 — Display live dispatch timeline
+function watchDispatchTimeline() {
+  const dispatchTimelineElement =
+    document.getElementById("dispatchTimeline");
+
+  const dispatchTimelineStatus =
+    document.getElementById("dispatchTimelineStatus");
+
+  if (!dispatchTimelineElement) {
+    return;
+  }
+
+  const dispatchTimelineRef = ref(db, "dispatchTimeline");
+
+  onValue(
+    dispatchTimelineRef,
+    (snapshot) => {
+      if (dispatchTimelineStatus) {
+        dispatchTimelineStatus.textContent = "Live";
+      }
+
+      if (!snapshot.exists()) {
+        dispatchTimelineElement.innerHTML = `
+          <div class="dispatch-timeline-empty">
+            No dispatch activity yet.
+          </div>
+        `;
+        return;
+      }
+
+      const timelineData = snapshot.val();
+
+      const timelineEvents = Object.entries(timelineData)
+        .map(([key, event]) => ({
+          key,
+          ...event
+        }))
+        .sort(
+          (firstEvent, secondEvent) =>
+            Number(secondEvent.createdAt || 0) -
+            Number(firstEvent.createdAt || 0)
+        );
+        // HTQS v2.3 — Timeline event visual identities
+        const eventStyles = {
+        CUSTOMER_REQUESTED: {
+        icon: "👤",
+        color: "#2563eb",
+        label: "Customer requested a taxi"
+        },
+
+        REQUEST_ACKNOWLEDGED: {
+        icon: "👍",
+        color: "#16a34a",
+        label: "Request acknowledged"
+        },
+
+        DRIVER_ASSIGNED: {
+        icon: "🚖",
+        color: "#7c3aed",
+        label: "Driver assigned"
+        },
+
+  DRIVER_ARRIVED: {
+    icon: "📍",
+    color: "#ea580c",
+    label: "Driver arrived"
+  },
+
+  PASSENGER_BOARDED: {
+    icon: "✅",
+    color: "#059669",
+    label: "Passenger boarded"
+  },
+
+  RIDE_COMPLETED: {
+    icon: "🏁",
+    color: "#6b7280",
+    label: "Ride completed"
+  }
+};
+
+      dispatchTimelineElement.innerHTML = "";
+
+      timelineEvents.forEach((event) => {
+  const timelineItem = document.createElement("article");
+  timelineItem.className = "dispatch-timeline-item";
+
+  const eventType = event.eventType || "GENERAL_EVENT";
+
+  const style = eventStyles[eventType] || {
+    icon: "📌",
+    color: "#64748b",
+    label: "Dispatch activity"
+  };
+
+  const eventTimestamp = event.createdAt || event.timestamp;
+
+  const eventTime = eventTimestamp
+    ? new Date(eventTimestamp).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit"
+      })
+    : "Time unavailable";
+
+  timelineItem.style.setProperty("--event-color", style.color);
+
+  timelineItem.innerHTML = `
+    <div
+      class="dispatch-timeline-dot"
+      style="background-color: ${style.color};"
+    ></div>
+
+    <div
+      class="dispatch-timeline-content"
+      style="border-left-color: ${style.color};"
+    >
+      <div class="dispatch-timeline-item-header">
+        <strong>
+          <span class="dispatch-timeline-icon">${style.icon}</span>
+          ${style.label}
+        </strong>
+
+        <time>${eventTime}</time>
+      </div>
+
+      <p class="dispatch-timeline-message">
+        ${event.message || style.label}
+      </p>
+
+      <span
+        class="dispatch-timeline-event-type"
+        style="
+          color: ${style.color};
+          border-color: ${style.color};
+        "
+      >
+        ${eventType.replaceAll("_", " ")}
+      </span>
+    </div>
+  `;
+
+  dispatchTimelineElement.appendChild(timelineItem);
+});
+    },
+    (error) => {
+      console.error("Unable to load dispatch timeline:", error);
+
+      if (dispatchTimelineStatus) {
+        dispatchTimelineStatus.textContent = "Offline";
+      }
+
+      dispatchTimelineElement.innerHTML = `
+        <div class="dispatch-timeline-empty">
+          Unable to load dispatch activity.
+        </div>
+      `;
+    }
+  );
+}
 
  // HTQS v1.5 – Doorman acknowledges customer request
   async function acknowledgeCustomerRequest() {
@@ -3002,6 +3161,7 @@ driverPlateInput.value =
 driverColorInput.value =
   localStorage.getItem("htqs.driverColor") || "";
 refreshJoinUI(); // optional but good
+watchDispatchTimeline();
 autoCheckLocation();
 subscribeQueue();
 

@@ -734,3 +734,232 @@ body{
   background: #fff7ed;
   border-color: #fdba74;
 }
+/* =========================================
+   HTQS v2.2 — Live Dispatch Timeline
+========================================= */
+
+.dispatch-timeline-panel {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #dfe7ef;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+.dispatch-timeline-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.dispatch-timeline-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #1f2937;
+}
+
+.dispatch-timeline-header p {
+  margin: 5px 0 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.dispatch-timeline-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 58px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.dispatch-timeline-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+}
+
+.dispatch-timeline {
+  position: relative;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 4px 4px 4px 26px;
+}
+
+.dispatch-timeline::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 10px;
+  width: 2px;
+  border-radius: 2px;
+  background: #dbe4ee;
+}
+
+.dispatch-timeline-empty {
+  position: relative;
+  padding: 22px 18px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #64748b;
+  text-align: center;
+  font-size: 0.92rem;
+}
+
+.dispatch-timeline-empty::before {
+  content: "🕒";
+  display: block;
+  margin-bottom: 7px;
+  font-size: 1.4rem;
+}
+
+.dispatch-timeline::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dispatch-timeline::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dispatch-timeline::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.dispatch-timeline::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+/* Timeline event items */
+.dispatch-timeline-item {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding: 0 0 18px;
+}
+
+.dispatch-timeline-item:last-child {
+  padding-bottom: 4px;
+}
+
+.dispatch-timeline-dot {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  margin-top: 7px;
+  margin-left: -22px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  background: var(--event-color, #64748b);
+  box-shadow: 0 0 0 3px color-mix(
+  in srgb,
+  var(--event-color, #64748b) 18%,
+  transparent
+);
+}
+
+.dispatch-timeline-content {
+  flex: 1;
+  min-width: 0;
+  padding: 13px 15px;
+  border: 1px solid #e2e8f0;
+  border-left: 5px solid var(--event-color, #64748b);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.dispatch-timeline-item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dispatch-timeline-item-header strong {
+  color: #1e293b;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.dispatch-timeline-item-header time {
+  flex-shrink: 0;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dispatch-timeline-event-type {
+  display: inline-flex;
+  margin-top: 9px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid currentColor;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+  }
+
+  .dispatch-timeline-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  margin-right: 8px;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: 1.05rem;
+}
+
+.dispatch-timeline-message {
+  margin: 8px 0 0;
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+  
+  @media (max-width: 600px) {
+
+  .dispatch-timeline-panel {
+    padding: 16px;
+  }
+
+  .dispatch-timeline-header {
+    align-items: flex-start;
+  }
+
+  .dispatch-timeline-header h3 {
+    font-size: 1.05rem;
+  }
+
+  .dispatch-timeline-item-header {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .dispatch-timeline-content {
+    padding: 12px;
+  }
+}

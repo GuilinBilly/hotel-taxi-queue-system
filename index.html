@@ -81,6 +81,7 @@
       <p class="helper">Drivers are served in order. Doorman calls the next taxi.</p>
       <p id="queueEmpty" class="empty">No drivers waiting yet.</p>
       <ul id="queueList" class="queue"></ul>
+
     </section>
 
     <!-- Doorman Control -->
@@ -141,6 +142,25 @@
     </strong>
     </div>
    </div>
+   <!-- Live Dispatch Timeline -->
+<div class="dispatch-timeline-panel">
+  <div class="dispatch-timeline-header">
+    <div>
+      <h3>🕒 Live Dispatch Timeline</h3>
+      <p>Real-time hotel taxi dispatch activity</p>
+    </div>
+
+    <span id="dispatchTimelineStatus" class="dispatch-timeline-status">
+      Live
+    </span>
+  </div>
+
+  <div id="dispatchTimeline" class="dispatch-timeline">
+    <div class="dispatch-timeline-empty">
+      No dispatch activity yet.
+    </div>
+   </div>
+  </div>
  </section>
     
     <!-- Customer Request -->
