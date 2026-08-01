@@ -804,10 +804,12 @@ function unwrapOfferCache(offeredCache) {
   // HTQS v1.5 — Create a professional customer request
   async function sendCustomerRequest() {
   const customerStatus = document.getElementById("customerStatus");
+  const dispatchId = `dispatch-${Date.now()}`;
 
   try {
     await set(customerRequestRef, {
       status: "waiting",
+      dispatchId,
       requestedAt: Date.now(),
       acknowledgedAt: null,
       assignedAt: null,
@@ -816,8 +818,10 @@ function unwrapOfferCache(offeredCache) {
     });
     await incrementTodayRequests();
     await addDispatchTimelineEvent(
-       "CUSTOMER_REQUESTED",
-       "Customer requested a taxi"
+      "CUSTOMER_REQUESTED",
+      "Customer requested a taxi",
+      {},
+      dispatchId
     );
 
     if (customerStatus) {
@@ -836,7 +840,12 @@ function unwrapOfferCache(offeredCache) {
   }
 }
   // HTQS v2.1 – Record dispatch timeline events
-  async function addDispatchTimelineEvent(eventType, message, details = {}) {
+  async function addDispatchTimelineEvent(
+     eventType,
+     message,
+     details = {},
+     dispatchId = null
+  ) {
     console.log("🚀 addDispatchTimelineEvent called:", eventType);
   try {
     const timelineEventRef = push(
@@ -844,10 +853,11 @@ function unwrapOfferCache(offeredCache) {
     );
 
     await set(timelineEventRef, {
-      eventType,
-      message,
-      details,
-      createdAt: Date.now()
+     eventType,
+     message,
+     details,
+     dispatchId,
+     createdAt: Date.now()
     });
 
     console.log("Dispatch timeline event recorded:", message);
@@ -936,67 +946,193 @@ function watchDispatchTimeline() {
   }
 };
 
-      dispatchTimelineElement.innerHTML = "";
+      // HTQS v2.4 – Group timeline events by dispatch lifecycle
+dispatchTimelineElement.innerHTML = "";
 
-      timelineEvents.forEach((event) => {
-  const timelineItem = document.createElement("article");
-  timelineItem.className = "dispatch-timeline-item";
+const dispatchGroups = Object.values(
+  timelineEvents.reduce((groups, event) => {
+    // Older events created before v2.4 do not have a dispatchId.
+    // Keep each legacy event separate so unrelated history is never merged.
+    const groupKey = event.dispatchId || `legacy-${event.key}`;
 
-  const eventType = event.eventType || "GENERAL_EVENT";
+    if (!groups[groupKey]) {
+      groups[groupKey] = {
+        dispatchId: event.dispatchId || null,
+        events: [],
+        earliestAt: Number(event.createdAt || event.timestamp || 0),
+        latestAt: Number(event.createdAt || event.timestamp || 0)
+      };
+    }
 
-  const style = eventStyles[eventType] || {
-    icon: "📌",
-    color: "#64748b",
-    label: "Dispatch activity"
-  };
+    const eventTimestamp = Number(
+      event.createdAt || event.timestamp || 0
+    );
 
-  const eventTimestamp = event.createdAt || event.timestamp;
+    groups[groupKey].events.push(event);
+    groups[groupKey].earliestAt = Math.min(
+      groups[groupKey].earliestAt,
+      eventTimestamp
+    );
+    groups[groupKey].latestAt = Math.max(
+      groups[groupKey].latestAt,
+      eventTimestamp
+    );
 
-  const eventTime = eventTimestamp
-    ? new Date(eventTimestamp).toLocaleTimeString([], {
+    return groups;
+  }, {})
+).sort(
+  (firstDispatch, secondDispatch) =>
+    secondDispatch.latestAt - firstDispatch.latestAt
+);
+
+dispatchGroups.forEach((dispatch) => {
+  const dispatchGroup = document.createElement("section");
+  dispatchGroup.className = "dispatch-history-group";
+
+  const isCompleted = dispatch.events.some(
+    (event) => event.eventType === "PASSENGER_BOARDED"
+  );
+
+  const shortDispatchId = dispatch.dispatchId
+    ? dispatch.dispatchId.split("-").pop().slice(-6).toUpperCase()
+    : "LEGACY";
+
+  const dispatchStartTime = dispatch.earliestAt
+    ? new Date(dispatch.earliestAt).toLocaleTimeString([], {
         hour: "numeric",
         minute: "2-digit"
       })
     : "Time unavailable";
 
-  timelineItem.style.setProperty("--event-color", style.color);
+  const durationMilliseconds =
+    dispatch.latestAt - dispatch.earliestAt;
 
-  timelineItem.innerHTML = `
-    <div
-      class="dispatch-timeline-dot"
-      style="background-color: ${style.color};"
-    ></div>
+  const durationMinutes = Math.floor(
+    durationMilliseconds / 60000
+  );
 
-    <div
-      class="dispatch-timeline-content"
-      style="border-left-color: ${style.color};"
-    >
-      <div class="dispatch-timeline-item-header">
+  const durationSeconds = Math.floor(
+    (durationMilliseconds % 60000) / 1000
+  );
+
+  const durationText =
+    durationMilliseconds > 0
+      ? `${durationMinutes}m ${durationSeconds}s`
+      : "In progress";
+
+  dispatchGroup.innerHTML = `
+    <div class="dispatch-history-header">
+      <div>
         <strong>
-          <span class="dispatch-timeline-icon">${style.icon}</span>
-          ${style.label}
+          ${
+            dispatch.dispatchId
+              ? `Dispatch #${shortDispatchId}`
+              : "Legacy timeline event"
+          }
         </strong>
 
-        <time>${eventTime}</time>
+        <span class="dispatch-history-start">
+          Started ${dispatchStartTime}
+        </span>
       </div>
 
-      <p class="dispatch-timeline-message">
-        ${event.message || style.label}
-      </p>
+      <div class="dispatch-history-summary">
+        <span
+          class="dispatch-history-status ${
+            isCompleted ? "is-completed" : "is-active"
+          }"
+        >
+          ${isCompleted ? "Completed" : "Active"}
+        </span>
 
-      <span
-        class="dispatch-timeline-event-type"
-        style="
-          color: ${style.color};
-          border-color: ${style.color};
-        "
-      >
-        ${eventType.replaceAll("_", " ")}
-      </span>
+        ${
+          dispatch.dispatchId
+            ? `<span class="dispatch-history-duration">${durationText}</span>`
+            : ""
+        }
+      </div>
     </div>
+
+    <div class="dispatch-history-events"></div>
   `;
 
-  dispatchTimelineElement.appendChild(timelineItem);
+  const dispatchEventsElement =
+    dispatchGroup.querySelector(".dispatch-history-events");
+
+  dispatch.events
+    .sort(
+      (firstEvent, secondEvent) =>
+        Number(firstEvent.createdAt || firstEvent.timestamp || 0) -
+        Number(secondEvent.createdAt || secondEvent.timestamp || 0)
+    )
+    .forEach((event) => {
+      const timelineItem = document.createElement("article");
+      timelineItem.className = "dispatch-timeline-item";
+
+      const eventType = event.eventType || "GENERAL_EVENT";
+
+      const style = eventStyles[eventType] || {
+        icon: "📌",
+        color: "#64748b",
+        label: "Dispatch activity"
+      };
+
+      const eventTimestamp =
+        event.createdAt || event.timestamp;
+
+      const eventTime = eventTimestamp
+        ? new Date(eventTimestamp).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+          })
+        : "Time unavailable";
+
+      timelineItem.style.setProperty(
+        "--event-color",
+        style.color
+      );
+
+      timelineItem.innerHTML = `
+        <div
+          class="dispatch-timeline-dot"
+          style="background-color: ${style.color};"
+        ></div>
+
+        <div
+          class="dispatch-timeline-content"
+          style="border-left-color: ${style.color};"
+        >
+          <div class="dispatch-timeline-item-header">
+            <strong>
+              <span class="dispatch-timeline-icon">
+                ${style.icon}
+              </span>
+              ${style.label}
+            </strong>
+
+            <time>${eventTime}</time>
+          </div>
+
+          <p class="dispatch-timeline-message">
+            ${event.message || style.label}
+          </p>
+
+          <span
+            class="dispatch-timeline-event-type"
+            style="
+              color: ${style.color};
+              border-color: ${style.color};
+            "
+          >
+            ${eventType.replaceAll("_", " ")}
+          </span>
+        </div>
+      `;
+
+      dispatchEventsElement.appendChild(timelineItem);
+    });
+
+  dispatchTimelineElement.appendChild(dispatchGroup);
 });
     },
     (error) => {
@@ -1054,7 +1190,9 @@ function watchDispatchTimeline() {
 
     await addDispatchTimelineEvent(
       "REQUEST_ACKNOWLEDGED",
-      "Doorman acknowledged the customer request"
+      "Doorman acknowledged the customer request",
+      {},
+      request.dispatchId || null
     );
 
     if (customerDemandStatus) {
@@ -1542,7 +1680,11 @@ if (customerRequestSnapshot.exists()) {
     });
     await addDispatchTimelineEvent(
       "DRIVER_ASSIGNED",
-      "Driver assigned to the customer request"
+      "Driver assigned to the customer request",
+      {
+      driverKey: key
+      },
+      customerRequest.dispatchId || null
     );
 
     console.log("Customer request status changed to: assigned");
@@ -1574,6 +1716,10 @@ if (customerRequestSnapshot.exists()) {
   try {
     const driverRef = ref(db, "queue/" + myDriverKey);
     const snap = await get(driverRef);
+    const customerRequestSnapshot = await get(customerRequestRef);
+    const customerRequest = customerRequestSnapshot.exists()
+    ? customerRequestSnapshot.val()
+    : {};
 
     if (!snap.exists()) return;
 
@@ -1597,9 +1743,13 @@ if (customerRequestSnapshot.exists()) {
     });
 
     await addDispatchTimelineEvent(
-      "DRIVER_ARRIVED",
-      "Driver arrived at the hotel"
-    );
+    "DRIVER_ARRIVED",
+    "Driver arrived at the hotel",
+    {
+     driverKey: myDriverKey
+    },
+    customerRequest.dispatchId || null
+  );
 
     showToast?.("Marked as arrived 🚖", "ok", 1500);
     refreshAcceptUI();
@@ -1658,6 +1808,11 @@ await update(ref(db, "queue/" + acceptedKey), {
   lastSeenAt: Date.now(),
 });
 
+const customerRequestSnapshot = await get(customerRequestRef);
+const customerRequest = customerRequestSnapshot.exists()
+  ? customerRequestSnapshot.val()
+  : {};
+
 const requestCompletedAt = Date.now();
 
 await update(customerRequestRef, {
@@ -1668,7 +1823,11 @@ await update(customerRequestRef, {
 
 await addDispatchTimelineEvent(
   "PASSENGER_BOARDED",
-  "Passenger boarded the taxi"
+  "Passenger boarded the taxi",
+  {
+    driverKey: acceptedKey
+  },
+  customerRequest.dispatchId || null
 );
 
 showToast?.("Pickup complete ✅", "ok", 1800);
