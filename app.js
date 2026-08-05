@@ -227,6 +227,22 @@ const dashboardQueueLength = document.getElementById(
    "dashboardQueueLength"
   );
 
+  const dashboardAverageAssignment = document.getElementById(
+  "dashboardAverageAssignment"
+);
+
+const dashboardAverageArrival = document.getElementById(
+  "dashboardAverageArrival"
+);
+
+const dashboardAverageService = document.getElementById(
+  "dashboardAverageService"
+);
+
+const dashboardCompletionRate = document.getElementById(
+  "dashboardCompletionRate"
+);
+
 // -----------------------------
 // STATE
 // -----------------------------
@@ -287,8 +303,152 @@ let devTestMode = true; // HTQS v1.3-C test mode
 // -----------------------------
 // HELPERS
 // -----------------------------
+
 function norm(s) {
   return (s ?? "").toString().trim().toLowerCase();
+}
+
+// HTQS v2.5 – Format KPI durations for Business Intelligence
+function formatDuration(milliseconds) {
+  const duration = Number(milliseconds);
+
+  if (!Number.isFinite(duration) || duration < 0) {
+    return "--";
+  }
+
+  const totalSeconds = Math.round(duration / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  if (minutes === 0) {
+    return `${seconds}s`;
+  }
+
+  return `${minutes}m ${seconds}s`;
+}
+
+// HTQS v2.5 – Calculate Business Intelligence KPIs
+function updateBusinessIntelligenceDashboard(timelineEvents) {
+  if (!Array.isArray(timelineEvents)) {
+    return;
+  }
+
+  const dispatches = Object.values(
+    timelineEvents.reduce((groups, event) => {
+      if (!event || !event.dispatchId) {
+        return groups;
+      }
+
+      if (!groups[event.dispatchId]) {
+        groups[event.dispatchId] = [];
+      }
+
+      groups[event.dispatchId].push(event);
+
+      return groups;
+    }, {})
+  );
+
+  const assignmentDurations = [];
+  const arrivalDurations = [];
+  const serviceDurations = [];
+
+  let requestedDispatches = 0;
+  let completedDispatches = 0;
+
+  dispatches.forEach((events) => {
+    const getEventTime = (eventType) => {
+      const matchingTimes = events
+        .filter((event) => event.eventType === eventType)
+        .map((event) => Number(event.createdAt || event.timestamp || 0))
+        .filter((timestamp) => Number.isFinite(timestamp) && timestamp > 0);
+
+      return matchingTimes.length > 0
+        ? Math.min(...matchingTimes)
+        : null;
+    };
+
+    const requestedAt = getEventTime("CUSTOMER_REQUESTED");
+    const assignedAt = getEventTime("DRIVER_ASSIGNED");
+    const arrivedAt = getEventTime("DRIVER_ARRIVED");
+    const boardedAt = getEventTime("PASSENGER_BOARDED");
+
+    if (!requestedAt) {
+      return;
+    }
+
+    requestedDispatches += 1;
+
+    if (assignedAt && assignedAt >= requestedAt) {
+      assignmentDurations.push(assignedAt - requestedAt);
+    }
+
+    if (assignedAt && arrivedAt && arrivedAt >= assignedAt) {
+      arrivalDurations.push(arrivedAt - assignedAt);
+    }
+
+    if (boardedAt && boardedAt >= requestedAt) {
+      serviceDurations.push(boardedAt - requestedAt);
+      completedDispatches += 1;
+    }
+  });
+
+  const calculateAverage = (durations) => {
+    if (durations.length === 0) {
+      return null;
+    }
+
+    const total = durations.reduce(
+      (sum, duration) => sum + duration,
+      0
+    );
+
+    return total / durations.length;
+  };
+
+  const averageAssignment =
+    calculateAverage(assignmentDurations);
+
+  const averageArrival =
+    calculateAverage(arrivalDurations);
+
+  const averageService =
+    calculateAverage(serviceDurations);
+
+  const completionRate =
+    requestedDispatches > 0
+      ? Math.round(
+          (completedDispatches / requestedDispatches) * 100
+        )
+      : null;
+
+  if (dashboardAverageAssignment) {
+    dashboardAverageAssignment.textContent =
+      averageAssignment === null
+        ? "--"
+        : formatDuration(averageAssignment);
+  }
+
+  if (dashboardAverageArrival) {
+    dashboardAverageArrival.textContent =
+      averageArrival === null
+        ? "--"
+        : formatDuration(averageArrival);
+  }
+
+  if (dashboardAverageService) {
+    dashboardAverageService.textContent =
+      averageService === null
+        ? "--"
+        : formatDuration(averageService);
+  }
+
+  if (dashboardCompletionRate) {
+    dashboardCompletionRate.textContent =
+      completionRate === null
+        ? "--"
+        : `${completionRate}%`;
+  }
 }
 
 function updateEmptyState() {
@@ -892,6 +1052,7 @@ function watchDispatchTimeline() {
             No dispatch activity yet.
           </div>
         `;
+         updateBusinessIntelligenceDashboard([]);
         return;
       }
 
@@ -907,6 +1068,7 @@ function watchDispatchTimeline() {
             Number(secondEvent.createdAt || 0) -
             Number(firstEvent.createdAt || 0)
         );
+        updateBusinessIntelligenceDashboard(timelineEvents);
         // HTQS v2.3 — Timeline event visual identities
         const eventStyles = {
         CUSTOMER_REQUESTED: {
