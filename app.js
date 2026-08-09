@@ -1189,7 +1189,7 @@ dispatchGroups.forEach((dispatch) => {
           ${
             dispatch.dispatchId
               ? `Dispatch #${shortDispatchId}`
-              : "Legacy timeline event"
+              : "Historical Dispatch"
           }
         </strong>
 
