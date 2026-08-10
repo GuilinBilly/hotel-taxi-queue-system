@@ -1707,30 +1707,53 @@ async function callNext(isAuto = false) {
     const data = snap.exists() ? snap.val() : {};
     const entries = Object.entries(data);
 
-    // 3) C3 rule: do NOT create a new offer if one is still active
-    const activeOffer = entries.find(([_, v]) => {
-  if (!v) return false;
+    // 3) HTQS v2.7 — prevent duplicate active dispatches
+    const activeDispatch = entries.find(([_, v]) => {
+    if (!v) return false;
 
   const status = (v.status ?? "WAITING").toUpperCase();
   const expiresAt = Number(v.offerExpiresAt ?? 0);
   const hasDriverInfo =
     Boolean(v.name || v.driverName || v.plate || v.carColor);
 
-  return (
-    status === "OFFERED" &&
-    expiresAt > Date.now() &&
-    hasDriverInfo
-  );
+  if (!hasDriverInfo) return false;
+
+  // OFFERED is active only while the offer has not expired
+  if (status === "OFFERED") {
+    return expiresAt > now;
+  }
+
+  // ACCEPTED and ARRIVED are active until the ride workflow continues
+  return status === "ACCEPTED" || status === "ARRIVED";
 });
 
-    if (activeOffer) {
-      const [, v] = activeOffer;
-      const name = v?.name ?? "a driver";
-      const secs = Math.ceil(((v.offerExpiresAt ?? now) - now) / 1000);
-      if (typeof showToast === "function") showToast(`Already offering ${name} (${secs}s left)`, "warn", 2200);
-      else alert(`Already offering ${name} (${secs}s left)`);
-      return;
-    }
+if (activeDispatch) {
+  const [, v] = activeDispatch;
+  const name = v?.name ?? v?.driverName ?? "a driver";
+  const status = (v?.status ?? "").toUpperCase();
+
+  let message = `Active dispatch already in progress with ${name}.`;
+
+  if (status === "OFFERED") {
+    const secs = Math.max(
+      0,
+      Math.ceil(((v.offerExpiresAt ?? now) - now) / 1000)
+    );
+    message = `Already offering ${name} (${secs}s left).`;
+  } else if (status === "ACCEPTED") {
+    message = `${name} has already accepted this dispatch.`;
+  } else if (status === "ARRIVED") {
+    message = `${name} has already arrived for pickup.`;
+  }
+
+  if (typeof showToast === "function") {
+    showToast(message, "warn", 2200);
+  } else {
+    alert(message);
+  }
+
+  return;
+}
 
     // 4) Find oldest WAITING
     const waiting = entries
