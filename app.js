@@ -195,6 +195,7 @@ const callNextBtn = document.getElementById("callNextBtn");
 const customerWaitingBtn = document.getElementById("customerRequestBtn");
 const customerDemandStatus = document.getElementById("customerDemandStatus");
 const completeBtn = document.getElementById("completeBtn");
+const cancelDispatchBtn = document.getElementById("cancelDispatchBtn");
 const resetBtn = document.getElementById("resetBtn");
 
 const doormanPinInput = document.getElementById("doormanPin");
@@ -2078,6 +2079,89 @@ setTimeout(async () => {
   }
 }
 
+// HTQS v2.8 — Recover from a cancelled active dispatch
+async function cancelActiveDispatch() {
+  if (isBusy) return;
+
+  if (doormanPinInput.value.trim() !== DOORMAN_PIN) {
+    showToast?.("Wrong PIN", "err", 1800) || alert("Wrong PIN");
+    return;
+  }
+
+  setBusy(true, "Cancelling dispatch...");
+
+  try {
+    const snap = await get(queueRef);
+    const data = snap.exists() ? snap.val() : {};
+
+    const activeDispatch = Object.entries(data).find(([_, v]) => {
+      const status = (v?.status ?? "").toUpperCase();
+      return status === "ACCEPTED" || status === "ARRIVED";
+    });
+
+    if (!activeDispatch) {
+      showToast?.("No active dispatch to cancel.", "warn", 2000) ||
+        alert("No active dispatch to cancel.");
+      return;
+    }
+
+    const [driverKey, driver] = activeDispatch;
+    const driverName = driver?.name ?? driver?.driverName ?? "Driver";
+
+    const confirmed = confirm(
+      `Cancel the active dispatch for ${driverName}?`
+    );
+
+    if (!confirmed) return;
+
+    const customerRequestSnapshot = await get(customerRequestRef);
+    const customerRequest = customerRequestSnapshot.exists()
+      ? customerRequestSnapshot.val()
+      : {};
+
+    await addDispatchTimelineEvent(
+      "DISPATCH_CANCELLED",
+      `Active dispatch cancelled for ${driverName}`,
+      {
+        driverKey
+      },
+      customerRequest.dispatchId || null
+    );
+
+    if (customerRequestSnapshot.exists()) {
+  await update(customerRequestRef, {
+    status: "waiting",
+    assignedAt: null,
+    assignedDriverKey: null
+  });
+
+  // Restore demand only when a real customer request still exists
+  customerDemandCount += 1;
+  updateCustomerDemandUI();
+  }
+
+    // Remove the cancelled driver so FIFO does not immediately select them again
+    await remove(ref(db, "queue/" + driverKey));
+
+    showToast?.(
+      `Dispatch cancelled — ${driverName} released.`,
+      "ok",
+      2200
+    );
+
+    refreshAcceptUI?.();
+    refreshJoinUI?.();
+    updateEmptyState?.();
+
+  } catch (err) {
+    console.error("cancelActiveDispatch error:", err);
+    showToast?.("Cancel dispatch failed", "err", 2200) ||
+      alert("Cancel dispatch failed");
+  } finally {
+    setBusy(false);
+  }
+}
+
 async function resetDemo() {
   if (!isConnected) {
     if (typeof showToast === "function") showToast("Offline — try again in a moment", "warn", 2000);
@@ -3539,6 +3623,7 @@ customerWaitingBtn.onclick = () => {
     sendCustomerRequest();
 };
 completeBtn.onclick = completePickup;
+cancelDispatchBtn.onclick = cancelActiveDispatch;
 resetBtn.onclick = resetDemo;
 
 function showSoundUnlockBanner() {
