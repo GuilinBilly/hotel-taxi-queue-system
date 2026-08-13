@@ -2242,6 +2242,10 @@ function subscribeQueue() {
         refreshAcceptUI();
       }
       if (queuePositionEl) queuePositionEl.textContent = "";
+      
+      lastQueueSnapshot = {};
+      refreshDoormanControls();
+
       updateEmptyState();
       refreshAcceptUI();
       updateQueueHealth({});
@@ -2252,6 +2256,7 @@ function subscribeQueue() {
     const data = snap.val() || {};
     updateQueueHealth(data);
     lastQueueSnapshot = data;
+    refreshDoormanControls();
     refreshJoinUI();
     const entries = Object.entries(data);
     updateLiveQueueDashboard(entries);
@@ -2771,6 +2776,44 @@ function refreshAcceptUI() {
     suppressOfferBeep = false; // reset so next offer can beep
   }
 }
+
+// HTQS v2.9 — Context-aware Doorman controls
+function refreshDoormanControls() {
+  if (!callNextBtn || !completeBtn || !cancelDispatchBtn) return;
+
+  const entries = Object.values(lastQueueSnapshot || {});
+  const now = Date.now();
+
+  const activeDispatch = entries.find(driver => {
+    if (!driver) return false;
+
+    const status = (driver.status ?? "WAITING").toUpperCase();
+    const expiresAt = Number(driver.offerExpiresAt ?? 0);
+
+    // OFFERED is active only while the offer has not expired
+    if (status === "OFFERED") {
+      return expiresAt > now;
+    }
+
+    // ACCEPTED and ARRIVED remain active
+    return status === "ACCEPTED" || status === "ARRIVED";
+  });
+
+  const activeStatus =
+    (activeDispatch?.status ?? "").toUpperCase();
+
+  // Call Next Taxi is allowed only when no active dispatch exists
+  callNextBtn.disabled = !!activeDispatch;
+
+  // Passenger Boarded is valid only after the driver has arrived
+  completeBtn.disabled = activeStatus !== "ARRIVED";
+
+  // Cancellation is valid only after a driver accepted or arrived
+  cancelDispatchBtn.disabled =
+    activeStatus !== "ACCEPTED" &&
+    activeStatus !== "ARRIVED";
+}
+
 // HTQS v1.4 – Customer demand display
 
 function updateCustomerDemandUI() {
