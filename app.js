@@ -736,9 +736,6 @@ function lockDriverInputs(locked) {
   if (driverNameInput) driverNameInput.disabled = locked;
   if (driverColorInput) driverColorInput.disabled = locked;
   if (driverPlateInput) driverPlateInput.disabled = locked;
-
-  if (joinBtn) joinBtn.disabled = locked;
-  if (leaveBtn) leaveBtn.disabled = !locked;
 }
 
 // Network wake: when Wi-Fi reconnects after sleep
@@ -767,7 +764,7 @@ document.addEventListener("visibilitychange", async () => {
       updateEmptyState?.();
 
       if (myDriverKey) {
-        startDriverHeartbeat();
+        // startDriverHeartbeat();
       }
 
       if (offeredCache) {
@@ -804,7 +801,7 @@ document.addEventListener("visibilitychange", async () => {
     updateEmptyState?.();
 
     if (myDriverKey) {
-      startDriverHeartbeat();
+      // startDriverHeartbeat();
     }
 
     if (offeredCache) {
@@ -1612,6 +1609,9 @@ function stopDriverHeartbeat() {
   }
 }
 
+window.stopDriverHeartbeat = stopDriverHeartbeat;
+window.getDriverHeartbeatId = () => driverHeartbeatId;
+
 async function leaveQueue() {
   if (isBusy) return;
   setBusy(true, "Leaving…");
@@ -1757,9 +1757,25 @@ if (activeDispatch) {
 }
 
     // 4) Find oldest WAITING
+    // HTQS v2.9 — only dispatch active WAITING drivers
+    const DRIVER_STALE_MS = 90000;
+
     const waiting = entries
-      .filter(([_, v]) => v && (v.status ?? "WAITING").toUpperCase() === "WAITING")
-      .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+     .filter(([_, v]) => {
+       if (!v) return false;
+
+    const status = (v.status ?? "WAITING").toUpperCase();
+       if (status !== "WAITING") return false;
+
+    const lastSeenAt = Number(v.lastSeenAt ?? 0);
+
+    // Missing or stale heartbeat = not currently eligible for dispatch.
+    if (!lastSeenAt) return false;
+    if (now - lastSeenAt > DRIVER_STALE_MS) return false;
+
+    return true;
+  })
+  .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
     if (!waiting.length) {
       if (typeof showToast === "function") showToast("No WAITING taxis.", "warn", 2000);
@@ -3448,51 +3464,84 @@ async function ensureSignedIn() {
 async function expireOffersNow() {
   const snap = await get(queueRef);
   if (!snap.exists()) return;
+
   const now = Date.now();
-  
-  
-  // 2) Pull fresh queue
   const entries = Object.entries(snap.val() || {});
   let bump = 0;
+  let expiredCount = 0;
 
   await Promise.all(
     entries.map(async ([k, v]) => {
       if (!v) return;
 
+      const status = (v.status ?? "WAITING").toUpperCase();
+      const expiresAt = Number(v.offerExpiresAt ?? 0);
+
       const isExpired =
-        (v.status ?? "WAITING") === "OFFERED" &&
-        (v.offerExpiresAt ?? 0) <= now;
+        status === "OFFERED" &&
+        expiresAt > 0 &&
+        expiresAt <= now;
 
       if (!isExpired) return;
 
-      // C3: mark it as "missed" so the driver UI can show a toast if desired
+      expiredCount += 1;
+
       await update(ref(db, "queue/" + k), {
         status: "WAITING",
         offerStartedAt: null,
         offerExpiresAt: null,
 
-        lastMissedAt: now,     // ✅ key for C3 UX
-        lastMissedOfferAt: now, // optional duplicate name if you prefer
+        lastMissedAt: now,
+        lastMissedOfferAt: now,
 
-        // keep fairness: put them at end (your original behavior)
+        // Keep FIFO fairness: expired driver goes to the end.
         joinedAt: now + bump++,
-        });
-        // Auto-call next waiting taxi
-
-        setTimeout(() => {
-        const hasWaitingDriver = Object.values(lastQueueSnapshot || {}).some(v =>
-        v && (v.status ?? "WAITING").toUpperCase() === "WAITING"
-        );
-
-        if (!hasWaitingDriver) return;
-
-        callNext(true);
-
-        }, 500);
+      });
     })
   );
-}
 
+  // Nothing expired, so no recovery dispatch is necessary.
+  if (expiredCount === 0) return;
+
+  // HTQS v2.9 — Operational Safety & Recovery
+  // Wait briefly for queue listeners/UI to settle, then verify Firebase again.
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  const freshSnap = await get(queueRef);
+  if (!freshSnap.exists()) return;
+
+  const freshEntries = Object.values(freshSnap.val() || {});
+
+  // Never recover by creating a second active dispatch.
+  const hasActiveDispatch = freshEntries.some((v) => {
+    if (!v) return false;
+
+    const status = (v.status ?? "WAITING").toUpperCase();
+
+    if (status === "ACCEPTED" || status === "ARRIVED") {
+      return true;
+    }
+
+    if (status === "OFFERED") {
+      const expiresAt = Number(v.offerExpiresAt ?? 0);
+      return expiresAt > Date.now();
+    }
+
+    return false;
+  });
+
+  if (hasActiveDispatch) return;
+
+  const hasWaitingDriver = freshEntries.some(
+    (v) =>
+      v &&
+      (v.status ?? "WAITING").toUpperCase() === "WAITING"
+  );
+
+  if (!hasWaitingDriver) return;
+
+  await callNext(true);
+}
 // =======================================
 // EVENT LISTENERS  ⭐ (you asked earlier)
 // =======================================
