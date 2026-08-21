@@ -1504,6 +1504,8 @@ if (!isDriverWithinGeofence(distance)) {
       myDriverKey = driverKey;
       localStorage.setItem("htqs.driverKey", driverKey);
 
+      startDriverHeartbeat();
+
       lockDriverInputs(true);
       refreshJoinUI();
       refreshAcceptUI();
@@ -1578,15 +1580,20 @@ if (!isDriverWithinGeofence(distance)) {
 }
 
 function startDriverHeartbeat() {
+  console.log("💓 startDriverHeartbeat called:", myDriverKey);
 
   // Prevent duplicate intervals
   stopDriverHeartbeat();
 
   // Write immediately once
   update(ref(db, "queue/" + myDriverKey), {
-    lastSeenAt: Date.now()
-  }).catch((e) => {
-    console.warn("Heartbeat initial write failed:", e);
+  lastSeenAt: Date.now()
+})
+  .then(() => {
+    console.log("💓 heartbeat initial write SUCCESS:", myDriverKey);
+  })
+  .catch((e) => {
+    console.warn("💓 heartbeat initial write FAILED:", e);
   });
   
   // Then keep updating every 15 seconds
@@ -3532,11 +3539,26 @@ async function expireOffersNow() {
 
   if (hasActiveDispatch) return;
 
-  const hasWaitingDriver = freshEntries.some(
-    (v) =>
-      v &&
-      (v.status ?? "WAITING").toUpperCase() === "WAITING"
-  );
+  const MISSED_OFFER_COOLDOWN_MS = 30000;
+
+const hasWaitingDriver = freshEntries.some((v) => {
+  if (!v) return false;
+
+  const status = (v.status ?? "WAITING").toUpperCase();
+  if (status !== "WAITING") return false;
+
+  const lastMissedOfferAt = Number(v.lastMissedOfferAt ?? 0);
+
+  // Do not immediately re-offer the same driver who just missed.
+  if (
+    lastMissedOfferAt &&
+    Date.now() - lastMissedOfferAt < MISSED_OFFER_COOLDOWN_MS
+  ) {
+    return false;
+  }
+
+  return true;
+});
 
   if (!hasWaitingDriver) return;
 
@@ -3567,8 +3589,11 @@ function resyncAfterMobileWake() {
       myDriverKey = savedKey;
     }
 
+    if (myDriverKey) {
+      startDriverHeartbeat();
+    }
+
     refreshJoinUI?.();
-    refreshJoinUI()
     refreshAcceptUI?.();
     
     if (typeof updateQueuePosition === "function") {
