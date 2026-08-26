@@ -146,10 +146,13 @@ function autoCheckLocation() {
       }
       currentInsideGeofence = isDriverWithinGeofence(currentDistance);
       // HTQS v1.3 Auto Check-In preparation
+      const manualLeaveSuppressed =
+        localStorage.getItem("htqs.manualLeave") === "1";
       if (
-       currentInsideGeofence &&
-       !autoCheckInAttempted
-     ) {
+        currentInsideGeofence &&
+        !autoCheckInAttempted &&
+        !manualLeaveSuppressed
+      ) {
        console.log("HTQS Auto Check-In ready");
 
       autoCheckInAttempted = true;
@@ -459,7 +462,10 @@ function updateEmptyState() {
 
 function updateLiveQueueDashboard(entries) {
   const activeEntries = entries.filter(([, driver]) => {
-    return driver && driver.status !== "COMPLETE";
+  return (
+    driver &&
+    ["WAITING", "OFFERED", "ACCEPTED", "ARRIVED"].includes(driver.status)
+  );
   });
 
   const waitingEntries = activeEntries.filter(([, driver]) => {
@@ -1541,6 +1547,7 @@ if (!isDriverWithinGeofence(distance)) {
       lng: driverLng,
       distanceMiles: Number(distance.toFixed(3)),
     });
+    localStorage.removeItem("htqs.manualLeave");
 
     myDriverKey = driverKey;
     localStorage.setItem("htqs.driverKey", driverKey);
@@ -1641,6 +1648,7 @@ async function leaveQueue() {
       console.warn("Failed to cancel onDisconnect stale-marker for", myDriverKey, e);
     }
     await update(ref(db, "queue/" + myDriverKey), { status: "LEFT" });
+    localStorage.setItem("htqs.manualLeave", "1");
     hideOfferAlert();
     updateAcceptButtonVisual(null);
     setAcceptButtonLabel(null);
@@ -1712,8 +1720,8 @@ async function callNext(isAuto = false) {
     const now = Date.now();
     // 2) Pull fresh queue
     const snap = await get(queueRef);
-    const data = snap.exists() ? snap.val() : {};
-    const entries = Object.entries(data);
+    let data = snap.exists() ? snap.val() : {};
+    let entries = Object.entries(data);
 
     // 3) HTQS v2.7 — prevent duplicate active dispatches
     const activeDispatch = entries.find(([_, v]) => {
@@ -1761,7 +1769,30 @@ if (activeDispatch) {
   }
 
   return;
+  }
+
+    // HTQS v3.1 — a manual Call Next starts a new dispatch cycle.
+    // Previous missed-offer markers must not block drivers forever.
+    if (!isAuto) {
+      await Promise.all(
+      entries.map(async ([key, driver]) => {
+        if (!driver) return;
+
+        if (driver.lastMissedAt || driver.lastMissedOfferAt) {
+         await update(ref(db, "queue/" + key), {
+          lastMissedAt: null,
+          lastMissedOfferAt: null,
+        });
+      }
+    })
+  );
+
+  // Re-read Firebase so the WAITING filter below uses the cleared state.
+  const refreshedSnap = await get(queueRef);
+  data = refreshedSnap.exists() ? refreshedSnap.val() : {};
+  entries = Object.entries(data);
 }
+
 
     // 4) Find oldest WAITING
     // HTQS v2.9 — only dispatch active WAITING drivers
@@ -1775,6 +1806,11 @@ if (activeDispatch) {
        if (status !== "WAITING") return false;
 
     const lastSeenAt = Number(v.lastSeenAt ?? 0);
+    const lastMissedOfferAt = Number(v.lastMissedOfferAt ?? 0);
+
+    // HTQS v3.1 — a driver who already missed this offer
+    // is not eligible for automatic re-offer.
+    if (isAuto && lastMissedOfferAt) return false;
 
     // Missing or stale heartbeat = not currently eligible for dispatch.
     if (!lastSeenAt) return false;
@@ -3539,9 +3575,7 @@ async function expireOffersNow() {
 
   if (hasActiveDispatch) return;
 
-  const MISSED_OFFER_COOLDOWN_MS = 30000;
-
-const hasWaitingDriver = freshEntries.some((v) => {
+  const hasWaitingDriver = freshEntries.some((v) => {
   if (!v) return false;
 
   const status = (v.status ?? "WAITING").toUpperCase();
@@ -3549,12 +3583,10 @@ const hasWaitingDriver = freshEntries.some((v) => {
 
   const lastMissedOfferAt = Number(v.lastMissedOfferAt ?? 0);
 
-  // Do not immediately re-offer the same driver who just missed.
-  if (
-    lastMissedOfferAt &&
-    Date.now() - lastMissedOfferAt < MISSED_OFFER_COOLDOWN_MS
-  ) {
-    return false;
+  // v3.1: a driver who missed an offer must not be
+  // automatically offered the same dispatch again.
+  if (lastMissedOfferAt) {
+  return false;
   }
 
   return true;
@@ -3605,7 +3637,7 @@ function resyncAfterMobileWake() {
     leaveBtn.onclick = leaveQueue;
     acceptBtn.onclick = acceptRide;
     acknowledgeRequestBtn.onclick = acknowledgeCustomerRequest;
-    callNextBtn.onclick = callNext;
+    callNextBtn.onclick = () => callNext(false);
     customerWaitingBtn.onclick = () => {
       console.log("Customer Waiting button clicked");
       sendCustomerRequest();
@@ -3734,7 +3766,7 @@ joinBtn.onclick = joinQueue;
 leaveBtn.onclick = leaveQueue;
 arrivedBtn.onclick = arrivedRide;
 acceptBtn.onclick = acceptRide;
-callNextBtn.onclick = callNext;
+callNextBtn.onclick = () => callNext(false);
 customerWaitingBtn.onclick = () => {
     console.log("Customer Waiting button clicked");
     sendCustomerRequest();
@@ -3820,7 +3852,7 @@ soundUnlockBanner?.addEventListener("click", () => {
 
 console.log("🔧 testBeepBtn found?", !!testBeepBtn, testBeepBtn);
 
-callNextBtn.onclick = callNext;
+callNextBtn.onclick = () => callNext(false);
 completeBtn.onclick = completePickup;
 resetBtn.onclick = resetDemo;
 
