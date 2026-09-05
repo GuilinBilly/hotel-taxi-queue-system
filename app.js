@@ -1378,10 +1378,20 @@ dispatchGroups.forEach((dispatch) => {
 }
 
  async function joinQueue() { // Validate saved driver session before ...
+  console.log("JOIN A: entered", myDriverKey);
   if (isBusy) return;
  
   if (myDriverKey) {
+    console.log("JOIN B: checking saved driver", myDriverKey);
   const existingSnap = await get(ref(db, "queue/" + myDriverKey));
+
+  console.log(
+
+      "JOIN C: saved-driver check finished",
+
+      existingSnap.exists()
+
+    );
 
   if (!existingSnap.exists()) {
     //console.log("🧹 Removing stale local driver session");
@@ -1534,6 +1544,7 @@ if (!isDriverWithinGeofence(distance)) {
         : Date.now();
 
     // ✅ Normal join: safe to create fresh record
+    console.log("JOIN D: about to write queue record", driverKey);
     await set(driverRef, {
       status: "WAITING",
       name,
@@ -1547,6 +1558,7 @@ if (!isDriverWithinGeofence(distance)) {
       lng: driverLng,
       distanceMiles: Number(distance.toFixed(3)),
     });
+    console.log("JOIN E: queue record written", driverKey);
     localStorage.removeItem("htqs.manualLeave");
 
     myDriverKey = driverKey;
@@ -1577,6 +1589,9 @@ if (!isDriverWithinGeofence(distance)) {
     }, 300);
 
     showToast("Joined queue ✅", "ok");
+
+    console.log("JOIN F: joinQueue normal path complete");
+    
   } catch (err) {
     console.error("joinQueue error:", err);
     showToast("Join failed — try again", "err", 2400);
@@ -2382,29 +2397,35 @@ if (arrivedEntry) {
     }
 
       if (myDriverKey) {
-      const mine = data[myDriverKey];
-      if (!mine || mine.status === "LEFT") {
-        localStorage.removeItem("htqs.driverKey");
-        myDriverKey = null;
+  const mine = data[myDriverKey];
 
-        stopDriverHeartbeat();
-        offeredCache = null;
-        calledBox.textContent = "";
+  if (mine?.status === "LEFT") {
+    localStorage.removeItem("htqs.driverKey");
+    myDriverKey = null;
 
-        lastOfferWasForMe = false;
-        lastOfferKeyForMe = null;
-        lastOfferSig = null;
-        suppressOfferBeep = false;
+    stopDriverHeartbeat();
+    offeredCache = null;
+    calledBox.textContent = "";
 
-        stopOfferBeepLoop?.();
-        if (typeof setOfferPulse === "function") setOfferPulse(false);
+    lastOfferWasForMe = false;
+    lastOfferKeyForMe = null;
+    lastOfferSig = null;
+    suppressOfferBeep = false;
 
-        lockDriverInputs(false);
-        refreshJoinUI();
-        refreshAcceptUI();
-        updateEmptyState();
-      }
-    }
+    stopOfferBeepLoop?.();
+    if (typeof setOfferPulse === "function") setOfferPulse(false);
+
+    lockDriverInputs(false);
+    refreshJoinUI();
+    refreshAcceptUI();
+    updateEmptyState();
+  } else if (!mine) {
+    console.log("🟡 DRIVER SESSION temporarily missing from snapshot", {
+      myDriverKey,
+      isConnected
+    });
+  }
+}
        refreshJoinUI();
     // Render list
     queueList.innerHTML = "";
@@ -2939,7 +2960,7 @@ function setBusy(on, msg = "Working…") {
   if (!on) {
     // IMPORTANT: when we unlock, re-apply "real" enabled/disabled rules
     if (typeof refreshAcceptUI === "function") refreshAcceptUI();
-    if (typeof refreshJoinLeaveUI === "function") refreshJoinLeaveUI(); // if you have it
+    if (typeof refreshJoinUI === "function") refreshJoinUI();
   }
 
   if (on && typeof showToast === "function") showToast(msg, "warn", 1200);
@@ -3613,9 +3634,18 @@ window.addEventListener("touchstart", () => {
   updateSoundHint();
 }, { once: true, passive: true });
 
+let mobileWakeResyncTimer = null;
 function resyncAfterMobileWake() {
-    //console.log("📱 resyncAfterMobileWake running", myDriverKey, localStorage.getItem("htqs.driverKey"));
-    setTimeout(() => {
+  console.log("🧪 WAKE RESYNC requested", {
+  hidden: document.hidden,
+  myDriverKey,
+  savedKey: localStorage.getItem("htqs.driverKey")
+});
+  clearTimeout(mobileWakeResyncTimer);
+
+  mobileWakeResyncTimer = setTimeout(() => {
+    mobileWakeResyncTimer = null;
+    console.log("🧪 WAKE RESYNC executing");
     const savedKey = localStorage.getItem("htqs.driverKey");
     if (!myDriverKey && savedKey) {
       myDriverKey = savedKey;
@@ -3656,17 +3686,11 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener("pageshow", () => {
   resyncAfterMobileWake();
 });
+
 window.addEventListener("focus", () => {
   resyncAfterMobileWake();
 });
 
-window.addEventListener("touchstart", () => {
-  resyncAfterMobileWake();
-}, { passive: true });
-
-window.addEventListener("pointerdown", () => {
-  resyncAfterMobileWake();
-});
 
 // -----------------------------
 // BOOT
