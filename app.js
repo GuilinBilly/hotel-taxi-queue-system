@@ -3635,6 +3635,7 @@ window.addEventListener("touchstart", () => {
 }, { once: true, passive: true });
 
 let mobileWakeResyncTimer = null;
+
 function resyncAfterMobileWake() {
   console.log("🧪 WAKE RESYNC requested", {
   hidden: document.hidden,
@@ -3647,13 +3648,35 @@ function resyncAfterMobileWake() {
     mobileWakeResyncTimer = null;
     console.log("🧪 WAKE RESYNC executing");
     const savedKey = localStorage.getItem("htqs.driverKey");
-    if (!myDriverKey && savedKey) {
-      myDriverKey = savedKey;
-    }
+    
+if (!myDriverKey) {
+  if (savedKey) {
+    myDriverKey = savedKey;
+  } else {
+    const savedName = localStorage.getItem("htqs.driverName");
+    const savedPlate = localStorage.getItem("htqs.driverPlate");
 
-    if (myDriverKey) {
-      startDriverHeartbeat();
+    if (savedName && savedPlate) {
+      const recoveredKey = `${norm(savedName)}_${norm(savedPlate)}`;
+      const recoveredDriver = lastQueueSnapshot?.[recoveredKey];
+
+      if (
+        recoveredDriver &&
+        (recoveredDriver.status ?? "").toUpperCase() !== "LEFT"
+      ) {
+        myDriverKey = recoveredKey;
+        localStorage.setItem("htqs.driverKey", recoveredKey);
+        localStorage.removeItem("htqs.manualLeave");
+
+        console.log("✅ WAKE RESYNC restored driver key", recoveredKey);
+      }
     }
+  }
+}
+
+if (myDriverKey) {
+  startDriverHeartbeat();
+}
 
     refreshJoinUI?.();
     refreshAcceptUI?.();
