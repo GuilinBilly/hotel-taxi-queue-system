@@ -2330,8 +2330,26 @@ function subscribeQueue() {
     const data = snap.val() || {};
     updateQueueHealth(data);
     lastQueueSnapshot = data;
-    refreshDoormanControls();
-    refreshJoinUI();
+
+    // v3.3: reconcile local driver session with authoritative Firebase queue state
+    if (myDriverKey) {
+    const currentDriver = data[myDriverKey];
+    const currentStatus = (currentDriver?.status ?? "").toUpperCase();
+
+    if (!currentDriver || currentStatus === "LEFT") {
+        console.log("🔄 DRIVER SESSION reconciled with Firebase", {
+            staleKey: myDriverKey,
+            currentStatus
+        });
+
+        localStorage.removeItem("htqs.driverKey");
+        myDriverKey = null;
+        lockDriverInputs(false);
+    }
+}
+
+refreshDoormanControls();
+refreshJoinUI();
     const entries = Object.entries(data);
     updateLiveQueueDashboard(entries);
     const arrivedEntry = entries.find(([, driver]) => {
