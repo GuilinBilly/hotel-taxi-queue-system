@@ -2376,8 +2376,12 @@ if (arrivedEntry) {
   }
 
   const waitingDrivers = entries
-    .filter(([_, v]) => v && (v.status ?? "WAITING").toUpperCase() === "WAITING")
-    .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+  .filter(([, v]) =>
+    v &&
+    (v.status ?? "WAITING").toUpperCase() === "WAITING" &&
+    (v.name || v.plate || v.carColor)
+  )
+  .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
   const offeredDriver = entries.find(([key, v]) =>
     key === myDriverKey &&
@@ -3662,7 +3666,7 @@ function resyncAfterMobileWake() {
 });
   clearTimeout(mobileWakeResyncTimer);
 
-  mobileWakeResyncTimer = setTimeout(() => {
+  mobileWakeResyncTimer = setTimeout(async () => {
     mobileWakeResyncTimer = null;
     console.log("🧪 WAKE RESYNC executing");
     const savedKey = localStorage.getItem("htqs.driverKey");
@@ -3693,7 +3697,20 @@ if (!myDriverKey) {
 }
 
 if (myDriverKey) {
-  startDriverHeartbeat();
+  const driverSnap = await get(ref(db, "queue/" + myDriverKey));
+
+  if (driverSnap.exists()) {
+    startDriverHeartbeat();
+  } else {
+    console.warn(
+      "⚠️ WAKE RESYNC: saved driver is no longer in queue:",
+      myDriverKey
+    );
+
+    stopDriverHeartbeat();
+    myDriverKey = null;
+    localStorage.removeItem("htqs.driverKey");
+  }
 }
 
     refreshJoinUI?.();
