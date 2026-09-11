@@ -2368,8 +2368,7 @@ if (arrivedEntry) {
     `🚗 ${arrivedName} has arrived at the hotel entrance. ` +
     `Ready for passenger pickup.`;
 }
-
-    function updateQueuePosition(entries) {
+  function updateQueuePosition(entries) {
   if (!queuePositionEl || !myDriverKey) {
     if (queuePositionEl) queuePositionEl.textContent = "";
     return;
