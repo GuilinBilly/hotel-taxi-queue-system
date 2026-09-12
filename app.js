@@ -1607,29 +1607,79 @@ function startDriverHeartbeat() {
   // Prevent duplicate intervals
   stopDriverHeartbeat();
 
-  // Write immediately once
-  update(ref(db, "queue/" + myDriverKey), {
-  lastSeenAt: Date.now()
-})
+  // Write immediately once — only if this is still a valid active driver record
+get(ref(db, "queue/" + myDriverKey))
+  .then((snap) => {
+    if (!snap.exists()) {
+      console.warn("⚠️ heartbeat skipped: driver record missing:", myDriverKey);
+      return;
+    }
+
+    const driver = snap.val();
+    const status = (driver?.status ?? "").toUpperCase();
+
+    if (!driver?.name || !driver?.plate || status === "LEFT") {
+      console.warn("⚠️ heartbeat skipped: invalid/inactive driver:", {
+        myDriverKey,
+        status,
+        driver
+      });
+      return;
+    }
+
+    return update(ref(db, "queue/" + myDriverKey), {
+      lastSeenAt: Date.now()
+    });
+  })
   .then(() => {
-    console.log("💓 heartbeat initial write SUCCESS:", myDriverKey);
+    console.log("💗 heartbeat initial validation complete:", myDriverKey);
   })
   .catch((e) => {
-    console.warn("💓 heartbeat initial write FAILED:", e);
+    console.warn("💗 heartbeat initial write FAILED:", e);
   });
   
   // Then keep updating every 15 seconds
-  driverHeartbeatId = setInterval(() => {
+driverHeartbeatId = setInterval(() => {
+  if (!myDriverKey) return;
 
-    if (!myDriverKey) return;
+  const heartbeatKey = myDriverKey;
 
-    update(ref(db, "queue/" + myDriverKey), {
-      lastSeenAt: Date.now()
-    }).catch((e) => {
+  get(ref(db, "queue/" + heartbeatKey))
+    .then((snap) => {
+      if (!snap.exists()) {
+        console.warn(
+          "⚠️ heartbeat skipped: driver record missing:",
+          heartbeatKey
+        );
+        stopDriverHeartbeat();
+        return;
+      }
+
+      const driver = snap.val();
+      const status = (driver?.status ?? "").toUpperCase();
+
+      if (!driver?.name || !driver?.plate || status === "LEFT") {
+        console.warn(
+          "⚠️ heartbeat skipped: invalid/inactive driver:",
+          {
+            heartbeatKey,
+            status,
+            driver
+          }
+        );
+        stopDriverHeartbeat();
+        return;
+      }
+
+      return update(ref(db, "queue/" + heartbeatKey), {
+        lastSeenAt: Date.now()
+      });
+    })
+    .catch((e) => {
       console.warn("Heartbeat update failed:", e);
     });
 
-  }, 15000);
+}, 15000);
 }
 function stopDriverHeartbeat() {
   if (driverHeartbeatId) {
