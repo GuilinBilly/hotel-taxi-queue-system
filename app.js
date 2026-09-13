@@ -1679,7 +1679,7 @@ driverHeartbeatId = setInterval(() => {
       console.warn("Heartbeat update failed:", e);
     });
 
-}, 15000);
+  }, 15000);
 }
 function stopDriverHeartbeat() {
   if (driverHeartbeatId) {
