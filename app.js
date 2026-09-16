@@ -184,6 +184,7 @@ function autoCheckLocation() {
 // -----------------------------
 // DOM
 // -----------------------------
+
 const driverNameInput = document.getElementById("driverName");
 const driverColorInput = document.getElementById("driverColor");
 const driverPlateInput = document.getElementById("driverPlate");
