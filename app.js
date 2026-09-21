@@ -3804,6 +3804,8 @@ if (myDriverKey) {
       myDriverKey
     );
     stopDriverHeartbeat();
+    myDriverKey = null;
+    localStorage.removeItem("htqs.driverKey");
   }
 } else {
     console.warn(
