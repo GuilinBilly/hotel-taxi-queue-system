@@ -462,12 +462,26 @@ function updateEmptyState() {
 }
 
 function updateLiveQueueDashboard(entries) {
-  const activeEntries = entries.filter(([, driver]) => {
-  return (
-    driver &&
-    ["WAITING", "OFFERED", "ACCEPTED", "ARRIVED"].includes(driver.status)
-  );
-  });
+  const now = Date.now();
+const DRIVER_STALE_MS = 90000;
+
+const activeEntries = entries.filter(([, driver]) => {
+  if (!driver) return false;
+
+  const status = (driver.status ?? "").toUpperCase();
+
+  if (!["WAITING", "OFFERED", "ACCEPTED", "ARRIVED"].includes(status)) {
+    return false;
+  }
+
+  const lastSeenAt = Number(driver.lastSeenAt ?? 0);
+
+  // Do not count missing/stale driver sessions on the live dashboard.
+  if (!lastSeenAt) return false;
+  if (now - lastSeenAt > DRIVER_STALE_MS) return false;
+
+  return true;
+});
 
   const waitingEntries = activeEntries.filter(([, driver]) => {
     return driver.status === "WAITING";
@@ -2503,14 +2517,28 @@ if (arrivedEntry) {
     queueList.innerHTML = "";
     calledBox.textContent = "";
 
-    const active = entries
-      .filter(([_, v]) =>
-        v &&
-        (v.status ?? "WAITING") !== "LEFT" &&
-        (v.name || v.plate || v.carColor)
-      )
-      .slice()
-      .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
+    const now = Date.now();
+const DRIVER_STALE_MS = 90000;
+
+const active = entries
+  .filter(([, v]) => {
+    if (!v) return false;
+
+    const status = (v.status ?? "WAITING").toUpperCase();
+    if (status === "LEFT") return false;
+
+    if (!(v.name || v.plate || v.carColor)) return false;
+
+    const lastSeenAt = Number(v.lastSeenAt ?? 0);
+
+    // Do not render missing/stale driver sessions in the Live Queue.
+    if (!lastSeenAt) return false;
+    if (now - lastSeenAt > DRIVER_STALE_MS) return false;
+
+    return true;
+  })
+  .slice()
+  .sort((a, b) => (a[1].joinedAt ?? 0) - (b[1].joinedAt ?? 0));
 
     active.forEach(([k, v], i) => {
       const li = document.createElement("li");
@@ -3046,23 +3074,34 @@ function wireConnectionBadge() {
     isConnected = snap.val() === true;
 
     if (isConnected) {
-      netStatus.textContent = "Online";
-      netStatus.className = "netStatus online";
-      dlog("RTDB connected");
+  netStatus.textContent = "Online";
+  netStatus.className = "netStatus online";
+  dlog("RTDB connected");
 
-      // Re-sync UI after reconnect / phone unlock
-      setTimeout(() => {
-        refreshJoinUI();
-        refreshAcceptUI();
-        if (typeof updateQueuePosition === "function") {
-          updateQueuePosition(Object.entries(lastQueueSnapshot || {}));
-        }
-      }, 300);
-    } else {
-      netStatus.textContent = "Reconnecting…";
-      netStatus.className = "netStatus offline";
-      dlog("RTDB disconnected — waiting for reconnect");
+  // If Firebase was previously disconnected, run the existing
+  // mobile-wake recovery path after the connection returns.
+  if (!wasConnected) {
+    console.log("🔄 RTDB reconnected — requesting wake resync");
+    resyncAfterMobileWake();
+  }
+
+  wasConnected = true;
+
+  // Re-sync UI after reconnect / phone unlock
+  setTimeout(() => {
+    refreshJoinUI();
+    refreshAcceptUI();
+    if (typeof updateQueuePosition === "function") {
+      updateQueuePosition(Object.entries(lastQueueSnapshot || {}));
     }
+  }, 300);
+} else {
+  wasConnected = false;
+
+  netStatus.textContent = "Reconnecting…";
+  netStatus.className = "netStatus offline";
+  dlog("RTDB disconnected — waiting for reconnect");
+}
 
     refreshJoinUI();
     refreshAcceptUI();
@@ -3750,8 +3789,23 @@ if (myDriverKey) {
   const driverSnap = await get(ref(db, "queue/" + myDriverKey));
 
   if (driverSnap.exists()) {
+  const driver = driverSnap.val();
+  const status = (driver?.status ?? "").toUpperCase();
+
+  if (driver?.name && driver?.plate && status !== "LEFT") {
+    await update(ref(db, "queue/" + myDriverKey), {
+      lastSeenAt: Date.now()
+    });
+
     startDriverHeartbeat();
   } else {
+    console.warn(
+      "⚠️ WAKE RESYNC: driver record is invalid/inactive:",
+      myDriverKey
+    );
+    stopDriverHeartbeat();
+  }
+} else {
     console.warn(
       "⚠️ WAKE RESYNC: saved driver is no longer in queue:",
       myDriverKey
