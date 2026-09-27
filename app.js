@@ -49,6 +49,8 @@ const QUEUE_RADIUS_MILES = 0.2;
 
 // Offer timing
 const OFFER_MS = 25000;
+// Driver session stale threshold
+const DRIVER_STALE_MS = 5 * 60 * 1000; // 5 minutes
 
 // -----------------------------
 // INIT
@@ -463,7 +465,6 @@ function updateEmptyState() {
 
 function updateLiveQueueDashboard(entries) {
   const now = Date.now();
-const DRIVER_STALE_MS = 90000;
 
 const activeEntries = entries.filter(([, driver]) => {
   if (!driver) return false;
@@ -887,8 +888,8 @@ function updateQueueHealth(queueObj = {}) {
     const lastSeenAt = driver.lastSeenAt ?? 0;
     const staleMs = now - lastSeenAt;
 
-    // treat 45s+ as inactive/stale
-    if (!lastSeenAt || staleMs > 90000) {
+    // Treat drivers beyond the shared stale threshold as inactive/stale
+    if (!lastSeenAt || staleMs > DRIVER_STALE_MS) {
       inactiveCount++;
     }
   }
@@ -1876,7 +1877,7 @@ if (activeDispatch) {
 
     // 4) Find oldest WAITING
     // HTQS v2.9 — only dispatch active WAITING drivers
-    const DRIVER_STALE_MS = 90000;
+    
 
     const waiting = entries
      .filter(([_, v]) => {
@@ -2518,11 +2519,10 @@ if (arrivedEntry) {
     calledBox.textContent = "";
 
     const now = Date.now();
-const DRIVER_STALE_MS = 90000;
 
-const active = entries
-  .filter(([, v]) => {
-    if (!v) return false;
+    const active = entries
+     .filter(([, v]) => {
+     if (!v) return false;
 
     const status = (v.status ?? "WAITING").toUpperCase();
     if (status === "LEFT") return false;
