@@ -2550,6 +2550,7 @@ if (arrivedEntry) {
       const driverLabel = `${safeName} ${safeColor} ${safePlate}`.replace(/\s+/g, " ").trim();
 
       li.classList.add("queue-item", `status-${status.toLowerCase()}`);
+      li.dataset.driverKey = k;
       let badgeText = status;
 
       if (status === "OFFERED") {
@@ -2651,6 +2652,23 @@ if (arrivedEntry) {
         const msLeft = Math.max(0, (v.offerExpiresAt ?? 0) - Date.now());
         setAcceptButtonLabel(msLeft);
         updateAcceptButtonVisual(msLeft);
+        // v3.6 — Synchronize this driver's Live Queue countdown
+// with the Accept Ride countdown.
+if (queueList && offeredCache?.key != null) {
+  const offerKey = String(offeredCache.key);
+  const queueItems = queueList.querySelectorAll(".queue-item");
+
+  queueItems.forEach((item) => {
+    if (item.dataset.driverKey !== offerKey) return;
+    if (!item.classList.contains("status-offered")) return;
+
+    const badge = item.querySelector(".badge");
+    if (!badge) return;
+
+    const seconds = Math.ceil(msLeft / 1000);
+    badge.textContent = `OFFERED (${seconds}s)`;
+  });
+}
         urgentDoublePulseActive = (msLeft > 0 && msLeft <= 2000);
         // ✅ urgent trigger uses msLeft (not "remaining")
         if (msLeft <= 5000 && !urgentBeepIntervalId) {
@@ -3066,6 +3084,46 @@ function setBusy(on, msg = "Working…") {
   if (on && typeof showToast === "function") showToast(msg, "warn", 1200);
 }
 
+// HTQS v3.6 — Restore disconnect protection after reconnection
+async function restoreDriverDisconnectProtection() {
+  if (!isConnected || !myDriverKey) return;
+
+  const driverKey = myDriverKey;
+
+  try {
+    const driverRef = ref(db, `queue/${driverKey}`);
+    const snap = await get(driverRef);
+
+    if (!snap.exists()) return;
+
+    const driver = snap.val();
+    const status = (driver?.status ?? "").toUpperCase();
+
+    // Never restore protection for an inactive driver.
+    if (!driver?.name || !driver?.plate || status === "LEFT") {
+      return;
+    }
+
+    // Do not restore protection if this session changed.
+    if (myDriverKey !== driverKey) return;
+
+    await onDisconnect(
+      ref(db, `queue/${driverKey}/lastSeenAt`)
+    ).set(0);
+
+    console.log(
+      "✅ Disconnect protection restored:",
+      driverKey
+    );
+
+  } catch (e) {
+    console.warn(
+      "⚠️ Failed to restore disconnect protection:",
+      e
+    );
+  }
+}
+
 function wireConnectionBadge() {
   const connectedRef = ref(db, ".info/connected");
   let wasConnected = true;
@@ -3081,9 +3139,19 @@ function wireConnectionBadge() {
   // If Firebase was previously disconnected, run the existing
   // mobile-wake recovery path after the connection returns.
   if (!wasConnected) {
-    console.log("🔄 RTDB reconnected — requesting wake resync");
-    resyncAfterMobileWake();
-  }
+  console.log("🔄 RTDB reconnected — requesting wake resync");
+
+  // Restore Firebase disconnect protection after reconnection.
+  // Mobile-wake recovery may first need to restore myDriverKey.
+  resyncAfterMobileWake();
+
+  setTimeout(() => {
+    console.log("🔎 Disconnect restore check:", { isConnected, myDriverKey });
+    if (isConnected && myDriverKey) {
+      restoreDriverDisconnectProtection();
+    }
+  }, 2000);
+}
 
   wasConnected = true;
 
